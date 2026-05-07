@@ -1,0 +1,985 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>抽籤點名扭蛋</title>
+  <style>
+    :root {
+      --ink: #243047;
+      --muted: #65758f;
+      --paper: #fff8fb;
+      --panel: #ffffff;
+      --pink: #ff8fc7;
+      --purple: #9b7bff;
+      --blue: #4f8cff;
+      --green: #22b98f;
+      --yellow: #ffd24a;
+      --orange: #ffad4d;
+      --red: #ff5d73;
+      --line: rgba(255, 143, 199, 0.42);
+      --shadow: 0 24px 60px rgba(111, 78, 143, 0.18);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", "Noto Sans TC", system-ui, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 8% 12%, rgba(255, 210, 74, 0.48), transparent 22%),
+        radial-gradient(circle at 90% 10%, rgba(155, 123, 255, 0.28), transparent 24%),
+        radial-gradient(circle at 80% 88%, rgba(79, 140, 255, 0.22), transparent 24%),
+        linear-gradient(135deg, rgba(255, 143, 199, 0.2), transparent 38%),
+        var(--paper);
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        radial-gradient(circle, rgba(255, 173, 77, 0.42) 0 4px, transparent 5px),
+        radial-gradient(circle, rgba(79, 140, 255, 0.32) 0 3px, transparent 4px),
+        radial-gradient(circle, rgba(34, 185, 143, 0.28) 0 5px, transparent 6px);
+      background-position: 32px 40px, 130px 96px, 230px 28px;
+      background-size: 260px 180px, 310px 210px, 360px 260px;
+      opacity: 0.8;
+    }
+
+    button,
+    textarea,
+    input,
+    select {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: minmax(300px, 390px) minmax(0, 1fr);
+    }
+
+    .sidebar {
+      padding: 24px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(255, 247, 251, 0.92)),
+        repeating-linear-gradient(135deg, rgba(255, 143, 199, 0.12) 0 14px, rgba(255, 210, 74, 0.1) 14px 28px);
+      border-right: 3px dashed rgba(255, 143, 199, 0.55);
+      backdrop-filter: blur(12px);
+    }
+
+    .home-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 38px;
+      margin-bottom: 14px;
+      padding: 0 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fffdf4;
+      color: #7b4ed8;
+      font-size: 14px;
+      font-weight: 900;
+      box-shadow: 0 5px 0 rgba(255, 143, 199, 0.18);
+    }
+
+    .brand {
+      display: inline-block;
+      margin: 0 0 20px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 28px;
+      line-height: 1.15;
+      letter-spacing: 0;
+      background: linear-gradient(135deg, var(--pink), var(--purple));
+      box-shadow: 0 10px 24px rgba(155, 123, 255, 0.25);
+    }
+
+    .section {
+      margin-top: 20px;
+    }
+
+    .label {
+      display: block;
+      margin-bottom: 8px;
+      color: #8a4f8f;
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 230px;
+      resize: vertical;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      color: var(--ink);
+      background: #fffdf4;
+      line-height: 1.5;
+    }
+
+    .toolbar,
+    .row {
+      display: grid;
+      gap: 8px;
+    }
+
+    .toolbar {
+      grid-template-columns: 1fr 1fr;
+      margin-top: 8px;
+    }
+
+    .row {
+      grid-template-columns: 1fr 1fr;
+      align-items: end;
+    }
+
+    input[type="file"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px dashed var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.78);
+    }
+
+    select,
+    .number-input {
+      width: 100%;
+      min-height: 44px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 0 10px;
+      color: var(--ink);
+      background: #fffdf4;
+      font-weight: 800;
+    }
+
+    .switch {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 44px;
+      padding: 0 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fffdf4;
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    .switch input {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--purple);
+    }
+
+    .button {
+      min-height: 44px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      color: var(--ink);
+      font-weight: 900;
+      box-shadow: 0 6px 0 rgba(255, 143, 199, 0.2);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 0 rgba(255, 143, 199, 0.24);
+    }
+
+    .button:active {
+      transform: translateY(2px);
+      box-shadow: 0 3px 0 rgba(255, 143, 199, 0.2);
+    }
+
+    .button.primary {
+      color: #fff;
+      border-color: transparent;
+      background: linear-gradient(135deg, var(--blue), var(--purple));
+    }
+
+    .button.danger {
+      color: #fff;
+      border-color: transparent;
+      background: linear-gradient(135deg, var(--red), #ff9a9e);
+    }
+
+    .main {
+      display: grid;
+      align-items: center;
+      padding: 32px;
+    }
+
+    .stage {
+      width: min(100%, 980px);
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .title {
+      margin: 0 0 16px;
+      color: #7b4ed8;
+      font-size: clamp(28px, 5vw, 56px);
+      line-height: 1.08;
+      letter-spacing: 0;
+      text-shadow: 0 3px 0 rgba(255, 255, 255, 0.9);
+    }
+
+    .machine-card {
+      position: relative;
+      overflow: hidden;
+      padding: clamp(24px, 5vw, 48px);
+      border: 4px solid rgba(255, 255, 255, 0.92);
+      border-radius: 8px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(255, 253, 244, 0.94)),
+        linear-gradient(135deg, rgba(255, 143, 199, 0.18), rgba(79, 140, 255, 0.12));
+      box-shadow: var(--shadow);
+    }
+
+    .machine-card::before,
+    .machine-card::after {
+      content: "★";
+      position: absolute;
+      color: rgba(255, 173, 77, 0.35);
+      font-size: clamp(42px, 8vw, 88px);
+      line-height: 1;
+      transform: rotate(-12deg);
+    }
+
+    .machine-card::before {
+      top: 18px;
+      left: 24px;
+    }
+
+    .machine-card::after {
+      right: 28px;
+      bottom: 22px;
+      color: rgba(79, 140, 255, 0.24);
+      transform: rotate(16deg);
+    }
+
+    .sound-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .switch {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 44px;
+      padding: 0 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fffdf4;
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    .switch input {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--purple);
+    }
+
+    .gacha-stage {
+      position: relative;
+      width: min(72vw, 390px);
+      min-height: 390px;
+      margin: 0 auto 24px;
+    }
+
+    .gacha-machine {
+      position: relative;
+      z-index: 2;
+      display: block;
+      width: 100%;
+      height: auto;
+      filter: drop-shadow(0 20px 26px rgba(111, 78, 143, 0.22));
+      transform-origin: 50% 58%;
+    }
+
+    .gacha-stage.spinning .gacha-machine {
+      animation: machineShake 0.12s linear infinite;
+    }
+
+    @keyframes machineShake {
+      0%, 100% {
+        transform: rotate(0deg) translateY(0);
+      }
+
+      25% {
+        transform: rotate(-1.8deg) translateY(1px);
+      }
+
+      75% {
+        transform: rotate(1.8deg) translateY(-1px);
+      }
+    }
+
+    .capsule {
+      position: absolute;
+      z-index: 3;
+      left: 50%;
+      bottom: 42px;
+      width: 96px;
+      height: 96px;
+      border: 7px solid #ffffff;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 34% 26%, rgba(255, 255, 255, 0.95) 0 10%, transparent 11%),
+        linear-gradient(180deg, #ff8fc7 0 49%, #fffdf4 50% 100%);
+      box-shadow:
+        inset 0 0 14px rgba(111, 78, 143, 0.12),
+        0 14px 24px rgba(111, 78, 143, 0.25);
+      opacity: 0;
+      transform: translate(-50%, -90px) scale(0.65) rotate(-20deg);
+    }
+
+    .capsule.drop {
+      animation: capsuleDrop 0.88s cubic-bezier(.22, 1.2, .36, 1) forwards;
+    }
+
+    .capsule.opened {
+      animation: capsuleOpen 0.46s ease forwards;
+    }
+
+    @keyframes capsuleDrop {
+      0% {
+        opacity: 0;
+        transform: translate(-50%, -120px) scale(0.45) rotate(-34deg);
+      }
+
+      64% {
+        opacity: 1;
+        transform: translate(-50%, 12px) scale(1.05) rotate(18deg);
+      }
+
+      82% {
+        transform: translate(-50%, -10px) scale(1) rotate(-8deg);
+      }
+
+      100% {
+        opacity: 1;
+        transform: translate(-50%, 0) scale(1) rotate(0deg);
+      }
+    }
+
+    @keyframes capsuleOpen {
+      0% {
+        opacity: 1;
+        transform: translate(-50%, 0) scale(1);
+      }
+
+      100% {
+        opacity: 0;
+        transform: translate(-50%, 0) scale(1.55);
+      }
+    }
+
+    .capsule-name {
+      position: absolute;
+      z-index: 4;
+      left: 50%;
+      bottom: 60px;
+      min-width: 168px;
+      min-height: 58px;
+      display: grid;
+      place-items: center;
+      padding: 10px 18px;
+      border: 5px solid #ffffff;
+      border-radius: 8px;
+      color: #7b4ed8;
+      background: #fff7d1;
+      font-size: clamp(22px, 4vw, 34px);
+      font-weight: 950;
+      box-shadow: 0 14px 28px rgba(111, 78, 143, 0.18);
+      opacity: 0;
+      transform: translate(-50%, 16px) scale(0.86);
+    }
+
+    .capsule-name.show {
+      animation: namePop 0.42s ease forwards;
+    }
+
+    @keyframes namePop {
+      0% {
+        opacity: 0;
+        transform: translate(-50%, 22px) scale(0.7);
+      }
+
+      76% {
+        opacity: 1;
+        transform: translate(-50%, -4px) scale(1.08);
+      }
+
+      100% {
+        opacity: 1;
+        transform: translate(-50%, 0) scale(1);
+      }
+    }
+
+    .result-box {
+      position: relative;
+      z-index: 1;
+      min-height: 130px;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      border: 3px dashed rgba(255, 143, 199, 0.6);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.72);
+    }
+
+    .result-list {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .name-chip {
+      display: inline-flex;
+      align-items: center;
+      min-height: 54px;
+      padding: 0 18px;
+      border-radius: 999px;
+      color: #20304f;
+      background: #fff7d1;
+      font-size: clamp(22px, 4vw, 38px);
+      font-weight: 950;
+      box-shadow: 0 8px 0 rgba(255, 173, 77, 0.28);
+    }
+
+    .name-chip.reveal {
+      animation: chipReveal 0.38s ease both;
+    }
+
+    @keyframes chipReveal {
+      from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.86);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .status {
+      margin-top: 14px;
+      color: #c04b85;
+      font-size: clamp(17px, 2.5vw, 24px);
+      font-weight: 900;
+    }
+
+    .draw-actions {
+      display: grid;
+      grid-template-columns: minmax(160px, 1fr) minmax(140px, 0.55fr);
+      gap: 10px;
+      margin-top: 22px;
+    }
+
+    .draw-actions .button {
+      min-height: 58px;
+      font-size: 20px;
+    }
+
+    .history {
+      margin-top: 20px;
+      text-align: left;
+    }
+
+    .history h2 {
+      margin: 0 0 8px;
+      color: #7b4ed8;
+      font-size: 20px;
+    }
+
+    .history-list {
+      min-height: 44px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .history-list li {
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: #eef8ff;
+      color: #2453a6;
+      font-weight: 800;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .stat {
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.74);
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    .stat strong {
+      display: block;
+      color: #7b4ed8;
+      font-size: 24px;
+    }
+
+    @media (max-width: 860px) {
+      .page {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        border-right: 0;
+        border-bottom: 3px dashed rgba(255, 143, 199, 0.55);
+      }
+
+      .main {
+        padding: 20px;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .toolbar,
+      .row,
+      .draw-actions {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <aside class="sidebar" aria-label="抽籤設定">
+      <a class="home-link" href="../index.html">← 回首頁</a>
+      <h1 class="brand">抽籤點名扭蛋</h1>
+
+      <div class="section">
+        <label class="label" for="names">學生名單</label>
+        <textarea id="names" spellcheck="false">小安
+小晴
+小宇
+小恩
+小蓁
+小翔
+小涵
+小杰
+小妍
+小睿
+小庭
+小樂</textarea>
+        <div class="toolbar">
+          <button class="button" id="saveNames" type="button">儲存名單</button>
+          <button class="button" id="clearNames" type="button">清空</button>
+        </div>
+      </div>
+
+      <div class="section">
+        <label class="label" for="fileInput">匯入名單</label>
+        <input id="fileInput" type="file" accept=".txt,.csv">
+      </div>
+
+      <div class="section row">
+        <div>
+          <label class="label" for="drawCount">抽出人數</label>
+          <select id="drawCount">
+            <option value="1">1 人</option>
+            <option value="2">2 人</option>
+            <option value="3">3 人</option>
+            <option value="4">4 人</option>
+            <option value="5">5 人</option>
+            <option value="6">6 人</option>
+          </select>
+        </div>
+        <label class="switch">
+          <input id="noRepeat" type="checkbox" checked>
+          抽過先暫停
+        </label>
+      </div>
+
+      <div class="section sound-row">
+        <label class="switch">
+          <input id="soundToggle" type="checkbox" checked>
+          緊張音效
+        </label>
+        <button class="button" id="testSound" type="button">試聽</button>
+      </div>
+
+      <div class="section stats">
+        <div class="stat">
+          <strong id="totalCount">0</strong>
+          名單人數
+        </div>
+        <div class="stat">
+          <strong id="poolCount">0</strong>
+          可抽人數
+        </div>
+      </div>
+
+      <div class="section toolbar">
+        <button class="button" id="resetPool" type="button">重置抽籤池</button>
+        <button class="button danger" id="clearHistory" type="button">清除紀錄</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <section class="stage" aria-live="polite">
+        <h2 class="title">今天抽誰來挑戰？</h2>
+        <div class="machine-card">
+          <div class="gacha-stage" id="gachaStage" aria-hidden="true">
+            <img class="gacha-machine" src="assets/gacha-machine.png" alt="">
+            <div class="capsule" id="capsule"></div>
+            <div class="capsule-name" id="capsuleName">?</div>
+          </div>
+          <div class="result-box">
+            <ul class="result-list" id="resultList">
+              <li class="name-chip">準備抽籤</li>
+            </ul>
+          </div>
+          <div class="status" id="status">輸入名單後，按下扭蛋抽人</div>
+          <div class="draw-actions">
+            <button class="button primary" id="drawButton" type="button">扭蛋抽人</button>
+            <button class="button" id="copyResult" type="button">複製結果</button>
+          </div>
+          <div class="history">
+            <h2>抽籤紀錄</h2>
+            <ul class="history-list" id="historyList"></ul>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const namesInput = document.querySelector("#names");
+    const fileInput = document.querySelector("#fileInput");
+    const drawCount = document.querySelector("#drawCount");
+    const noRepeat = document.querySelector("#noRepeat");
+    const totalCount = document.querySelector("#totalCount");
+    const poolCount = document.querySelector("#poolCount");
+    const resetPool = document.querySelector("#resetPool");
+    const clearHistory = document.querySelector("#clearHistory");
+    const saveNames = document.querySelector("#saveNames");
+    const clearNames = document.querySelector("#clearNames");
+    const drawButton = document.querySelector("#drawButton");
+    const copyResult = document.querySelector("#copyResult");
+    const resultList = document.querySelector("#resultList");
+    const historyList = document.querySelector("#historyList");
+    const status = document.querySelector("#status");
+    const gachaStage = document.querySelector("#gachaStage");
+    const capsule = document.querySelector("#capsule");
+    const capsuleName = document.querySelector("#capsuleName");
+    const soundToggle = document.querySelector("#soundToggle");
+    const testSound = document.querySelector("#testSound");
+
+    const storageKey = "jessie-toolbox-lucky-draw";
+    let drawnNames = [];
+    let history = [];
+    let latestResult = [];
+    let isDrawing = false;
+    let audioContext = null;
+    let suspenseTimer = null;
+
+    function parseNames(text) {
+      return [...new Set(text
+        .split(/[\n,，、;；\t]+/)
+        .map((name) => name.trim())
+        .filter(Boolean))];
+    }
+
+    function currentNames() {
+      return parseNames(namesInput.value);
+    }
+
+    function availablePool() {
+      const names = currentNames();
+      if (!noRepeat.checked) return names;
+      return names.filter((name) => !drawnNames.includes(name));
+    }
+
+    function saveState() {
+      const state = {
+        names: namesInput.value,
+        drawnNames,
+        history,
+        noRepeat: noRepeat.checked,
+        drawCount: drawCount.value
+      };
+      localStorage.setItem(storageKey, JSON.stringify(state));
+    }
+
+    function loadState() {
+      try {
+        const state = JSON.parse(localStorage.getItem(storageKey) || "{}");
+        if (state.names) namesInput.value = state.names;
+        if (Array.isArray(state.drawnNames)) drawnNames = state.drawnNames;
+        if (Array.isArray(state.history)) history = state.history;
+        if (typeof state.noRepeat === "boolean") noRepeat.checked = state.noRepeat;
+        if (state.drawCount) drawCount.value = state.drawCount;
+      } catch {
+        localStorage.removeItem(storageKey);
+      }
+    }
+
+    function getAudioContext() {
+      audioContext ||= new AudioContext();
+      return audioContext;
+    }
+
+    function beep(frequency, start, duration, volume = 0.16, type = "sine") {
+      if (!soundToggle.checked) return;
+      const audio = getAudioContext();
+      const oscillator = audio.createOscillator();
+      const gain = audio.createGain();
+      oscillator.type = type;
+      oscillator.frequency.setValueAtTime(frequency, start);
+      gain.gain.setValueAtTime(0.001, start);
+      gain.gain.exponentialRampToValueAtTime(volume, start + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.001, start + duration);
+      oscillator.connect(gain);
+      gain.connect(audio.destination);
+      oscillator.start(start);
+      oscillator.stop(start + duration + 0.02);
+    }
+
+    function startSuspenseSound() {
+      if (!soundToggle.checked) return;
+      const audio = getAudioContext();
+      let step = 0;
+      clearInterval(suspenseTimer);
+      suspenseTimer = setInterval(() => {
+        const now = audio.currentTime;
+        const frequency = 260 + (step * 34);
+        beep(frequency, now, 0.07, 0.1, step % 2 ? "triangle" : "square");
+        step += 1;
+      }, 115);
+    }
+
+    function stopSuspenseSound() {
+      clearInterval(suspenseTimer);
+      suspenseTimer = null;
+    }
+
+    function playRevealSound() {
+      if (!soundToggle.checked) return;
+      const audio = getAudioContext();
+      const now = audio.currentTime;
+      [523, 659, 784, 1046].forEach((frequency, index) => {
+        beep(frequency, now + (index * 0.08), 0.16, 0.18, "sine");
+      });
+    }
+
+    function playTestSound() {
+      startSuspenseSound();
+      window.setTimeout(() => {
+        stopSuspenseSound();
+        playRevealSound();
+      }, 700);
+    }
+
+    function renderList(target, names, emptyText) {
+      target.innerHTML = "";
+      if (!names.length) {
+        const item = document.createElement("li");
+        item.className = target === resultList ? "name-chip" : "";
+        item.textContent = emptyText;
+        target.appendChild(item);
+        return;
+      }
+
+      names.forEach((name) => {
+        const item = document.createElement("li");
+        if (target === resultList) item.className = "name-chip reveal";
+        item.textContent = name;
+        target.appendChild(item);
+      });
+    }
+
+    function render() {
+      const names = currentNames();
+      const pool = availablePool();
+      totalCount.textContent = names.length;
+      poolCount.textContent = pool.length;
+      renderList(historyList, history, "尚無紀錄");
+
+      if (!latestResult.length && resultList.children.length === 0) {
+        renderList(resultList, [], "準備抽籤");
+      }
+
+      if (!names.length) {
+        status.textContent = "請先輸入或匯入學生名單";
+      } else if (!pool.length) {
+        status.textContent = "抽籤池已空，可以重置抽籤池再抽";
+      } else {
+        status.textContent = `目前有 ${pool.length} 位可以抽`;
+      }
+      saveState();
+    }
+
+    function shuffle(list) {
+      const copy = [...list];
+      for (let i = copy.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function draw() {
+      if (isDrawing) return;
+      const pool = availablePool();
+      if (!pool.length) {
+        render();
+        return;
+      }
+
+      isDrawing = true;
+      drawButton.disabled = true;
+      gachaStage.classList.add("spinning");
+      capsule.classList.remove("drop", "opened");
+      capsuleName.classList.remove("show");
+      capsuleName.textContent = "?";
+      renderList(resultList, ["抽籤中..."], "");
+      status.textContent = "扭蛋轉動中";
+      startSuspenseSound();
+
+      window.setTimeout(() => {
+        const count = Math.min(Number(drawCount.value), pool.length);
+        latestResult = shuffle(pool).slice(0, count);
+        if (noRepeat.checked) {
+          drawnNames = [...new Set([...drawnNames, ...latestResult])];
+        }
+        history = [...latestResult, ...history].slice(0, 30);
+        stopSuspenseSound();
+        gachaStage.classList.remove("spinning");
+        capsuleName.textContent = latestResult.length === 1 ? latestResult[0] : `${latestResult.length} 位`;
+        capsule.classList.add("drop");
+        status.textContent = "扭蛋出現了";
+
+        window.setTimeout(() => {
+          capsule.classList.add("opened");
+          capsuleName.classList.add("show");
+          playRevealSound();
+          renderList(resultList, latestResult, "準備抽籤");
+          status.textContent = `抽出 ${latestResult.length} 位`;
+          drawButton.disabled = false;
+          isDrawing = false;
+          render();
+        }, 880);
+      }, 1350);
+    }
+
+    namesInput.addEventListener("input", () => {
+      const all = currentNames();
+      drawnNames = drawnNames.filter((name) => all.includes(name));
+      history = history.filter((name) => all.includes(name));
+      latestResult = latestResult.filter((name) => all.includes(name));
+      render();
+    });
+
+    fileInput.addEventListener("change", async () => {
+      const file = fileInput.files[0];
+      if (!file) return;
+      namesInput.value = await file.text();
+      drawnNames = [];
+      history = [];
+      latestResult = [];
+      renderList(resultList, [], "準備抽籤");
+      render();
+      fileInput.value = "";
+    });
+
+    drawCount.addEventListener("change", render);
+    noRepeat.addEventListener("change", render);
+    drawButton.addEventListener("click", draw);
+
+    resetPool.addEventListener("click", () => {
+      drawnNames = [];
+      latestResult = [];
+      renderList(resultList, [], "準備抽籤");
+      render();
+    });
+
+    clearHistory.addEventListener("click", () => {
+      history = [];
+      render();
+    });
+
+    saveNames.addEventListener("click", () => {
+      status.textContent = "名單已儲存";
+      saveState();
+    });
+
+    clearNames.addEventListener("click", () => {
+      namesInput.value = "";
+      drawnNames = [];
+      history = [];
+      latestResult = [];
+      renderList(resultList, [], "準備抽籤");
+      render();
+    });
+
+    copyResult.addEventListener("click", async () => {
+      if (!latestResult.length) {
+        status.textContent = "目前沒有可複製的抽籤結果";
+        return;
+      }
+      await navigator.clipboard.writeText(latestResult.join("、"));
+      status.textContent = "已複製抽籤結果";
+    });
+
+    testSound.addEventListener("click", playTestSound);
+
+    document.addEventListener("keydown", (event) => {
+      if (event.code === "Space" && event.target.tagName !== "TEXTAREA") {
+        event.preventDefault();
+        draw();
+      }
+    });
+
+    loadState();
+    render();
+  </script>
+</body>
+</html>

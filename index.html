@@ -1,0 +1,420 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Jessie 的教學工具箱</title>
+  <style>
+    :root {
+      --ink: #243047;
+      --muted: #65758f;
+      --paper: #fff8fb;
+      --panel: #ffffff;
+      --pink: #ff8fc7;
+      --purple: #9b7bff;
+      --blue: #4f8cff;
+      --green: #22b98f;
+      --yellow: #ffd24a;
+      --orange: #ffad4d;
+      --line: rgba(255, 143, 199, 0.38);
+      --shadow: 0 24px 60px rgba(111, 78, 143, 0.18);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", "Noto Sans TC", system-ui, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 8% 12%, rgba(255, 210, 74, 0.48), transparent 22%),
+        radial-gradient(circle at 90% 10%, rgba(155, 123, 255, 0.28), transparent 24%),
+        radial-gradient(circle at 80% 88%, rgba(79, 140, 255, 0.22), transparent 24%),
+        linear-gradient(135deg, rgba(255, 143, 199, 0.2), transparent 38%),
+        var(--paper);
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        radial-gradient(circle, rgba(255, 173, 77, 0.42) 0 4px, transparent 5px),
+        radial-gradient(circle, rgba(79, 140, 255, 0.32) 0 3px, transparent 4px),
+        radial-gradient(circle, rgba(34, 185, 143, 0.28) 0 5px, transparent 6px);
+      background-position: 32px 40px, 130px 96px, 230px 28px;
+      background-size: 260px 180px, 310px 210px, 360px 260px;
+      opacity: 0.8;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding: 18px clamp(18px, 4vw, 44px);
+    }
+
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 44px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      color: #fff;
+      font-weight: 900;
+      background: linear-gradient(135deg, var(--pink), var(--purple));
+      box-shadow: 0 10px 24px rgba(155, 123, 255, 0.24);
+    }
+
+    .logo-mark {
+      display: grid;
+      place-items: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.24);
+    }
+
+    .nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    .nav a {
+      min-height: 40px;
+      display: inline-flex;
+      align-items: center;
+      padding: 0 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.78);
+      color: #7b4ed8;
+      font-weight: 800;
+    }
+
+    .hero {
+      width: min(1120px, calc(100% - 36px));
+      margin: 0 auto;
+      padding: clamp(22px, 5vw, 48px) 0 54px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(280px, 0.95fr);
+      gap: 26px;
+      align-items: stretch;
+    }
+
+    .intro {
+      padding: clamp(24px, 5vw, 44px);
+      border: 4px solid rgba(255, 255, 255, 0.92);
+      border-radius: 8px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(255, 253, 244, 0.94)),
+        linear-gradient(135deg, rgba(255, 143, 199, 0.18), rgba(79, 140, 255, 0.12));
+      box-shadow: var(--shadow);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(40px, 8vw, 84px);
+      line-height: 0.98;
+      letter-spacing: 0;
+      color: #20304f;
+      text-shadow:
+        0 6px 0 rgba(255, 210, 74, 0.45),
+        0 14px 34px rgba(79, 140, 255, 0.16);
+    }
+
+    .lead {
+      max-width: 650px;
+      margin: 22px 0 0;
+      color: var(--muted);
+      font-size: clamp(18px, 2.5vw, 24px);
+      line-height: 1.55;
+      font-weight: 700;
+    }
+
+    .quick-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 28px;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
+      padding: 0 18px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      font-weight: 900;
+      box-shadow: 0 7px 0 rgba(255, 143, 199, 0.2);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 9px 0 rgba(255, 143, 199, 0.24);
+    }
+
+    .button.primary {
+      color: #fff;
+      background: linear-gradient(135deg, var(--blue), var(--purple));
+    }
+
+    .button.secondary {
+      color: #7b4ed8;
+      background: #fffdf4;
+      border-color: var(--line);
+    }
+
+    .mascot-card {
+      position: relative;
+      min-height: 100%;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      border: 4px solid rgba(255, 255, 255, 0.92);
+      border-radius: 8px;
+      background:
+        radial-gradient(circle at 50% 46%, rgba(255, 210, 74, 0.28), transparent 42%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.8), rgba(255, 247, 251, 0.82));
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .mascot-card img {
+      display: block;
+      width: min(78%, 330px);
+      height: auto;
+      max-height: 430px;
+      object-fit: contain;
+      object-position: center;
+      border-radius: 6px;
+      filter: drop-shadow(0 16px 22px rgba(111, 78, 143, 0.18));
+    }
+
+    .section-title {
+      margin: 38px 0 14px;
+      color: #7b4ed8;
+      font-size: clamp(24px, 4vw, 36px);
+      letter-spacing: 0;
+    }
+
+    .tool-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .tool-card {
+      position: relative;
+      min-height: 196px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 20px;
+      border: 2px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.88);
+      box-shadow: 0 16px 34px rgba(111, 78, 143, 0.12);
+      overflow: hidden;
+    }
+
+    .tool-card::after {
+      content: "";
+      position: absolute;
+      width: 88px;
+      height: 88px;
+      right: -24px;
+      top: -24px;
+      border-radius: 50%;
+      background: var(--card-color, var(--yellow));
+      opacity: 0.3;
+    }
+
+    .tool-icon {
+      width: 52px;
+      height: 52px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      background: var(--card-color, var(--yellow));
+      font-size: 28px;
+      box-shadow: 0 8px 0 rgba(36, 48, 71, 0.08);
+    }
+
+    .tool-card h3 {
+      margin: 18px 0 8px;
+      font-size: 24px;
+      letter-spacing: 0;
+    }
+
+    .tool-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.5;
+      font-weight: 650;
+    }
+
+    .tool-status {
+      align-self: flex-start;
+      margin-top: 18px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: #fff7d1;
+      color: #8a5a00;
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .tool-card.ready .tool-status {
+      background: #ddfff3;
+      color: #087352;
+    }
+
+    @media (max-width: 900px) {
+      .hero-grid,
+      .tool-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .mascot-card img {
+        width: min(82%, 320px);
+        height: auto;
+        min-height: 0;
+        max-height: 360px;
+        margin: 0 auto;
+        object-fit: contain;
+      }
+    }
+
+    @media (max-width: 620px) {
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .nav {
+        justify-content: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="topbar">
+      <a class="logo" href="./index.html" aria-label="回首頁">
+        <span class="logo-mark">★</span>
+        Jessie 的教學工具箱
+      </a>
+      <nav class="nav" aria-label="主要分頁">
+        <a href="./index.html">首頁</a>
+        <a href="./class-timer/index.html">班級計時器</a>
+        <a href="./lucky-draw/index.html">抽籤扭蛋</a>
+        <a href="./team-scoreboard/index.html">小組計分板</a>
+        <a href="./homework-helper/index.html">作業訂正</a>
+      </nav>
+    </header>
+
+    <main class="hero">
+      <section class="hero-grid" aria-labelledby="site-title">
+        <div class="intro">
+          <h1 id="site-title">上課工具，一點就用</h1>
+          <p class="lead">把常用的課堂活動工具整理成一個可愛入口：計時、抽籤、計分、翻牌、題庫，之後都可以慢慢加進來。</p>
+          <div class="quick-actions">
+            <a class="button primary" href="./class-timer/index.html">打開班級計時器</a>
+            <a class="button secondary" href="#tools">看看工具分頁</a>
+          </div>
+        </div>
+        <div class="mascot-card" aria-hidden="true">
+          <img src="./assets/home-teacher.png" alt="">
+        </div>
+      </section>
+
+      <section id="tools" aria-labelledby="tools-title">
+        <h2 class="section-title" id="tools-title">工具分頁</h2>
+        <div class="tool-grid">
+          <a class="tool-card ready" href="./class-timer/index.html" style="--card-color: #ffd24a">
+            <div>
+              <div class="tool-icon">⏱</div>
+              <h3>班級計時器</h3>
+              <p>倒數、正計時、鈴聲、全螢幕，適合小組討論、作答與活動切換。</p>
+            </div>
+            <span class="tool-status">已完成</span>
+          </a>
+
+          <a class="tool-card ready" href="./lucky-draw/index.html" style="--card-color: #ff8fc7">
+            <div>
+              <div class="tool-icon">🎡</div>
+              <h3>抽籤點名轉盤</h3>
+              <p>輸入或匯入學生名單，以扭蛋方式隨機抽人，可選擇一次抽出幾位。</p>
+            </div>
+            <span class="tool-status">已完成</span>
+          </a>
+
+          <a class="tool-card ready" href="./team-scoreboard/index.html" style="--card-color: #9b7bff">
+            <div>
+              <div class="tool-icon">🏆</div>
+              <h3>小組計分板</h3>
+              <p>幫不同小組加分、扣分、排名，適合競賽與闖關活動。</p>
+            </div>
+            <span class="tool-status">已完成</span>
+          </a>
+
+          <a class="tool-card ready" href="./homework-helper/index.html" style="--card-color: #22b98f">
+            <div>
+              <div class="tool-icon">📝</div>
+              <h3>作業訂正小幫手</h3>
+              <p>用座號格子追蹤作業狀態，白色未交、綠色完成、橘色需訂正。</p>
+            </div>
+            <span class="tool-status">已完成</span>
+          </a>
+
+          <article class="tool-card" style="--card-color: #4f8cff">
+            <div>
+              <div class="tool-icon">⚡</div>
+              <h3>課堂搶答器</h3>
+              <p>老師開一場搶答，學生或小組用連線頁面按搶答，畫面顯示第一名。</p>
+            </div>
+            <span class="tool-status">待製作</span>
+          </article>
+
+          <article class="tool-card" style="--card-color: #ffad4d">
+            <div>
+              <div class="tool-icon">✅</div>
+              <h3>任務看板</h3>
+              <p>列出小組任務、時間與完成狀態，適合專題課與分站活動。</p>
+            </div>
+            <span class="tool-status">待製作</span>
+          </article>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
