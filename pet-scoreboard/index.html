@@ -1,0 +1,725 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>個人寵物記分板</title>
+  <style>
+    :root {
+      --ink: #243047;
+      --muted: #65758f;
+      --paper: #fff8fb;
+      --panel: #ffffff;
+      --pink: #ff8fc7;
+      --purple: #9b7bff;
+      --blue: #4f8cff;
+      --green: #22b98f;
+      --yellow: #ffd24a;
+      --orange: #ffad4d;
+      --red: #ff5d73;
+      --line: rgba(255, 143, 199, 0.42);
+      --shadow: 0 24px 60px rgba(111, 78, 143, 0.18);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", "Noto Sans TC", system-ui, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 8% 12%, rgba(255, 210, 74, 0.48), transparent 22%),
+        radial-gradient(circle at 90% 10%, rgba(155, 123, 255, 0.28), transparent 24%),
+        radial-gradient(circle at 80% 88%, rgba(79, 140, 255, 0.22), transparent 24%),
+        linear-gradient(135deg, rgba(255, 143, 199, 0.2), transparent 38%),
+        var(--paper);
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        radial-gradient(circle, rgba(255, 173, 77, 0.42) 0 4px, transparent 5px),
+        radial-gradient(circle, rgba(79, 140, 255, 0.32) 0 3px, transparent 4px),
+        radial-gradient(circle, rgba(34, 185, 143, 0.28) 0 5px, transparent 6px);
+      background-position: 32px 40px, 130px 96px, 230px 28px;
+      background-size: 260px 180px, 310px 210px, 360px 260px;
+      opacity: 0.8;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: minmax(300px, 370px) minmax(0, 1fr);
+    }
+
+    .sidebar {
+      padding: 24px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(255, 247, 251, 0.92)),
+        repeating-linear-gradient(135deg, rgba(255, 143, 199, 0.12) 0 14px, rgba(255, 210, 74, 0.1) 14px 28px);
+      border-right: 3px dashed rgba(255, 143, 199, 0.55);
+      backdrop-filter: blur(12px);
+    }
+
+    .home-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 38px;
+      margin-bottom: 14px;
+      padding: 0 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fffdf4;
+      color: #7b4ed8;
+      font-size: 14px;
+      font-weight: 900;
+      box-shadow: 0 5px 0 rgba(255, 143, 199, 0.18);
+    }
+
+    .brand {
+      display: inline-block;
+      margin: 0 0 20px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 28px;
+      line-height: 1.15;
+      letter-spacing: 0;
+      background: linear-gradient(135deg, var(--pink), var(--purple));
+      box-shadow: 0 10px 24px rgba(155, 123, 255, 0.25);
+    }
+
+    .section {
+      margin-top: 20px;
+    }
+
+    .label {
+      display: block;
+      margin-bottom: 8px;
+      color: #8a4f8f;
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    input,
+    select {
+      width: 100%;
+      min-height: 44px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 0 10px;
+      color: var(--ink);
+      background: #fffdf4;
+      font-weight: 800;
+    }
+
+    .button {
+      min-height: 44px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      color: var(--ink);
+      font-weight: 900;
+      box-shadow: 0 6px 0 rgba(255, 143, 199, 0.2);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 0 rgba(255, 143, 199, 0.24);
+    }
+
+    .button:active {
+      transform: translateY(2px);
+      box-shadow: 0 3px 0 rgba(255, 143, 199, 0.2);
+    }
+
+    .button.primary {
+      color: #fff;
+      border-color: transparent;
+      background: linear-gradient(135deg, var(--blue), var(--purple));
+    }
+
+    .button.good {
+      color: #fff;
+      border-color: transparent;
+      background: linear-gradient(135deg, var(--green), #82dfc6);
+    }
+
+    .button.danger {
+      color: #fff;
+      border-color: transparent;
+      background: linear-gradient(135deg, var(--red), #ff9a9e);
+    }
+
+    .stack {
+      display: grid;
+      gap: 8px;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .stage-list {
+      display: grid;
+      gap: 8px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .stage-list li {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 8px;
+      align-items: center;
+      min-height: 42px;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.75);
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 850;
+    }
+
+    .main {
+      padding: 28px;
+    }
+
+    .stage {
+      width: min(100%, 1220px);
+      margin: 0 auto;
+    }
+
+    .page-title {
+      margin: 0 0 18px;
+      color: #7b4ed8;
+      text-align: center;
+      font-size: clamp(30px, 5vw, 58px);
+      line-height: 1.08;
+      letter-spacing: 0;
+      text-shadow: 0 3px 0 rgba(255, 255, 255, 0.9);
+    }
+
+    .summary-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .stat {
+      min-height: 72px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.78);
+      color: var(--muted);
+      text-align: center;
+      font-weight: 900;
+      box-shadow: 0 12px 26px rgba(111, 78, 143, 0.1);
+    }
+
+    .stat strong {
+      display: block;
+      color: #7b4ed8;
+      font-size: 28px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .pet-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+      gap: 14px;
+    }
+
+    .pet-card {
+      position: relative;
+      overflow: hidden;
+      padding: 16px;
+      border: 4px solid rgba(255, 255, 255, 0.92);
+      border-radius: 8px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(255, 253, 244, 0.94)),
+        linear-gradient(135deg, rgba(255, 143, 199, 0.18), rgba(79, 140, 255, 0.12));
+      box-shadow: var(--shadow);
+    }
+
+    .pet-card.hungry {
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(255, 243, 230, 0.94)),
+        linear-gradient(135deg, rgba(255, 173, 77, 0.24), rgba(255, 93, 115, 0.12));
+    }
+
+    .pet-card.maxed {
+      border-color: rgba(255, 210, 74, 0.95);
+    }
+
+    .card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .student-no {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 48px;
+      height: 42px;
+      border-radius: 999px;
+      background: #fff7d1;
+      color: #8a5a00;
+      font-size: 20px;
+      font-weight: 950;
+    }
+
+    .stage-name {
+      color: #7b4ed8;
+      font-weight: 950;
+    }
+
+    .pet-yard {
+      position: relative;
+      min-height: 150px;
+      display: grid;
+      place-items: center;
+      margin: 8px 0 12px;
+      border-radius: 8px;
+      background:
+        radial-gradient(circle at 50% 82%, rgba(34, 185, 143, 0.16), transparent 38%),
+        rgba(255, 255, 255, 0.52);
+    }
+
+    .pet {
+      position: relative;
+      width: var(--pet-size);
+      height: var(--pet-size);
+      border: 6px solid #ffffff;
+      border-radius: 46% 46% 42% 42%;
+      background: var(--pet-color);
+      box-shadow:
+        inset 0 -12px 18px rgba(36, 48, 71, 0.08),
+        0 13px 22px rgba(111, 78, 143, 0.16);
+      transform: translateY(var(--pet-y));
+    }
+
+    .pet::before,
+    .pet::after {
+      content: "";
+      position: absolute;
+      top: 38%;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #20304f;
+    }
+
+    .pet::before {
+      left: 27%;
+    }
+
+    .pet::after {
+      right: 27%;
+    }
+
+    .pet-mouth {
+      position: absolute;
+      left: 50%;
+      top: 58%;
+      width: 22px;
+      height: 12px;
+      border-bottom: 4px solid #20304f;
+      border-radius: 0 0 999px 999px;
+      transform: translateX(-50%);
+    }
+
+    .pet.egg {
+      border-radius: 50% 50% 44% 44%;
+      background:
+        radial-gradient(circle at 35% 28%, rgba(255, 255, 255, 0.9) 0 12%, transparent 13%),
+        linear-gradient(135deg, #fff7d1, #ff8fc7);
+    }
+
+    .pet.egg::before,
+    .pet.egg::after,
+    .pet.egg .pet-mouth {
+      display: none;
+    }
+
+    .pet.hungry .pet-mouth {
+      width: 16px;
+      height: 16px;
+      border: 4px solid #20304f;
+      border-radius: 50%;
+    }
+
+    .ears {
+      position: absolute;
+      inset: 0;
+    }
+
+    .ears::before,
+    .ears::after {
+      content: "";
+      position: absolute;
+      top: -18px;
+      width: 28px;
+      height: 34px;
+      border: 5px solid #ffffff;
+      border-radius: 70% 70% 30% 30%;
+      background: var(--pet-color);
+    }
+
+    .ears::before {
+      left: 10%;
+      transform: rotate(-20deg);
+    }
+
+    .ears::after {
+      right: 10%;
+      transform: rotate(20deg);
+    }
+
+    .belly {
+      position: absolute;
+      left: 50%;
+      bottom: 10%;
+      width: 44%;
+      height: 32%;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.42);
+      transform: translateX(-50%);
+    }
+
+    .score-row {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 10px;
+      color: var(--muted);
+      font-weight: 900;
+    }
+
+    .score {
+      color: #20304f;
+      font-size: 28px;
+      font-weight: 950;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .progress-wrap {
+      height: 14px;
+      overflow: hidden;
+      border: 2px solid #ffffff;
+      border-radius: 999px;
+      background: #ffe6f0;
+    }
+
+    .progress {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, var(--green), #82dfc6);
+      transform-origin: left center;
+      transform: scaleX(var(--progress));
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .actions .button {
+      min-height: 40px;
+    }
+
+    .rebirth {
+      grid-column: 1 / -1;
+      display: none;
+    }
+
+    .pet-card.maxed .rebirth {
+      display: block;
+    }
+
+    @media (max-width: 980px) {
+      .page {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        border-right: 0;
+        border-bottom: 3px dashed rgba(255, 143, 199, 0.55);
+      }
+
+      .summary-bar {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 560px) {
+      .main {
+        padding: 20px;
+      }
+
+      .row,
+      .summary-bar {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <aside class="sidebar" aria-label="個人寵物記分設定">
+      <a class="home-link" href="../index.html">← 回首頁</a>
+      <h1 class="brand">個人寵物記分板</h1>
+
+      <div class="section stack">
+        <label class="label" for="studentCount">班級人數</label>
+        <input id="studentCount" type="number" min="1" max="80" value="28">
+        <button id="applyCount" class="button primary" type="button">套用人數</button>
+      </div>
+
+      <div class="section row">
+        <button id="addAll" class="button good" type="button">全班 +1</button>
+        <button id="feedHungry" class="button" type="button">餵飽肚子餓</button>
+      </div>
+
+      <div class="section row">
+        <button id="resetScores" class="button danger" type="button">分數歸零</button>
+        <button id="resetAll" class="button danger" type="button">全部重置</button>
+      </div>
+
+      <div class="section">
+        <span class="label">寵物成長分數</span>
+        <ul class="stage-list">
+          <li><span>🥚</span><span>蛋</span><strong>0 分</strong></li>
+          <li><span>🐣</span><span>幼幼寵</span><strong>5 分</strong></li>
+          <li><span>🐾</span><span>小寵物</span><strong>15 分</strong></li>
+          <li><span>🌱</span><span>成長中</span><strong>30 分</strong></li>
+          <li><span>🌟</span><span>成熟寵</span><strong>50 分</strong></li>
+          <li><span>👑</span><span>滿等</span><strong>80 分</strong></li>
+        </ul>
+      </div>
+    </aside>
+
+    <main class="main">
+      <section class="stage" aria-live="polite">
+        <h2 class="page-title">一起照顧學習寵物</h2>
+        <div class="summary-bar">
+          <div class="stat"><strong id="totalStudents">0</strong>學生數</div>
+          <div class="stat"><strong id="maxedCount">0</strong>滿等寵物</div>
+          <div class="stat"><strong id="hungryCount">0</strong>肚子餓</div>
+          <div class="stat"><strong id="topScore">0</strong>最高分</div>
+        </div>
+        <div class="pet-grid" id="petGrid"></div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const studentCountInput = document.querySelector("#studentCount");
+    const applyCount = document.querySelector("#applyCount");
+    const addAll = document.querySelector("#addAll");
+    const feedHungry = document.querySelector("#feedHungry");
+    const resetScores = document.querySelector("#resetScores");
+    const resetAll = document.querySelector("#resetAll");
+    const totalStudents = document.querySelector("#totalStudents");
+    const maxedCount = document.querySelector("#maxedCount");
+    const hungryCount = document.querySelector("#hungryCount");
+    const topScore = document.querySelector("#topScore");
+    const petGrid = document.querySelector("#petGrid");
+
+    const storageKey = "jessie-toolbox-pet-scoreboard";
+    const maxScore = 80;
+    const stages = [
+      { min: 0, name: "蛋", icon: "🥚", size: 70, y: "8px", color: "#fff7d1", className: "egg" },
+      { min: 5, name: "幼幼寵", icon: "🐣", size: 82, y: "6px", color: "#ffcfde", className: "baby" },
+      { min: 15, name: "小寵物", icon: "🐾", size: 96, y: "2px", color: "#ffd24a", className: "small" },
+      { min: 30, name: "成長中", icon: "🌱", size: 112, y: "-3px", color: "#82dfc6", className: "growing" },
+      { min: 50, name: "成熟寵", icon: "🌟", size: 126, y: "-8px", color: "#9bd2ff", className: "mature" },
+      { min: 80, name: "滿等", icon: "👑", size: 138, y: "-12px", color: "#c7b6ff", className: "max" }
+    ];
+
+    let state = {
+      studentCount: 28,
+      pets: []
+    };
+
+    function makePet(number) {
+      return { number, score: 0, hungry: false, generation: 1 };
+    }
+
+    function syncPets() {
+      const existing = new Map(state.pets.map((pet) => [pet.number, pet]));
+      state.pets = Array.from({ length: state.studentCount }, (_, index) => existing.get(index + 1) || makePet(index + 1));
+    }
+
+    function saveState() {
+      localStorage.setItem(storageKey, JSON.stringify(state));
+    }
+
+    function loadState() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(storageKey) || "{}");
+        if (saved.studentCount && Array.isArray(saved.pets)) state = saved;
+      } catch {
+        localStorage.removeItem(storageKey);
+      }
+      syncPets();
+    }
+
+    function getStage(score) {
+      return stages.reduce((best, stage) => score >= stage.min ? stage : best, stages[0]);
+    }
+
+    function updatePet(number, delta) {
+      state.pets = state.pets.map((pet) => {
+        if (pet.number !== number) return pet;
+        const nextScore = Math.max(0, Math.min(maxScore, pet.score + delta));
+        return {
+          ...pet,
+          score: nextScore,
+          hungry: delta < 0 ? true : (delta > 0 ? false : pet.hungry)
+        };
+      });
+      render();
+    }
+
+    function rebirth(number) {
+      state.pets = state.pets.map((pet) => {
+        if (pet.number !== number) return pet;
+        return { ...pet, score: 0, hungry: false, generation: pet.generation + 1 };
+      });
+      render();
+    }
+
+    function renderStats() {
+      const maxed = state.pets.filter((pet) => pet.score >= maxScore).length;
+      const hungry = state.pets.filter((pet) => pet.hungry).length;
+      const top = state.pets.reduce((best, pet) => Math.max(best, pet.score), 0);
+      totalStudents.textContent = state.studentCount;
+      maxedCount.textContent = maxed;
+      hungryCount.textContent = hungry;
+      topScore.textContent = top;
+    }
+
+    function renderPets() {
+      petGrid.innerHTML = "";
+      state.pets.forEach((pet) => {
+        const stage = getStage(pet.score);
+        const progress = Math.min(pet.score / maxScore, 1);
+        const card = document.createElement("article");
+        card.className = `pet-card ${pet.hungry ? "hungry" : ""} ${pet.score >= maxScore ? "maxed" : ""}`;
+        card.style.setProperty("--pet-size", `${stage.size}px`);
+        card.style.setProperty("--pet-y", stage.y);
+        card.style.setProperty("--pet-color", stage.color);
+        card.style.setProperty("--progress", progress);
+        card.innerHTML = `
+          <div class="card-top">
+            <span class="student-no">${pet.number} 號</span>
+            <span class="stage-name">${stage.icon} ${stage.name} · 第 ${pet.generation} 代</span>
+          </div>
+          <div class="pet-yard">
+            <div class="pet ${stage.className} ${pet.hungry ? "hungry" : ""}">
+              ${stage.className === "egg" ? "" : '<span class="ears"></span><span class="belly"></span><span class="pet-mouth"></span>'}
+            </div>
+          </div>
+          <div class="score-row">
+            <span>分數</span>
+            <div class="progress-wrap"><div class="progress"></div></div>
+            <span class="score">${pet.score}</span>
+          </div>
+          <div class="actions">
+            <button class="button danger" data-delta="-5" type="button">-5</button>
+            <button class="button danger" data-delta="-1" type="button">-1</button>
+            <button class="button good" data-delta="1" type="button">+1</button>
+            <button class="button good" data-delta="5" type="button">+5</button>
+            <button class="button good" data-delta="10" type="button">+10</button>
+            <button class="button" data-feed="true" type="button">餵食</button>
+            <button class="button primary rebirth" data-rebirth="true" type="button">滿等，重新養一個</button>
+          </div>
+        `;
+
+        card.querySelectorAll("[data-delta]").forEach((button) => {
+          button.addEventListener("click", () => updatePet(pet.number, Number(button.dataset.delta)));
+        });
+        card.querySelector("[data-feed]").addEventListener("click", () => updatePet(pet.number, 1));
+        card.querySelector("[data-rebirth]").addEventListener("click", () => rebirth(pet.number));
+        petGrid.appendChild(card);
+      });
+    }
+
+    function render() {
+      studentCountInput.value = state.studentCount;
+      renderStats();
+      renderPets();
+      saveState();
+    }
+
+    applyCount.addEventListener("click", () => {
+      state.studentCount = Math.min(Math.max(Number(studentCountInput.value) || 1, 1), 80);
+      syncPets();
+      render();
+    });
+
+    addAll.addEventListener("click", () => {
+      state.pets = state.pets.map((pet) => ({ ...pet, score: Math.min(maxScore, pet.score + 1), hungry: false }));
+      render();
+    });
+
+    feedHungry.addEventListener("click", () => {
+      state.pets = state.pets.map((pet) => pet.hungry ? { ...pet, score: Math.min(maxScore, pet.score + 1), hungry: false } : pet);
+      render();
+    });
+
+    resetScores.addEventListener("click", () => {
+      state.pets = state.pets.map((pet) => ({ ...pet, score: 0, hungry: false }));
+      render();
+    });
+
+    resetAll.addEventListener("click", () => {
+      localStorage.removeItem(storageKey);
+      state = { studentCount: 28, pets: [] };
+      syncPets();
+      render();
+    });
+
+    loadState();
+    render();
+  </script>
+</body>
+</html>
