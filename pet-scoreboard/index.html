@@ -883,6 +883,7 @@
     const petGrid = document.querySelector("#petGrid");
 
     const storageKey = "jessie-toolbox-pet-scoreboard";
+    const teacherPassword = "0800";
     const maxScore = 80;
     const stages = [
       { min: 0, name: "神祕蛋", icon: "🥚", scale: 0.72, details: 0 },
@@ -1240,6 +1241,14 @@
       saveState();
     }
 
+    function confirmTeacherAction(actionName) {
+      const input = window.prompt(`老師密碼確認：要執行「${actionName}」，請輸入密碼`);
+      if (input === null) return false;
+      if (input === teacherPassword) return true;
+      window.alert("密碼錯誤，資料沒有變更。");
+      return false;
+    }
+
     applyCount.addEventListener("click", () => {
       state.studentCount = Math.min(Math.max(Number(studentCountInput.value) || 1, 1), 80);
       syncPets();
@@ -1257,11 +1266,13 @@
     });
 
     resetScores.addEventListener("click", () => {
+      if (!confirmTeacherAction("分數歸零")) return;
       state.pets = state.pets.map((pet) => ({ ...pet, score: 0, hungry: false }));
       render();
     });
 
     resetAll.addEventListener("click", () => {
+      if (!confirmTeacherAction("全部重置")) return;
       localStorage.removeItem(storageKey);
       state = { studentCount: 28, pets: [] };
       syncPets();
