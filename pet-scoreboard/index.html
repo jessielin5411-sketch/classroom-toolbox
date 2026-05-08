@@ -311,7 +311,7 @@
 
     .pet-yard {
       position: relative;
-      min-height: 150px;
+      min-height: 166px;
       display: grid;
       place-items: center;
       margin: 8px 0 12px;
@@ -322,10 +322,16 @@
     }
 
     .pet-svg {
-      width: min(100%, 176px);
-      height: 148px;
+      width: min(100%, 190px);
+      height: 164px;
       overflow: visible;
       filter: drop-shadow(0 13px 18px rgba(111, 78, 143, 0.18));
+    }
+
+    .pet-svg.mini {
+      width: 54px;
+      height: 50px;
+      filter: drop-shadow(0 6px 8px rgba(111, 78, 143, 0.16));
     }
 
     .pet-card:not(.maxed) .pet-svg {
@@ -354,6 +360,10 @@
 
     .spark {
       animation: sparkle 1.1s ease-in-out infinite alternate;
+    }
+
+    .eye-shine {
+      animation: eyeShine 2.2s ease-in-out infinite;
     }
 
     @keyframes petFloat {
@@ -420,6 +430,46 @@
         opacity: 1;
         transform: scale(1.08);
       }
+    }
+
+    @keyframes eyeShine {
+      0%, 100% {
+        opacity: 0.82;
+      }
+
+      50% {
+        opacity: 1;
+      }
+    }
+
+    .collection {
+      min-height: 62px;
+      margin: 4px 0 12px;
+      padding: 8px;
+      border: 1px dashed rgba(155, 123, 255, 0.35);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.54);
+    }
+
+    .collection-title {
+      margin-bottom: 5px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .collection-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+      min-height: 50px;
+    }
+
+    .collection-empty {
+      color: #98a2b3;
+      font-size: 13px;
+      font-weight: 800;
     }
 
     .score-row {
@@ -608,12 +658,18 @@
     }
 
     function makePet(number) {
-      return { number, score: 0, hungry: false, generation: 1, variant: variantFor(number, 1) };
+      return { number, score: 0, hungry: false, generation: 1, variant: variantFor(number, 1), retired: [] };
     }
 
     function syncPets() {
       const existing = new Map(state.pets.map((pet) => [pet.number, pet]));
-      state.pets = Array.from({ length: state.studentCount }, (_, index) => existing.get(index + 1) || makePet(index + 1));
+      state.pets = Array.from({ length: state.studentCount }, (_, index) => {
+        const pet = existing.get(index + 1) || makePet(index + 1);
+        pet.generation ||= 1;
+        pet.variant ||= variantFor(pet.number, pet.generation);
+        pet.retired ||= [];
+        return pet;
+      });
     }
 
     function saveState() {
@@ -651,32 +707,57 @@
       state.pets = state.pets.map((pet) => {
         if (pet.number !== number) return pet;
         const nextGeneration = pet.generation + 1;
-        return { ...pet, score: 0, hungry: false, generation: nextGeneration, variant: variantFor(number, nextGeneration) };
+        const retired = [
+          ...(pet.retired || []),
+          {
+            generation: pet.generation,
+            variant: { ...ensureVariant(pet) }
+          }
+        ];
+        return { ...pet, score: 0, hungry: false, generation: nextGeneration, variant: variantFor(number, nextGeneration), retired };
       });
       render();
     }
 
     function ensureVariant(pet) {
       if (!pet.variant) pet.variant = variantFor(pet.number, pet.generation || 1);
+      pet.retired ||= [];
       return pet.variant;
     }
 
-    function svgPet(pet, stage) {
+    function collectionHtml(pet) {
+      const retired = pet.retired || [];
+      if (!retired.length) return '<div class="collection-empty">滿等後會收藏在這裡</div>';
+      return retired.map((oldPet) => {
+        const miniPet = {
+          number: pet.number,
+          score: maxScore,
+          hungry: false,
+          generation: oldPet.generation,
+          variant: oldPet.variant,
+          retired: []
+        };
+        return svgPet(miniPet, stages[stages.length - 1], true);
+      }).join("");
+    }
+
+    function svgPet(pet, stage, compact = false) {
       const variant = ensureVariant(pet);
       const [main, light, dark] = palettes[variant.palette];
       const isEgg = stage.details === 0;
       const isHungry = pet.hungry;
       const isMaxed = pet.score >= maxScore;
-      const bodyY = 88 - (stage.details * 3);
-      const bodyRx = [34, 40, 45, 50, 54][variant.body] || 44;
-      const bodyRy = isEgg ? 48 : 42 + (stage.details * 2);
+      const svgClass = compact ? "pet-svg mini" : "pet-svg";
+      const bodyY = 88 - (stage.details * 2);
+      const bodyRx = ([38, 43, 47, 51, 55][variant.body] || 45) + (stage.details * 1.5);
+      const bodyRy = isEgg ? 48 : 43 + (stage.details * 2.2);
       const scale = stage.scale;
       const mouth = isHungry
         ? '<circle cx="90" cy="98" r="6" fill="none" stroke="#20304f" stroke-width="4"/>'
-        : '<path d="M78 96 Q90 107 102 96" fill="none" stroke="#20304f" stroke-width="4" stroke-linecap="round"/>';
+        : '<path d="M76 96 Q90 110 104 96" fill="none" stroke="#20304f" stroke-width="4.5" stroke-linecap="round"/>';
       const eyes = isHungry
         ? '<path d="M66 79 l10 8 M76 79 l-10 8 M104 79 l10 8 M114 79 l-10 8" stroke="#20304f" stroke-width="4" stroke-linecap="round"/>'
-        : '<g class="blink"><circle cx="72" cy="82" r="8" fill="#20304f"/><circle cx="108" cy="82" r="8" fill="#20304f"/><circle cx="75" cy="79" r="2.8" fill="#fff"/><circle cx="111" cy="79" r="2.8" fill="#fff"/></g>';
+        : '<g class="blink"><circle cx="70" cy="82" r="11" fill="#20304f"/><circle cx="110" cy="82" r="11" fill="#20304f"/><circle class="eye-shine" cx="66" cy="77" r="4.2" fill="#fff"/><circle class="eye-shine" cx="106" cy="77" r="4.2" fill="#fff"/><circle cx="74" cy="86" r="2.4" fill="#6b7280"/><circle cx="114" cy="86" r="2.4" fill="#6b7280"/></g>';
       const ears = [
         `<path d="M54 50 Q48 18 70 39" fill="${main}" stroke="#fff" stroke-width="6"/><path d="M126 50 Q132 18 110 39" fill="${main}" stroke="#fff" stroke-width="6"/>`,
         `<circle cx="55" cy="43" r="17" fill="${main}" stroke="#fff" stroke-width="6"/><circle cx="125" cy="43" r="17" fill="${main}" stroke="#fff" stroke-width="6"/>`,
@@ -700,27 +781,44 @@
       ][variant.extra];
       const cheeks = variant.cheek === 0 ? "" : `<circle cx="58" cy="94" r="6" fill="#ff8fc7" opacity="0.55"/><circle cx="122" cy="94" r="6" fill="#ff8fc7" opacity="0.55"/>`;
       const crown = isMaxed ? '<path class="spark" d="M67 24 L78 43 L90 22 L102 43 L113 24 L110 50 L70 50 Z" fill="#ffd24a" stroke="#fff" stroke-width="5"/>' : "";
+      const defs = `
+        <defs>
+          <radialGradient id="body-${pet.number}-${pet.generation}-${compact ? "m" : "b"}" cx="35%" cy="25%" r="70%">
+            <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9"/>
+            <stop offset="28%" stop-color="${light}"/>
+            <stop offset="100%" stop-color="${main}"/>
+          </radialGradient>
+          <linearGradient id="belly-${pet.number}-${pet.generation}-${compact ? "m" : "b"}" x1="0" x2="1" y1="0" y2="1">
+            <stop offset="0%" stop-color="#ffffff" stop-opacity="0.88"/>
+            <stop offset="100%" stop-color="${light}" stop-opacity="0.68"/>
+          </linearGradient>
+        </defs>`;
+      const bodyFill = `url(#body-${pet.number}-${pet.generation}-${compact ? "m" : "b"})`;
+      const bellyFill = `url(#belly-${pet.number}-${pet.generation}-${compact ? "m" : "b"})`;
 
       if (isEgg) {
         return `
-          <svg class="pet-svg" viewBox="0 0 180 160" role="img" aria-label="${pet.number} 號神祕蛋">
-            <ellipse cx="90" cy="93" rx="38" ry="49" fill="${main}" stroke="#fff" stroke-width="7"/>
+          <svg class="${svgClass}" viewBox="0 0 180 160" role="img" aria-label="${pet.number} 號神祕蛋">
+            ${defs}
+            <ellipse cx="90" cy="93" rx="42" ry="52" fill="${bodyFill}" stroke="#fff" stroke-width="7"/>
             <path d="M54 95 Q66 82 78 96 T102 96 T126 93" fill="none" stroke="${light}" stroke-width="9" stroke-linecap="round"/>
-            <circle cx="76" cy="72" r="5" fill="${light}"/><circle cx="105" cy="116" r="6" fill="${light}"/>
+            <ellipse cx="76" cy="68" rx="12" ry="8" fill="#fff" opacity="0.7"/><circle cx="105" cy="116" r="6" fill="${light}"/>
             <ellipse cx="90" cy="145" rx="44" ry="10" fill="rgba(36,48,71,0.12)"/>
           </svg>`;
       }
 
       return `
-        <svg class="pet-svg" viewBox="0 0 180 160" role="img" aria-label="${pet.number} 號${variant.name}${stage.name}">
+        <svg class="${svgClass}" viewBox="0 0 180 160" role="img" aria-label="${pet.number} 號${variant.name}${stage.name}">
+          ${defs}
           <ellipse cx="90" cy="146" rx="54" ry="10" fill="rgba(36,48,71,0.12)"/>
           ${crown}
           ${stage.details >= 2 ? tails : ""}
           ${ears}
           ${stage.details >= 3 ? extras : ""}
           <g transform="translate(90 88) scale(${scale}) translate(-90 -88)">
-            <ellipse cx="90" cy="${bodyY}" rx="${bodyRx}" ry="${bodyRy}" fill="${main}" stroke="#fff" stroke-width="7"/>
-            <ellipse cx="90" cy="${bodyY + 19}" rx="${bodyRx * 0.45}" ry="${bodyRy * 0.28}" fill="${light}" opacity="0.7"/>
+            <ellipse cx="90" cy="${bodyY}" rx="${bodyRx}" ry="${bodyRy}" fill="${bodyFill}" stroke="#fff" stroke-width="7"/>
+            <ellipse cx="72" cy="${bodyY - 25}" rx="${bodyRx * 0.26}" ry="${bodyRy * 0.16}" fill="#fff" opacity="0.46"/>
+            <ellipse cx="90" cy="${bodyY + 20}" rx="${bodyRx * 0.46}" ry="${bodyRy * 0.28}" fill="${bellyFill}" opacity="0.9"/>
             ${eyes}
             ${cheeks}
             ${mouth}
@@ -754,6 +852,10 @@
           <div class="card-top">
             <span class="student-no">${pet.number} 號</span>
             <span class="stage-name">${stage.icon} ${variant.name}${stage.name} · 第 ${pet.generation} 代</span>
+          </div>
+          <div class="collection">
+            <div class="collection-title">已養大的守護獸</div>
+            <div class="collection-list">${collectionHtml(pet)}</div>
           </div>
           <div class="pet-yard">
             ${svgPet(pet, stage)}
