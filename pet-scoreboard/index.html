@@ -311,7 +311,7 @@
 
     .pet-yard {
       position: relative;
-      min-height: 166px;
+      min-height: 190px;
       display: grid;
       place-items: center;
       margin: 8px 0 12px;
@@ -322,10 +322,12 @@
     }
 
     .pet-svg {
-      width: min(100%, 190px);
-      height: 164px;
+      width: min(100%, 214px);
+      height: 186px;
       overflow: visible;
-      filter: drop-shadow(0 13px 18px rgba(111, 78, 143, 0.18));
+      filter:
+        drop-shadow(0 18px 22px rgba(111, 78, 143, 0.2))
+        saturate(1.08);
     }
 
     .pet-svg.mini {
@@ -335,15 +337,15 @@
     }
 
     .pet-card:not(.maxed) .pet-svg {
-      animation: petFloat 2.4s ease-in-out infinite;
+      animation: petFloat 2.6s ease-in-out infinite;
     }
 
     .pet-card.hungry .pet-svg {
-      animation: petHungry 0.75s ease-in-out infinite;
+      animation: petHungry 0.85s ease-in-out infinite;
     }
 
     .pet-card.maxed .pet-svg {
-      animation: petCelebrate 1.3s ease-in-out infinite;
+      animation: petCelebrate 1.25s ease-in-out infinite;
     }
 
     .blink {
@@ -352,10 +354,26 @@
     }
 
     .tail,
-    .wing {
+    .wing,
+    .antenna,
+    .arm {
       transform-box: fill-box;
       transform-origin: center;
       animation: wiggle 1.8s ease-in-out infinite;
+    }
+
+    .ear {
+      transform-box: fill-box;
+      transform-origin: bottom center;
+      animation: earWiggle 2.4s ease-in-out infinite;
+    }
+
+    .pupil {
+      animation: lookAround 4.6s ease-in-out infinite;
+    }
+
+    .blush {
+      animation: blushPulse 2.8s ease-in-out infinite;
     }
 
     .spark {
@@ -372,7 +390,7 @@
       }
 
       50% {
-        transform: translateY(-8px);
+        transform: translateY(-10px) scale(1.025);
       }
     }
 
@@ -396,7 +414,7 @@
       }
 
       50% {
-        transform: translateY(-13px) scale(1.04);
+        transform: translateY(-15px) scale(1.06);
       }
     }
 
@@ -417,6 +435,40 @@
 
       50% {
         transform: rotate(8deg);
+      }
+    }
+
+    @keyframes earWiggle {
+      0%, 100% {
+        transform: rotate(-3deg);
+      }
+
+      50% {
+        transform: rotate(7deg);
+      }
+    }
+
+    @keyframes lookAround {
+      0%, 18%, 100% {
+        transform: translateX(0);
+      }
+
+      36%, 52% {
+        transform: translateX(2px);
+      }
+
+      70%, 82% {
+        transform: translateX(-2px);
+      }
+    }
+
+    @keyframes blushPulse {
+      0%, 100% {
+        opacity: 0.46;
+      }
+
+      50% {
+        opacity: 0.78;
       }
     }
 
@@ -748,22 +800,22 @@
       const isHungry = pet.hungry;
       const isMaxed = pet.score >= maxScore;
       const svgClass = compact ? "pet-svg mini" : "pet-svg";
-      const bodyY = 88 - (stage.details * 2);
-      const bodyRx = ([38, 43, 47, 51, 55][variant.body] || 45) + (stage.details * 1.5);
-      const bodyRy = isEgg ? 48 : 43 + (stage.details * 2.2);
+      const bodyY = 90 - (stage.details * 2);
+      const bodyRx = ([42, 47, 51, 55, 59][variant.body] || 49) + (stage.details * 1.6);
+      const bodyRy = isEgg ? 50 : 47 + (stage.details * 2.4);
       const scale = stage.scale;
       const mouth = isHungry
-        ? '<circle cx="90" cy="98" r="6" fill="none" stroke="#20304f" stroke-width="4"/>'
-        : '<path d="M76 96 Q90 110 104 96" fill="none" stroke="#20304f" stroke-width="4.5" stroke-linecap="round"/>';
+        ? '<path d="M80 104 Q90 94 100 104" fill="none" stroke="#20304f" stroke-width="4.4" stroke-linecap="round"/><path d="M74 116 Q90 108 106 116" fill="none" stroke="#b45309" stroke-width="3" stroke-linecap="round" opacity="0.55"/>'
+        : '<path d="M75 99 Q90 116 105 99" fill="none" stroke="#20304f" stroke-width="4.8" stroke-linecap="round"/><path d="M84 105 Q90 111 96 105" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" opacity="0.75"/>';
       const eyes = isHungry
-        ? '<path d="M66 79 l10 8 M76 79 l-10 8 M104 79 l10 8 M114 79 l-10 8" stroke="#20304f" stroke-width="4" stroke-linecap="round"/>'
-        : '<g class="blink"><circle cx="70" cy="82" r="11" fill="#20304f"/><circle cx="110" cy="82" r="11" fill="#20304f"/><circle class="eye-shine" cx="66" cy="77" r="4.2" fill="#fff"/><circle class="eye-shine" cx="106" cy="77" r="4.2" fill="#fff"/><circle cx="74" cy="86" r="2.4" fill="#6b7280"/><circle cx="114" cy="86" r="2.4" fill="#6b7280"/></g>';
+        ? '<path d="M61 82 Q70 75 79 82 M101 82 Q110 75 119 82" stroke="#20304f" stroke-width="4.8" stroke-linecap="round" fill="none"/><circle cx="70" cy="89" r="3" fill="#94a3b8"/><circle cx="110" cy="89" r="3" fill="#94a3b8"/>'
+        : '<g class="blink"><ellipse cx="68" cy="84" rx="13" ry="15" fill="url(#eyeGloss)"/><ellipse cx="112" cy="84" rx="13" ry="15" fill="url(#eyeGloss)"/><circle class="pupil" cx="69" cy="84" r="6" fill="#111827"/><circle class="pupil" cx="113" cy="84" r="6" fill="#111827"/><circle class="eye-shine" cx="64" cy="77" r="4.6" fill="#fff"/><circle class="eye-shine" cx="108" cy="77" r="4.6" fill="#fff"/><circle cx="72" cy="90" r="2.2" fill="#94a3b8" opacity="0.85"/><circle cx="116" cy="90" r="2.2" fill="#94a3b8" opacity="0.85"/></g>';
       const ears = [
-        `<path d="M54 50 Q48 18 70 39" fill="${main}" stroke="#fff" stroke-width="6"/><path d="M126 50 Q132 18 110 39" fill="${main}" stroke="#fff" stroke-width="6"/>`,
-        `<circle cx="55" cy="43" r="17" fill="${main}" stroke="#fff" stroke-width="6"/><circle cx="125" cy="43" r="17" fill="${main}" stroke="#fff" stroke-width="6"/>`,
-        `<path d="M58 50 L48 24 L78 40" fill="${main}" stroke="#fff" stroke-width="6"/><path d="M122 50 L132 24 L102 40" fill="${main}" stroke="#fff" stroke-width="6"/>`,
-        `<path d="M62 48 C42 32 48 18 72 38" fill="${light}" stroke="#fff" stroke-width="6"/><path d="M118 48 C138 32 132 18 108 38" fill="${light}" stroke="#fff" stroke-width="6"/>`,
-        `<path d="M62 49 Q62 19 82 40" fill="${main}" stroke="#fff" stroke-width="6"/><path d="M118 49 Q118 19 98 40" fill="${main}" stroke="#fff" stroke-width="6"/>`
+        `<path class="ear" d="M54 52 Q46 16 74 39" fill="url(#body-${pet.number}-${pet.generation}-${compact ? "m" : "b"})" stroke="#fff" stroke-width="7"/><path class="ear" d="M126 52 Q134 16 106 39" fill="url(#body-${pet.number}-${pet.generation}-${compact ? "m" : "b"})" stroke="#fff" stroke-width="7"/>`,
+        `<circle class="ear" cx="55" cy="44" r="19" fill="url(#body-${pet.number}-${pet.generation}-${compact ? "m" : "b"})" stroke="#fff" stroke-width="7"/><circle class="ear" cx="125" cy="44" r="19" fill="url(#body-${pet.number}-${pet.generation}-${compact ? "m" : "b"})" stroke="#fff" stroke-width="7"/>`,
+        `<path class="ear" d="M58 52 L45 22 L80 39" fill="url(#body-${pet.number}-${pet.generation}-${compact ? "m" : "b"})" stroke="#fff" stroke-width="7"/><path class="ear" d="M122 52 L135 22 L100 39" fill="url(#body-${pet.number}-${pet.generation}-${compact ? "m" : "b"})" stroke="#fff" stroke-width="7"/>`,
+        `<path class="ear" d="M62 50 C39 31 47 16 74 38" fill="${light}" stroke="#fff" stroke-width="7"/><path class="ear" d="M118 50 C141 31 133 16 106 38" fill="${light}" stroke="#fff" stroke-width="7"/>`,
+        `<path class="ear" d="M62 51 Q62 17 84 40" fill="url(#body-${pet.number}-${pet.generation}-${compact ? "m" : "b"})" stroke="#fff" stroke-width="7"/><path class="ear" d="M118 51 Q118 17 96 40" fill="url(#body-${pet.number}-${pet.generation}-${compact ? "m" : "b"})" stroke="#fff" stroke-width="7"/>`
       ][variant.ears];
       const tails = [
         `<path class="tail" d="M132 102 Q168 92 146 66" fill="none" stroke="${dark}" stroke-width="13" stroke-linecap="round"/>`,
@@ -774,24 +826,30 @@
       ][variant.tail];
       const extras = [
         `<circle cx="90" cy="54" r="8" fill="${dark}" opacity="0.9"/>`,
-        `<path d="M82 53 L90 37 L98 53" fill="${dark}" stroke="#fff" stroke-width="4"/>`,
+        `<path class="antenna" d="M82 53 L90 34 L98 53" fill="${dark}" stroke="#fff" stroke-width="4"/><circle class="spark" cx="90" cy="32" r="6" fill="#ffd24a" stroke="#fff" stroke-width="3"/>`,
         `<g class="wing"><path d="M43 92 Q18 72 39 57 Q49 70 50 91" fill="${light}" stroke="#fff" stroke-width="5"/><path d="M137 92 Q162 72 141 57 Q131 70 130 91" fill="${light}" stroke="#fff" stroke-width="5"/></g>`,
         `<path d="M74 57 Q90 43 106 57" fill="none" stroke="${dark}" stroke-width="6" stroke-linecap="round"/>`,
         `<circle class="spark" cx="126" cy="48" r="7" fill="#ffd24a"/><circle class="spark" cx="54" cy="59" r="5" fill="#ff8fc7"/>`
       ][variant.extra];
-      const cheeks = variant.cheek === 0 ? "" : `<circle cx="58" cy="94" r="6" fill="#ff8fc7" opacity="0.55"/><circle cx="122" cy="94" r="6" fill="#ff8fc7" opacity="0.55"/>`;
+      const cheeks = variant.cheek === 0 ? "" : `<ellipse class="blush" cx="54" cy="98" rx="8" ry="5" fill="#ff8fc7"/><ellipse class="blush" cx="126" cy="98" rx="8" ry="5" fill="#ff8fc7"/>`;
       const crown = isMaxed ? '<path class="spark" d="M67 24 L78 43 L90 22 L102 43 L113 24 L110 50 L70 50 Z" fill="#ffd24a" stroke="#fff" stroke-width="5"/>' : "";
       const defs = `
         <defs>
           <radialGradient id="body-${pet.number}-${pet.generation}-${compact ? "m" : "b"}" cx="35%" cy="25%" r="70%">
             <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9"/>
-            <stop offset="28%" stop-color="${light}"/>
+            <stop offset="20%" stop-color="${light}"/>
+            <stop offset="58%" stop-color="${main}"/>
             <stop offset="100%" stop-color="${main}"/>
           </radialGradient>
           <linearGradient id="belly-${pet.number}-${pet.generation}-${compact ? "m" : "b"}" x1="0" x2="1" y1="0" y2="1">
             <stop offset="0%" stop-color="#ffffff" stop-opacity="0.88"/>
             <stop offset="100%" stop-color="${light}" stop-opacity="0.68"/>
           </linearGradient>
+          <radialGradient id="eyeGloss" cx="35%" cy="25%" r="70%">
+            <stop offset="0%" stop-color="#ffffff"/>
+            <stop offset="22%" stop-color="#64748b"/>
+            <stop offset="100%" stop-color="#111827"/>
+          </radialGradient>
         </defs>`;
       const bodyFill = `url(#body-${pet.number}-${pet.generation}-${compact ? "m" : "b"})`;
       const bellyFill = `url(#belly-${pet.number}-${pet.generation}-${compact ? "m" : "b"})`;
@@ -800,9 +858,9 @@
         return `
           <svg class="${svgClass}" viewBox="0 0 180 160" role="img" aria-label="${pet.number} 號神祕蛋">
             ${defs}
-            <ellipse cx="90" cy="93" rx="42" ry="52" fill="${bodyFill}" stroke="#fff" stroke-width="7"/>
+            <ellipse cx="90" cy="93" rx="45" ry="54" fill="${bodyFill}" stroke="#fff" stroke-width="7"/>
             <path d="M54 95 Q66 82 78 96 T102 96 T126 93" fill="none" stroke="${light}" stroke-width="9" stroke-linecap="round"/>
-            <ellipse cx="76" cy="68" rx="12" ry="8" fill="#fff" opacity="0.7"/><circle cx="105" cy="116" r="6" fill="${light}"/>
+            <ellipse cx="73" cy="65" rx="14" ry="9" fill="#fff" opacity="0.74"/><circle cx="105" cy="116" r="6" fill="${light}"/>
             <ellipse cx="90" cy="145" rx="44" ry="10" fill="rgba(36,48,71,0.12)"/>
           </svg>`;
       }
@@ -819,11 +877,13 @@
             <ellipse cx="90" cy="${bodyY}" rx="${bodyRx}" ry="${bodyRy}" fill="${bodyFill}" stroke="#fff" stroke-width="7"/>
             <ellipse cx="72" cy="${bodyY - 25}" rx="${bodyRx * 0.26}" ry="${bodyRy * 0.16}" fill="#fff" opacity="0.46"/>
             <ellipse cx="90" cy="${bodyY + 20}" rx="${bodyRx * 0.46}" ry="${bodyRy * 0.28}" fill="${bellyFill}" opacity="0.9"/>
+            <path class="arm" d="M52 98 Q36 105 41 121" fill="none" stroke="${dark}" stroke-width="9" stroke-linecap="round"/>
+            <path class="arm" d="M128 98 Q144 105 139 121" fill="none" stroke="${dark}" stroke-width="9" stroke-linecap="round"/>
             ${eyes}
             ${cheeks}
             ${mouth}
-            <path d="M67 124 Q57 138 44 129" fill="none" stroke="${dark}" stroke-width="8" stroke-linecap="round"/>
-            <path d="M113 124 Q123 138 136 129" fill="none" stroke="${dark}" stroke-width="8" stroke-linecap="round"/>
+            <ellipse cx="66" cy="126" rx="13" ry="8" fill="${dark}" opacity="0.9"/>
+            <ellipse cx="114" cy="126" rx="13" ry="8" fill="${dark}" opacity="0.9"/>
           </g>
           ${isHungry ? '<text x="90" y="30" text-anchor="middle" font-size="20">🍽️</text>' : ""}
         </svg>`;
