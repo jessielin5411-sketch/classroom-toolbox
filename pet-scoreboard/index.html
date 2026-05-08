@@ -321,105 +321,105 @@
         rgba(255, 255, 255, 0.52);
     }
 
-    .pet {
-      position: relative;
-      width: var(--pet-size);
-      height: var(--pet-size);
-      border: 6px solid #ffffff;
-      border-radius: 46% 46% 42% 42%;
-      background: var(--pet-color);
-      box-shadow:
-        inset 0 -12px 18px rgba(36, 48, 71, 0.08),
-        0 13px 22px rgba(111, 78, 143, 0.16);
-      transform: translateY(var(--pet-y));
+    .pet-svg {
+      width: min(100%, 176px);
+      height: 148px;
+      overflow: visible;
+      filter: drop-shadow(0 13px 18px rgba(111, 78, 143, 0.18));
     }
 
-    .pet::before,
-    .pet::after {
-      content: "";
-      position: absolute;
-      top: 38%;
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: #20304f;
+    .pet-card:not(.maxed) .pet-svg {
+      animation: petFloat 2.4s ease-in-out infinite;
     }
 
-    .pet::before {
-      left: 27%;
+    .pet-card.hungry .pet-svg {
+      animation: petHungry 0.75s ease-in-out infinite;
     }
 
-    .pet::after {
-      right: 27%;
+    .pet-card.maxed .pet-svg {
+      animation: petCelebrate 1.3s ease-in-out infinite;
     }
 
-    .pet-mouth {
-      position: absolute;
-      left: 50%;
-      top: 58%;
-      width: 22px;
-      height: 12px;
-      border-bottom: 4px solid #20304f;
-      border-radius: 0 0 999px 999px;
-      transform: translateX(-50%);
+    .blink {
+      transform-origin: center;
+      animation: blink 3.8s infinite;
     }
 
-    .pet.egg {
-      border-radius: 50% 50% 44% 44%;
-      background:
-        radial-gradient(circle at 35% 28%, rgba(255, 255, 255, 0.9) 0 12%, transparent 13%),
-        linear-gradient(135deg, #fff7d1, #ff8fc7);
+    .tail,
+    .wing {
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: wiggle 1.8s ease-in-out infinite;
     }
 
-    .pet.egg::before,
-    .pet.egg::after,
-    .pet.egg .pet-mouth {
-      display: none;
+    .spark {
+      animation: sparkle 1.1s ease-in-out infinite alternate;
     }
 
-    .pet.hungry .pet-mouth {
-      width: 16px;
-      height: 16px;
-      border: 4px solid #20304f;
-      border-radius: 50%;
+    @keyframes petFloat {
+      0%, 100% {
+        transform: translateY(2px);
+      }
+
+      50% {
+        transform: translateY(-8px);
+      }
     }
 
-    .ears {
-      position: absolute;
-      inset: 0;
+    @keyframes petHungry {
+      0%, 100% {
+        transform: translateX(0) rotate(0);
+      }
+
+      25% {
+        transform: translateX(-2px) rotate(-1deg);
+      }
+
+      75% {
+        transform: translateX(2px) rotate(1deg);
+      }
     }
 
-    .ears::before,
-    .ears::after {
-      content: "";
-      position: absolute;
-      top: -18px;
-      width: 28px;
-      height: 34px;
-      border: 5px solid #ffffff;
-      border-radius: 70% 70% 30% 30%;
-      background: var(--pet-color);
+    @keyframes petCelebrate {
+      0%, 100% {
+        transform: translateY(-4px) scale(1);
+      }
+
+      50% {
+        transform: translateY(-13px) scale(1.04);
+      }
     }
 
-    .ears::before {
-      left: 10%;
-      transform: rotate(-20deg);
+    @keyframes blink {
+      0%, 88%, 100% {
+        transform: scaleY(1);
+      }
+
+      92% {
+        transform: scaleY(0.08);
+      }
     }
 
-    .ears::after {
-      right: 10%;
-      transform: rotate(20deg);
+    @keyframes wiggle {
+      0%, 100% {
+        transform: rotate(-5deg);
+      }
+
+      50% {
+        transform: rotate(8deg);
+      }
     }
 
-    .belly {
-      position: absolute;
-      left: 50%;
-      bottom: 10%;
-      width: 44%;
-      height: 32%;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.42);
-      transform: translateX(-50%);
+    @keyframes sparkle {
+      from {
+        opacity: 0.35;
+        transform: scale(0.88);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1.08);
+      }
     }
 
     .score-row {
@@ -566,21 +566,49 @@
     const storageKey = "jessie-toolbox-pet-scoreboard";
     const maxScore = 80;
     const stages = [
-      { min: 0, name: "蛋", icon: "🥚", size: 70, y: "8px", color: "#fff7d1", className: "egg" },
-      { min: 5, name: "幼幼寵", icon: "🐣", size: 82, y: "6px", color: "#ffcfde", className: "baby" },
-      { min: 15, name: "小寵物", icon: "🐾", size: 96, y: "2px", color: "#ffd24a", className: "small" },
-      { min: 30, name: "成長中", icon: "🌱", size: 112, y: "-3px", color: "#82dfc6", className: "growing" },
-      { min: 50, name: "成熟寵", icon: "🌟", size: 126, y: "-8px", color: "#9bd2ff", className: "mature" },
-      { min: 80, name: "滿等", icon: "👑", size: 138, y: "-12px", color: "#c7b6ff", className: "max" }
+      { min: 0, name: "神祕蛋", icon: "🥚", scale: 0.72, details: 0 },
+      { min: 5, name: "幼幼獸", icon: "🐣", scale: 0.82, details: 1 },
+      { min: 15, name: "小萌獸", icon: "🐾", scale: 0.94, details: 2 },
+      { min: 30, name: "成長獸", icon: "🌱", scale: 1.06, details: 3 },
+      { min: 50, name: "閃亮獸", icon: "🌟", scale: 1.16, details: 4 },
+      { min: 80, name: "守護獸", icon: "👑", scale: 1.26, details: 5 }
     ];
+    const palettes = [
+      ["#ff8fc7", "#fff1a8", "#7b4ed8"],
+      ["#82dfc6", "#e4fff5", "#087352"],
+      ["#9bd2ff", "#eef8ff", "#2453a6"],
+      ["#ffd24a", "#fff7d1", "#8a5a00"],
+      ["#c7b6ff", "#f2eeff", "#6040b5"],
+      ["#ffad4d", "#fff0d8", "#a54f00"],
+      ["#ff9a9e", "#fff0f3", "#b42334"],
+      ["#7dd3fc", "#e0f7ff", "#075985"],
+      ["#f0abfc", "#fdf4ff", "#86198f"],
+      ["#a7f3d0", "#ecfdf5", "#047857"],
+      ["#fde68a", "#fffbeb", "#92400e"],
+      ["#93c5fd", "#eff6ff", "#1d4ed8"]
+    ];
+    const speciesNames = ["星糖", "雲朵", "泡泡", "布丁", "閃電", "月光", "果凍", "奶茶", "薄荷", "彩虹", "栗子", "珍珠"];
 
     let state = {
       studentCount: 28,
       pets: []
     };
 
+    function variantFor(number, generation = 1) {
+      const seed = (number * 37) + (generation * 101);
+      return {
+        palette: seed % palettes.length,
+        body: seed % 5,
+        ears: Math.floor(seed / 2) % 5,
+        tail: Math.floor(seed / 3) % 5,
+        extra: Math.floor(seed / 5) % 5,
+        cheek: Math.floor(seed / 7) % 4,
+        name: speciesNames[seed % speciesNames.length]
+      };
+    }
+
     function makePet(number) {
-      return { number, score: 0, hungry: false, generation: 1 };
+      return { number, score: 0, hungry: false, generation: 1, variant: variantFor(number, 1) };
     }
 
     function syncPets() {
@@ -622,9 +650,85 @@
     function rebirth(number) {
       state.pets = state.pets.map((pet) => {
         if (pet.number !== number) return pet;
-        return { ...pet, score: 0, hungry: false, generation: pet.generation + 1 };
+        const nextGeneration = pet.generation + 1;
+        return { ...pet, score: 0, hungry: false, generation: nextGeneration, variant: variantFor(number, nextGeneration) };
       });
       render();
+    }
+
+    function ensureVariant(pet) {
+      if (!pet.variant) pet.variant = variantFor(pet.number, pet.generation || 1);
+      return pet.variant;
+    }
+
+    function svgPet(pet, stage) {
+      const variant = ensureVariant(pet);
+      const [main, light, dark] = palettes[variant.palette];
+      const isEgg = stage.details === 0;
+      const isHungry = pet.hungry;
+      const isMaxed = pet.score >= maxScore;
+      const bodyY = 88 - (stage.details * 3);
+      const bodyRx = [34, 40, 45, 50, 54][variant.body] || 44;
+      const bodyRy = isEgg ? 48 : 42 + (stage.details * 2);
+      const scale = stage.scale;
+      const mouth = isHungry
+        ? '<circle cx="90" cy="98" r="6" fill="none" stroke="#20304f" stroke-width="4"/>'
+        : '<path d="M78 96 Q90 107 102 96" fill="none" stroke="#20304f" stroke-width="4" stroke-linecap="round"/>';
+      const eyes = isHungry
+        ? '<path d="M66 79 l10 8 M76 79 l-10 8 M104 79 l10 8 M114 79 l-10 8" stroke="#20304f" stroke-width="4" stroke-linecap="round"/>'
+        : '<g class="blink"><circle cx="72" cy="82" r="8" fill="#20304f"/><circle cx="108" cy="82" r="8" fill="#20304f"/><circle cx="75" cy="79" r="2.8" fill="#fff"/><circle cx="111" cy="79" r="2.8" fill="#fff"/></g>';
+      const ears = [
+        `<path d="M54 50 Q48 18 70 39" fill="${main}" stroke="#fff" stroke-width="6"/><path d="M126 50 Q132 18 110 39" fill="${main}" stroke="#fff" stroke-width="6"/>`,
+        `<circle cx="55" cy="43" r="17" fill="${main}" stroke="#fff" stroke-width="6"/><circle cx="125" cy="43" r="17" fill="${main}" stroke="#fff" stroke-width="6"/>`,
+        `<path d="M58 50 L48 24 L78 40" fill="${main}" stroke="#fff" stroke-width="6"/><path d="M122 50 L132 24 L102 40" fill="${main}" stroke="#fff" stroke-width="6"/>`,
+        `<path d="M62 48 C42 32 48 18 72 38" fill="${light}" stroke="#fff" stroke-width="6"/><path d="M118 48 C138 32 132 18 108 38" fill="${light}" stroke="#fff" stroke-width="6"/>`,
+        `<path d="M62 49 Q62 19 82 40" fill="${main}" stroke="#fff" stroke-width="6"/><path d="M118 49 Q118 19 98 40" fill="${main}" stroke="#fff" stroke-width="6"/>`
+      ][variant.ears];
+      const tails = [
+        `<path class="tail" d="M132 102 Q168 92 146 66" fill="none" stroke="${dark}" stroke-width="13" stroke-linecap="round"/>`,
+        `<circle class="tail" cx="145" cy="95" r="18" fill="${light}" stroke="#fff" stroke-width="6"/>`,
+        `<path class="tail" d="M131 101 L161 86 L151 121 Z" fill="${main}" stroke="#fff" stroke-width="6"/>`,
+        `<path class="tail" d="M132 103 C162 112 168 76 143 78" fill="none" stroke="${main}" stroke-width="12" stroke-linecap="round"/>`,
+        `<path class="tail" d="M132 101 Q156 102 158 76 Q169 96 150 118" fill="${light}" stroke="#fff" stroke-width="6"/>`
+      ][variant.tail];
+      const extras = [
+        `<circle cx="90" cy="54" r="8" fill="${dark}" opacity="0.9"/>`,
+        `<path d="M82 53 L90 37 L98 53" fill="${dark}" stroke="#fff" stroke-width="4"/>`,
+        `<g class="wing"><path d="M43 92 Q18 72 39 57 Q49 70 50 91" fill="${light}" stroke="#fff" stroke-width="5"/><path d="M137 92 Q162 72 141 57 Q131 70 130 91" fill="${light}" stroke="#fff" stroke-width="5"/></g>`,
+        `<path d="M74 57 Q90 43 106 57" fill="none" stroke="${dark}" stroke-width="6" stroke-linecap="round"/>`,
+        `<circle class="spark" cx="126" cy="48" r="7" fill="#ffd24a"/><circle class="spark" cx="54" cy="59" r="5" fill="#ff8fc7"/>`
+      ][variant.extra];
+      const cheeks = variant.cheek === 0 ? "" : `<circle cx="58" cy="94" r="6" fill="#ff8fc7" opacity="0.55"/><circle cx="122" cy="94" r="6" fill="#ff8fc7" opacity="0.55"/>`;
+      const crown = isMaxed ? '<path class="spark" d="M67 24 L78 43 L90 22 L102 43 L113 24 L110 50 L70 50 Z" fill="#ffd24a" stroke="#fff" stroke-width="5"/>' : "";
+
+      if (isEgg) {
+        return `
+          <svg class="pet-svg" viewBox="0 0 180 160" role="img" aria-label="${pet.number} 號神祕蛋">
+            <ellipse cx="90" cy="93" rx="38" ry="49" fill="${main}" stroke="#fff" stroke-width="7"/>
+            <path d="M54 95 Q66 82 78 96 T102 96 T126 93" fill="none" stroke="${light}" stroke-width="9" stroke-linecap="round"/>
+            <circle cx="76" cy="72" r="5" fill="${light}"/><circle cx="105" cy="116" r="6" fill="${light}"/>
+            <ellipse cx="90" cy="145" rx="44" ry="10" fill="rgba(36,48,71,0.12)"/>
+          </svg>`;
+      }
+
+      return `
+        <svg class="pet-svg" viewBox="0 0 180 160" role="img" aria-label="${pet.number} 號${variant.name}${stage.name}">
+          <ellipse cx="90" cy="146" rx="54" ry="10" fill="rgba(36,48,71,0.12)"/>
+          ${crown}
+          ${stage.details >= 2 ? tails : ""}
+          ${ears}
+          ${stage.details >= 3 ? extras : ""}
+          <g transform="translate(90 88) scale(${scale}) translate(-90 -88)">
+            <ellipse cx="90" cy="${bodyY}" rx="${bodyRx}" ry="${bodyRy}" fill="${main}" stroke="#fff" stroke-width="7"/>
+            <ellipse cx="90" cy="${bodyY + 19}" rx="${bodyRx * 0.45}" ry="${bodyRy * 0.28}" fill="${light}" opacity="0.7"/>
+            ${eyes}
+            ${cheeks}
+            ${mouth}
+            <path d="M67 124 Q57 138 44 129" fill="none" stroke="${dark}" stroke-width="8" stroke-linecap="round"/>
+            <path d="M113 124 Q123 138 136 129" fill="none" stroke="${dark}" stroke-width="8" stroke-linecap="round"/>
+          </g>
+          ${isHungry ? '<text x="90" y="30" text-anchor="middle" font-size="20">🍽️</text>' : ""}
+        </svg>`;
     }
 
     function renderStats() {
@@ -642,21 +746,17 @@
       state.pets.forEach((pet) => {
         const stage = getStage(pet.score);
         const progress = Math.min(pet.score / maxScore, 1);
+        const variant = ensureVariant(pet);
         const card = document.createElement("article");
         card.className = `pet-card ${pet.hungry ? "hungry" : ""} ${pet.score >= maxScore ? "maxed" : ""}`;
-        card.style.setProperty("--pet-size", `${stage.size}px`);
-        card.style.setProperty("--pet-y", stage.y);
-        card.style.setProperty("--pet-color", stage.color);
         card.style.setProperty("--progress", progress);
         card.innerHTML = `
           <div class="card-top">
             <span class="student-no">${pet.number} 號</span>
-            <span class="stage-name">${stage.icon} ${stage.name} · 第 ${pet.generation} 代</span>
+            <span class="stage-name">${stage.icon} ${variant.name}${stage.name} · 第 ${pet.generation} 代</span>
           </div>
           <div class="pet-yard">
-            <div class="pet ${stage.className} ${pet.hungry ? "hungry" : ""}">
-              ${stage.className === "egg" ? "" : '<span class="ears"></span><span class="belly"></span><span class="pet-mouth"></span>'}
-            </div>
+            ${svgPet(pet, stage)}
           </div>
           <div class="score-row">
             <span>分數</span>
