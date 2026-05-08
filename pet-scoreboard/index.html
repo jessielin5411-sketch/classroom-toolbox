@@ -321,6 +321,78 @@
         rgba(255, 255, 255, 0.52);
     }
 
+    .pet-atlas-frame {
+      position: relative;
+      width: min(100%, 220px);
+      aspect-ratio: 1;
+      display: grid;
+      place-items: center;
+      filter:
+        drop-shadow(0 18px 22px rgba(111, 78, 143, 0.2))
+        saturate(1.08);
+    }
+
+    .pet-atlas {
+      width: 100%;
+      height: 100%;
+      background-image: url("assets/pet-atlas.png");
+      background-repeat: no-repeat;
+      background-size: 400% 300%;
+      background-position: var(--atlas-x) var(--atlas-y);
+      transform: scale(var(--pet-scale));
+      transform-origin: center bottom;
+      transition: transform 0.25s ease, filter 0.25s ease;
+    }
+
+    .pet-atlas-frame.mini {
+      width: 58px;
+      filter: drop-shadow(0 6px 8px rgba(111, 78, 143, 0.16));
+    }
+
+    .pet-card:not(.maxed) .pet-atlas {
+      animation: petFloat 2.6s ease-in-out infinite;
+    }
+
+    .pet-card.hungry .pet-atlas {
+      animation: petHungry 0.85s ease-in-out infinite;
+      filter: grayscale(0.28) saturate(0.82);
+    }
+
+    .pet-card.maxed .pet-atlas {
+      animation: petCelebrate 1.25s ease-in-out infinite;
+      filter: saturate(1.24) contrast(1.04);
+    }
+
+    .pet-mood {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      display: inline-grid;
+      place-items: center;
+      min-width: 42px;
+      height: 34px;
+      padding: 0 8px;
+      border: 2px solid rgba(255, 255, 255, 0.9);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.86);
+      box-shadow: 0 6px 16px rgba(111, 78, 143, 0.14);
+      font-size: 20px;
+      font-weight: 950;
+    }
+
+    .pet-mood.mini {
+      display: none;
+    }
+
+    .pet-stage-glow {
+      position: absolute;
+      inset: auto 18% 4% 18%;
+      height: 18%;
+      border-radius: 999px;
+      background: radial-gradient(circle, rgba(34, 185, 143, 0.22), transparent 70%);
+      z-index: -1;
+    }
+
     .pet-svg {
       width: min(100%, 214px);
       height: 186px;
@@ -386,35 +458,35 @@
 
     @keyframes petFloat {
       0%, 100% {
-        transform: translateY(2px);
+        transform: translateY(2px) scale(var(--pet-scale, 1));
       }
 
       50% {
-        transform: translateY(-10px) scale(1.025);
+        transform: translateY(-10px) scale(calc(var(--pet-scale, 1) * 1.025));
       }
     }
 
     @keyframes petHungry {
       0%, 100% {
-        transform: translateX(0) rotate(0);
+        transform: translateX(0) rotate(0) scale(var(--pet-scale, 1));
       }
 
       25% {
-        transform: translateX(-2px) rotate(-1deg);
+        transform: translateX(-2px) rotate(-1deg) scale(var(--pet-scale, 1));
       }
 
       75% {
-        transform: translateX(2px) rotate(1deg);
+        transform: translateX(2px) rotate(1deg) scale(var(--pet-scale, 1));
       }
     }
 
     @keyframes petCelebrate {
       0%, 100% {
-        transform: translateY(-4px) scale(1);
+        transform: translateY(-4px) scale(var(--pet-scale, 1));
       }
 
       50% {
-        transform: translateY(-15px) scale(1.06);
+        transform: translateY(-15px) scale(calc(var(--pet-scale, 1) * 1.06));
       }
     }
 
@@ -705,6 +777,7 @@
         tail: Math.floor(seed / 3) % 5,
         extra: Math.floor(seed / 5) % 5,
         cheek: Math.floor(seed / 7) % 4,
+        sprite: seed % 12,
         name: speciesNames[seed % speciesNames.length]
       };
     }
@@ -773,8 +846,38 @@
 
     function ensureVariant(pet) {
       if (!pet.variant) pet.variant = variantFor(pet.number, pet.generation || 1);
+      if (!Number.isInteger(pet.variant.sprite)) {
+        pet.variant.sprite = variantFor(pet.number, pet.generation || 1).sprite;
+      }
       pet.retired ||= [];
       return pet.variant;
+    }
+
+    function atlasPosition(variant) {
+      const sprite = Number.isInteger(variant.sprite) ? variant.sprite : 0;
+      const slot = ((sprite % 12) + 12) % 12;
+      const col = slot % 4;
+      const row = Math.floor(slot / 4);
+      return {
+        x: `${(col * 100) / 3}%`,
+        y: `${(row * 100) / 2}%`
+      };
+    }
+
+    function petAtlasHtml(pet, stage, compact = false) {
+      const variant = ensureVariant(pet);
+      const pos = atlasPosition(variant);
+      const maxed = pet.score >= maxScore;
+      const mood = pet.hungry ? "🍽️" : (maxed ? "✨" : stage.icon);
+      const scale = compact ? 1 : Math.min(1.14, 0.78 + (stage.details * 0.08));
+      const frameClass = compact ? "pet-atlas-frame mini" : "pet-atlas-frame";
+      const moodClass = compact ? "pet-mood mini" : "pet-mood";
+      return `
+        <div class="${frameClass}" role="img" aria-label="${pet.number} 號的圖鑑寵物">
+          <div class="pet-stage-glow"></div>
+          <div class="pet-atlas" style="--atlas-x: ${pos.x}; --atlas-y: ${pos.y}; --pet-scale: ${scale};"></div>
+          <span class="${moodClass}">${mood}</span>
+        </div>`;
     }
 
     function collectionHtml(pet) {
@@ -789,7 +892,7 @@
           variant: oldPet.variant,
           retired: []
         };
-        return svgPet(miniPet, stages[stages.length - 1], true);
+        return petAtlasHtml(miniPet, stages[stages.length - 1], true);
       }).join("");
     }
 
@@ -929,7 +1032,7 @@
             <div class="collection-list">${collectionHtml(pet)}</div>
           </div>
           <div class="pet-yard">
-            ${svgPet(pet, stage)}
+            ${petAtlasHtml(pet, stage)}
           </div>
           <div class="score-row">
             <span>分數</span>
