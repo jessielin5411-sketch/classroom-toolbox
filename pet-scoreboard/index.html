@@ -438,16 +438,38 @@
     .pet-atlas-frame.guardian-stage::before {
       content: "";
       position: absolute;
-      top: 4px;
-      left: 50%;
-      width: 112px;
-      height: 30px;
-      border: 8px solid rgba(255, 210, 74, 0.9);
-      border-radius: 999px;
-      transform: translateX(-50%) rotate(-3deg);
-      box-shadow: 0 0 18px rgba(255, 210, 74, 0.72);
+      top: 10px;
+      left: 12px;
+      width: 62px;
+      height: 62px;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle, #fff 0 7%, transparent 8%),
+        conic-gradient(from 8deg, transparent 0 8%, #ffd24a 9% 12%, transparent 13% 23%, #ff8fc7 24% 27%, transparent 28% 39%, #4f8cff 40% 43%, transparent 44% 56%, #22b98f 57% 60%, transparent 61% 72%, #ffd24a 73% 76%, transparent 77%);
+      filter: drop-shadow(0 0 10px rgba(255, 210, 74, 0.74));
       z-index: 3;
-      animation: haloFloat 2.2s ease-in-out infinite;
+      animation: fireworksPop 1.4s ease-in-out infinite;
+    }
+
+    .pet-atlas-frame.guardian-stage::after {
+      content: "";
+      position: absolute;
+      top: 34px;
+      right: 10px;
+      width: 76px;
+      height: 76px;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle, #fff 0 6%, transparent 7%),
+        conic-gradient(from 22deg, transparent 0 10%, #7dd3fc 11% 14%, transparent 15% 25%, #f0abfc 26% 29%, transparent 30% 41%, #ffd24a 42% 45%, transparent 46% 57%, #ff5d73 58% 61%, transparent 62% 74%, #22b98f 75% 78%, transparent 79%);
+      filter: drop-shadow(0 0 12px rgba(155, 123, 255, 0.54));
+      z-index: 3;
+      animation: fireworksPop 1.65s ease-in-out infinite 0.25s;
+    }
+
+    .pet-atlas-frame.mini.guardian-stage::before,
+    .pet-atlas-frame.mini.guardian-stage::after {
+      display: none;
     }
 
     .pet-card:not(.maxed) .pet-atlas {
@@ -601,13 +623,15 @@
       }
     }
 
-    @keyframes haloFloat {
+    @keyframes fireworksPop {
       0%, 100% {
-        transform: translateX(-50%) translateY(0) rotate(-3deg);
+        opacity: 0.45;
+        transform: scale(0.72) rotate(0);
       }
 
       50% {
-        transform: translateX(-50%) translateY(-6px) rotate(3deg);
+        opacity: 1;
+        transform: scale(1.08) rotate(16deg);
       }
     }
 
