@@ -349,6 +349,107 @@
       filter: drop-shadow(0 6px 8px rgba(111, 78, 143, 0.16));
     }
 
+    .pet-atlas-frame.egg-stage,
+    .pet-atlas-frame.hatch-stage {
+      width: min(100%, 190px);
+    }
+
+    .pet-egg {
+      position: relative;
+      width: 132px;
+      height: 158px;
+      border: 7px solid #fff;
+      border-radius: 52% 48% 46% 54% / 58% 58% 42% 42%;
+      background:
+        radial-gradient(circle at 32% 22%, rgba(255, 255, 255, 0.95) 0 13%, transparent 14%),
+        radial-gradient(circle at 68% 38%, rgba(255, 143, 199, 0.44) 0 10%, transparent 11%),
+        radial-gradient(circle at 36% 62%, rgba(79, 140, 255, 0.36) 0 9%, transparent 10%),
+        linear-gradient(145deg, #fffdf4 0%, #fff0b8 46%, #ffd0e8 100%);
+      box-shadow:
+        inset -18px -20px 28px rgba(155, 123, 255, 0.14),
+        0 18px 24px rgba(111, 78, 143, 0.2);
+      animation: eggWiggle 2.8s ease-in-out infinite;
+    }
+
+    .pet-egg::before {
+      content: "";
+      position: absolute;
+      left: 22px;
+      right: 22px;
+      top: 72px;
+      height: 20px;
+      background: linear-gradient(135deg, transparent 0 16%, #fff 17% 28%, transparent 29% 44%, #fff 45% 58%, transparent 59% 72%, #fff 73% 84%, transparent 85%);
+      opacity: 0.75;
+    }
+
+    .pet-egg::after {
+      content: "";
+      position: absolute;
+      left: 26px;
+      top: 24px;
+      width: 34px;
+      height: 20px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.7);
+      transform: rotate(-24deg);
+    }
+
+    .hatch-shell {
+      position: absolute;
+      left: 50%;
+      bottom: 20px;
+      width: 152px;
+      height: 84px;
+      transform: translateX(-50%);
+      border: 7px solid #fff;
+      border-top: 0;
+      border-radius: 0 0 70px 70px;
+      background: linear-gradient(145deg, #fffdf4, #ffd5eb);
+      box-shadow: 0 16px 20px rgba(111, 78, 143, 0.18);
+      z-index: 2;
+    }
+
+    .hatch-shell::before {
+      content: "";
+      position: absolute;
+      left: -4px;
+      right: -4px;
+      top: -19px;
+      height: 26px;
+      background: linear-gradient(135deg, transparent 0 11%, #fffdf4 12% 23%, transparent 24% 34%, #fffdf4 35% 48%, transparent 49% 60%, #fffdf4 61% 74%, transparent 75% 86%, #fffdf4 87%);
+    }
+
+    .hatch-stage .pet-atlas {
+      width: 128px;
+      height: 128px;
+      margin-bottom: 42px;
+      clip-path: inset(0 0 28% 0 round 28px);
+      filter: saturate(0.92) brightness(1.08);
+      z-index: 1;
+    }
+
+    .pet-atlas-frame.glow-stage .pet-atlas {
+      filter:
+        saturate(1.28)
+        drop-shadow(0 0 14px rgba(255, 210, 74, 0.86))
+        drop-shadow(0 0 28px rgba(255, 143, 199, 0.42));
+    }
+
+    .pet-atlas-frame.guardian-stage::before {
+      content: "";
+      position: absolute;
+      top: 4px;
+      left: 50%;
+      width: 112px;
+      height: 30px;
+      border: 8px solid rgba(255, 210, 74, 0.9);
+      border-radius: 999px;
+      transform: translateX(-50%) rotate(-3deg);
+      box-shadow: 0 0 18px rgba(255, 210, 74, 0.72);
+      z-index: 3;
+      animation: haloFloat 2.2s ease-in-out infinite;
+    }
+
     .pet-card:not(.maxed) .pet-atlas {
       animation: petFloat 2.6s ease-in-out infinite;
     }
@@ -487,6 +588,26 @@
 
       50% {
         transform: translateY(-15px) scale(calc(var(--pet-scale, 1) * 1.06));
+      }
+    }
+
+    @keyframes eggWiggle {
+      0%, 100% {
+        transform: rotate(-2deg) translateY(2px);
+      }
+
+      50% {
+        transform: rotate(3deg) translateY(-7px);
+      }
+    }
+
+    @keyframes haloFloat {
+      0%, 100% {
+        transform: translateX(-50%) translateY(0) rotate(-3deg);
+      }
+
+      50% {
+        transform: translateX(-50%) translateY(-6px) rotate(3deg);
       }
     }
 
@@ -700,12 +821,12 @@
       <div class="section">
         <span class="label">寵物成長分數</span>
         <ul class="stage-list">
-          <li><span>🥚</span><span>蛋</span><strong>0 分</strong></li>
-          <li><span>🐣</span><span>幼幼寵</span><strong>5 分</strong></li>
-          <li><span>🐾</span><span>小寵物</span><strong>15 分</strong></li>
-          <li><span>🌱</span><span>成長中</span><strong>30 分</strong></li>
-          <li><span>🌟</span><span>成熟寵</span><strong>50 分</strong></li>
-          <li><span>👑</span><span>滿等</span><strong>80 分</strong></li>
+          <li><span>🥚</span><span>神祕蛋</span><strong>0 分</strong></li>
+          <li><span>🐣</span><span>幼幼獸</span><strong>5 分</strong></li>
+          <li><span>🐾</span><span>小萌獸</span><strong>15 分</strong></li>
+          <li><span>🌱</span><span>成長獸</span><strong>30 分</strong></li>
+          <li><span>🌟</span><span>閃亮獸</span><strong>50 分</strong></li>
+          <li><span>👑</span><span>守護獸</span><strong>80 分</strong></li>
         </ul>
       </div>
     </aside>
@@ -869,9 +990,38 @@
       const pos = atlasPosition(variant);
       const maxed = pet.score >= maxScore;
       const mood = pet.hungry ? "🍽️" : (maxed ? "✨" : stage.icon);
-      const scale = compact ? 1 : Math.min(1.14, 0.78 + (stage.details * 0.08));
-      const frameClass = compact ? "pet-atlas-frame mini" : "pet-atlas-frame";
+      const scaleByStage = [0, 0.66, 0.82, 0.98, 1.08, 1.14];
+      const stageClass = [
+        "egg-stage",
+        "hatch-stage",
+        "atlas-stage",
+        "grown-stage",
+        "glow-stage",
+        "guardian-stage"
+      ][stage.details] || "atlas-stage";
+      const scale = compact ? 1 : scaleByStage[stage.details];
+      const frameClass = compact ? "pet-atlas-frame mini guardian-stage" : `pet-atlas-frame ${stageClass}`;
       const moodClass = compact ? "pet-mood mini" : "pet-mood";
+
+      if (!compact && stage.details === 0) {
+        return `
+        <div class="${frameClass}" role="img" aria-label="${pet.number} 號的神祕蛋">
+          <div class="pet-stage-glow"></div>
+          <div class="pet-egg"></div>
+          <span class="${moodClass}">${mood}</span>
+        </div>`;
+      }
+
+      if (!compact && stage.details === 1) {
+        return `
+        <div class="${frameClass}" role="img" aria-label="${pet.number} 號的幼幼獸">
+          <div class="pet-stage-glow"></div>
+          <div class="pet-atlas" style="--atlas-x: ${pos.x}; --atlas-y: ${pos.y}; --pet-scale: ${scale};"></div>
+          <div class="hatch-shell"></div>
+          <span class="${moodClass}">${mood}</span>
+        </div>`;
+      }
+
       return `
         <div class="${frameClass}" role="img" aria-label="${pet.number} 號的圖鑑寵物">
           <div class="pet-stage-glow"></div>
