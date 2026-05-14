@@ -1,3 +1,7 @@
 *-source.png
 .DS_Store
 Thumbs.db
+.portable-git/
+Git-*-64-bit.exe
+PortableGit-*-64-bit.7z.exe
+git-install.log
