@@ -304,6 +304,30 @@
         0 14px 34px rgba(79, 140, 255, 0.18);
     }
 
+    .current-clock {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      min-height: 42px;
+      margin: 12px auto 0;
+      padding: 0 18px;
+      border: 2px solid rgba(79, 140, 255, 0.18);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.86);
+      color: #4f5f7c;
+      font-size: clamp(16px, 2.4vw, 26px);
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0;
+      box-shadow: 0 8px 18px rgba(79, 140, 255, 0.12);
+    }
+
+    .clock-label {
+      color: #7b4ed8;
+      font-size: 0.72em;
+    }
+
     .status {
       position: relative;
       z-index: 1;
@@ -366,6 +390,17 @@
       background: linear-gradient(90deg, var(--red), #ff9a9e);
     }
 
+    .is-final-seconds .time {
+      color: var(--red);
+      text-shadow:
+        0 6px 0 rgba(255, 210, 74, 0.65),
+        0 0 28px rgba(217, 45, 32, 0.24);
+    }
+
+    .is-final-seconds .timer-card {
+      border-color: rgba(217, 45, 32, 0.28);
+    }
+
     .is-done .timer-card {
       border-color: rgba(217, 45, 32, 0.4);
     }
@@ -376,6 +411,7 @@
 
     .character-art {
       margin-top: 18px;
+      text-align: center;
       pointer-events: none;
       user-select: none;
     }
@@ -522,6 +558,10 @@
           </div>
         </div>
         <div class="character-art" aria-hidden="true">
+          <div class="current-clock">
+            <span class="clock-label">現在時間</span>
+            <span id="currentClock">--:--:--</span>
+          </div>
           <img src="assets/classroom-characters.png" alt="">
         </div>
       </section>
@@ -531,6 +571,7 @@
   <script>
     const app = document.querySelector("#app");
     const timeDisplay = document.querySelector("#timeDisplay");
+    const currentClock = document.querySelector("#currentClock");
     const statusText = document.querySelector("#status");
     const progress = document.querySelector("#progress");
     const startPause = document.querySelector("#startPause");
@@ -555,6 +596,7 @@
     let timerId = null;
     let lastTick = 0;
     let hasFinished = false;
+    let lastCountdownBeepSecond = null;
 
     function clamp(value, min, max) {
       return Math.min(Math.max(Number(value) || 0, min), max);
@@ -586,39 +628,69 @@
       return hours > 0 ? `${hours}:${mm}:${ss}` : `${mm}:${ss}`;
     }
 
-    function playBell() {
+    function formatCurrentClock(date) {
+      const hours = String(date.getHours()).padStart(2, "0");
+      const minutes = String(date.getMinutes()).padStart(2, "0");
+      const seconds = String(date.getSeconds()).padStart(2, "0");
+      return `${hours}:${minutes}:${seconds}`;
+    }
+
+    function playToneSequence(notes, closeAfter = 900) {
       if (!soundToggle.checked) return;
-      const audio = new AudioContext();
+      const Audio = window.AudioContext || window.webkitAudioContext;
+      if (!Audio) return;
+      const audio = new Audio();
       const now = audio.currentTime;
-      [0, 0.18, 0.36].forEach((offset) => {
+      notes.forEach(({ offset, frequency, duration, volume, type = "sine" }) => {
         const oscillator = audio.createOscillator();
         const gain = audio.createGain();
-        oscillator.type = "sine";
-        oscillator.frequency.setValueAtTime(880, now + offset);
+        oscillator.type = type;
+        oscillator.frequency.setValueAtTime(frequency, now + offset);
         gain.gain.setValueAtTime(0.001, now + offset);
-        gain.gain.exponentialRampToValueAtTime(0.28, now + offset + 0.02);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + offset + 0.14);
+        gain.gain.exponentialRampToValueAtTime(volume, now + offset + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + offset + duration);
         oscillator.connect(gain);
         gain.connect(audio.destination);
         oscillator.start(now + offset);
-        oscillator.stop(now + offset + 0.16);
+        oscillator.stop(now + offset + duration + 0.02);
       });
-      setTimeout(() => audio.close(), 900);
+      setTimeout(() => audio.close(), closeAfter);
+    }
+
+    function playCountdownBeep() {
+      playToneSequence([
+        { offset: 0, frequency: 1046, duration: 0.08, volume: 0.18, type: "square" }
+      ], 250);
+    }
+
+    function playBell() {
+      playToneSequence([
+        { offset: 0, frequency: 784, duration: 0.22, volume: 0.32 },
+        { offset: 0.24, frequency: 1046, duration: 0.28, volume: 0.38 },
+        { offset: 0.56, frequency: 1318, duration: 0.42, volume: 0.42 },
+        { offset: 1.08, frequency: 1046, duration: 0.5, volume: 0.4 }
+      ], 1900);
     }
 
     function updateClasses(percent) {
       app.classList.toggle("is-warning", mode === "countdown" && percent <= 0.35 && percent > 0.15);
       app.classList.toggle("is-ending", mode === "countdown" && percent <= 0.15 && !hasFinished);
+      app.classList.toggle("is-final-seconds", mode === "countdown" && remainingSeconds > 0 && remainingSeconds <= 10 && !hasFinished);
       app.classList.toggle("is-done", hasFinished);
     }
 
+    function renderClock() {
+      currentClock.textContent = formatCurrentClock(new Date());
+    }
+
     function render() {
-      const displaySeconds = mode === "countdown" ? remainingSeconds : elapsedSeconds;
+      const displaySeconds = mode === "countdown" ? Math.ceil(remainingSeconds) : elapsedSeconds;
       const percent = mode === "countdown"
         ? remainingSeconds / Math.max(totalSeconds, 1)
         : Math.min(elapsedSeconds / Math.max(totalSeconds, 1), 1);
 
       timeDisplay.textContent = formatTime(displaySeconds);
+      renderClock();
       progress.style.transform = `scaleX(${Math.max(0, Math.min(percent, 1))})`;
       displayTitle.textContent = activityTitle.value.trim() || "班級計時器";
 
@@ -639,6 +711,7 @@
       remainingSeconds = totalSeconds;
       elapsedSeconds = 0;
       hasFinished = false;
+      lastCountdownBeepSecond = null;
       render();
     }
 
@@ -650,13 +723,18 @@
     }
 
     function tick() {
-      const now = Date.now();
-      const delta = Math.max(1, Math.floor((now - lastTick) / 1000));
+      const now = performance.now();
+      const delta = Math.max(0, (now - lastTick) / 1000);
       lastTick = now;
 
       if (mode === "countdown") {
         remainingSeconds = Math.max(0, remainingSeconds - delta);
-        if (remainingSeconds === 0) finish();
+        const countdownSecond = Math.ceil(remainingSeconds);
+        if (countdownSecond > 0 && countdownSecond <= 10 && countdownSecond !== lastCountdownBeepSecond) {
+          lastCountdownBeepSecond = countdownSecond;
+          playCountdownBeep();
+        }
+        if (remainingSeconds <= 0) finish();
       } else {
         elapsedSeconds += delta;
         if (elapsedSeconds >= totalSeconds && !hasFinished) finish(false);
@@ -673,7 +751,7 @@
     function start() {
       if (hasFinished && mode === "countdown") configureFromInputs();
       if (!timerId) {
-        lastTick = Date.now();
+        lastTick = performance.now();
         timerId = setInterval(tick, 250);
       }
       render();
@@ -706,6 +784,7 @@
         remainingSeconds += 60;
         totalSeconds += 60;
         syncInputs(totalSeconds);
+        lastCountdownBeepSecond = null;
       } else {
         totalSeconds += 60;
         syncInputs(totalSeconds);
@@ -748,6 +827,8 @@
       activityTitle.focus();
     });
     testSound.addEventListener("click", playBell);
+
+    setInterval(renderClock, 1000);
 
     document.addEventListener("keydown", (event) => {
       if (event.code === "Space" && event.target.tagName !== "INPUT") {
