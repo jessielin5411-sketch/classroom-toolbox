@@ -54,18 +54,9 @@
 
     button,
     input,
-    select {
-      font: inherit;
-    }
-
-    button {
-      cursor: pointer;
-    }
-
-    a {
-      color: inherit;
-      text-decoration: none;
-    }
+    select { font: inherit; }
+    button { cursor: pointer; }
+    a { color: inherit; text-decoration: none; }
 
     .page {
       position: relative;
@@ -113,9 +104,7 @@
       box-shadow: 0 10px 24px rgba(155, 123, 255, 0.25);
     }
 
-    .section {
-      margin-top: 20px;
-    }
+    .section { margin-top: 20px; }
 
     .label {
       display: block;
@@ -148,65 +137,18 @@
       transition: transform 0.15s ease, box-shadow 0.15s ease;
     }
 
-    .button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 0 rgba(255, 143, 199, 0.24);
-    }
+    .button:hover { transform: translateY(-2px); box-shadow: 0 8px 0 rgba(255, 143, 199, 0.24); }
+    .button:active { transform: translateY(2px); box-shadow: 0 3px 0 rgba(255, 143, 199, 0.2); }
+    .button.primary { color: #fff; border-color: transparent; background: linear-gradient(135deg, var(--blue), var(--purple)); }
+    .button.danger { color: #fff; border-color: transparent; background: linear-gradient(135deg, var(--red), #ff9a9e); }
+    .button.good { color: #fff; border-color: transparent; background: linear-gradient(135deg, var(--green), #82dfc6); }
 
-    .button:active {
-      transform: translateY(2px);
-      box-shadow: 0 3px 0 rgba(255, 143, 199, 0.2);
-    }
+    .stack { display: grid; gap: 8px; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .tabs .active { color: #fff; border-color: transparent; background: linear-gradient(135deg, var(--blue), var(--purple)); }
 
-    .button.primary {
-      color: #fff;
-      border-color: transparent;
-      background: linear-gradient(135deg, var(--blue), var(--purple));
-    }
-
-    .button.danger {
-      color: #fff;
-      border-color: transparent;
-      background: linear-gradient(135deg, var(--red), #ff9a9e);
-    }
-
-    .button.good {
-      color: #fff;
-      border-color: transparent;
-      background: linear-gradient(135deg, var(--green), #82dfc6);
-    }
-
-    .stack {
-      display: grid;
-      gap: 8px;
-    }
-
-    .row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-    }
-
-    .tabs {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-    }
-
-    .tabs .active {
-      color: #fff;
-      border-color: transparent;
-      background: linear-gradient(135deg, var(--blue), var(--purple));
-    }
-
-    .assignment-list {
-      display: grid;
-      gap: 8px;
-      margin: 0;
-      padding: 0;
-      list-style: none;
-    }
-
+    .assignment-list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
     .assignment-list button {
       width: 100%;
       min-height: 44px;
@@ -218,21 +160,10 @@
       text-align: left;
       font-weight: 900;
     }
+    .assignment-list button.active { color: #fff; border-color: transparent; background: linear-gradient(135deg, var(--pink), var(--purple)); }
 
-    .assignment-list button.active {
-      color: #fff;
-      border-color: transparent;
-      background: linear-gradient(135deg, var(--pink), var(--purple));
-    }
-
-    .main {
-      padding: 28px;
-    }
-
-    .stage {
-      width: min(100%, 1180px);
-      margin: 0 auto;
-    }
+    .main { padding: 28px; }
+    .stage { width: min(100%, 1180px); margin: 0 auto; }
 
     .page-title {
       margin: 0 0 18px;
@@ -254,13 +185,7 @@
       box-shadow: var(--shadow);
     }
 
-    .status-bar {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      margin-bottom: 18px;
-    }
-
+    .status-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 18px; }
     .stat {
       min-height: 76px;
       padding: 12px;
@@ -271,49 +196,14 @@
       font-weight: 900;
       text-align: center;
     }
+    .stat strong { display: block; color: #7b4ed8; font-size: 28px; font-variant-numeric: tabular-nums; }
 
-    .stat strong {
-      display: block;
-      color: #7b4ed8;
-      font-size: 28px;
-      font-variant-numeric: tabular-nums;
-    }
+    .legend { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: center; margin-bottom: 18px; color: var(--muted); font-weight: 900; }
+    .dot { width: 18px; height: 18px; border: 2px solid rgba(36, 48, 71, 0.16); border-radius: 5px; background: #fff; }
+    .dot.done { background: #dffbed; border-color: rgba(34, 185, 143, 0.55); }
+    .dot.fix { background: var(--red); border-color: #c91832; }
 
-    .legend {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 18px;
-      color: var(--muted);
-      font-weight: 900;
-    }
-
-    .dot {
-      width: 18px;
-      height: 18px;
-      border: 2px solid rgba(36, 48, 71, 0.16);
-      border-radius: 5px;
-      background: #fff;
-    }
-
-    .dot.done {
-      background: #dffbed;
-      border-color: rgba(34, 185, 143, 0.55);
-    }
-
-    .dot.fix {
-      background: #ffe0b6;
-      border-color: rgba(255, 173, 77, 0.8);
-    }
-
-    .student-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
-      gap: 10px;
-    }
-
+    .student-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 10px; }
     .student-cell {
       min-height: 66px;
       border: 2px solid rgba(36, 48, 71, 0.12);
@@ -324,47 +214,18 @@
       font-weight: 950;
       box-shadow: 0 6px 0 rgba(111, 78, 143, 0.08);
     }
-
-    .student-cell.done {
-      background: #dffbed;
-      border-color: rgba(34, 185, 143, 0.6);
-      color: #087352;
-    }
-
+    .student-cell.done { background: #dffbed; border-color: rgba(34, 185, 143, 0.6); color: #087352; }
     .student-cell.fix {
-      background: #ffe0b6;
-      border-color: rgba(255, 173, 77, 0.88);
-      color: #955500;
+      background: linear-gradient(135deg, #d92d20, var(--red));
+      border-color: #b42318;
+      color: #fff;
+      box-shadow: 0 6px 0 rgba(180, 35, 24, 0.28), 0 0 0 4px rgba(217, 45, 32, 0.16);
     }
 
-    .summary-list {
-      display: grid;
-      gap: 14px;
-    }
-
-    .summary-card {
-      padding: 16px;
-      border: 2px solid var(--line);
-      border-radius: 8px;
-      background: rgba(255, 255, 255, 0.78);
-    }
-
-    .summary-card h3 {
-      margin: 0 0 10px;
-      color: #7b4ed8;
-      font-size: 24px;
-      letter-spacing: 0;
-    }
-
-    .number-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin: 0;
-      padding: 0;
-      list-style: none;
-    }
-
+    .summary-list { display: grid; gap: 14px; }
+    .summary-card { padding: 16px; border: 2px solid var(--line); border-radius: 8px; background: rgba(255, 255, 255, 0.78); }
+    .summary-card h3 { margin: 0 0 10px; color: #7b4ed8; font-size: 24px; letter-spacing: 0; }
+    .number-list { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
     .number-list li {
       min-width: 42px;
       min-height: 38px;
@@ -376,16 +237,8 @@
       color: #8a5a00;
       font-weight: 950;
     }
-
-    .number-list li.fix {
-      background: #ffe0b6;
-      color: #955500;
-    }
-
-    .number-list li.missing {
-      background: #eef2f7;
-      color: #475467;
-    }
+    .number-list li.fix { background: #d92d20; color: #fff; box-shadow: 0 0 0 3px rgba(217, 45, 32, 0.16); }
+    .number-list li.missing { background: #eef2f7; color: #475467; }
 
     .empty {
       padding: 22px;
@@ -399,25 +252,13 @@
     }
 
     @media (max-width: 960px) {
-      .page {
-        grid-template-columns: 1fr;
-      }
-
-      .sidebar {
-        border-right: 0;
-        border-bottom: 3px dashed rgba(255, 143, 199, 0.55);
-      }
+      .page { grid-template-columns: 1fr; }
+      .sidebar { border-right: 0; border-bottom: 3px dashed rgba(255, 143, 199, 0.55); }
     }
 
     @media (max-width: 640px) {
-      .main {
-        padding: 20px;
-      }
-
-      .status-bar,
-      .row {
-        grid-template-columns: 1fr;
-      }
+      .main { padding: 20px; }
+      .status-bar, .row { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -439,41 +280,18 @@
         <button id="addAssignment" class="button good" type="button">新增作業</button>
       </div>
 
-      <div class="section">
-        <span class="label">目前作業</span>
-        <ul class="assignment-list" id="assignmentList"></ul>
-      </div>
-
-      <div class="section tabs" role="group" aria-label="檢視模式">
-        <button id="gridView" class="button active" type="button">格子頁</button>
-        <button id="summaryView" class="button" type="button">統整頁</button>
-      </div>
-
-      <div class="section row">
-        <button id="markAllDone" class="button good" type="button">全班完成</button>
-        <button id="clearCurrent" class="button" type="button">清空本項</button>
-      </div>
-
-      <div class="section row">
-        <button id="deleteCurrent" class="button danger" type="button">刪除本項</button>
-        <button id="resetAll" class="button danger" type="button">全部重置</button>
-      </div>
+      <div class="section"><span class="label">目前作業</span><ul class="assignment-list" id="assignmentList"></ul></div>
+      <div class="section tabs" role="group" aria-label="檢視模式"><button id="gridView" class="button active" type="button">格子頁</button><button id="summaryView" class="button" type="button">統整頁</button></div>
+      <div class="section row"><button id="markAllDone" class="button good" type="button">全班完成</button><button id="clearCurrent" class="button" type="button">清空本項</button></div>
+      <div class="section row"><button id="deleteCurrent" class="button danger" type="button">刪除本項</button><button id="resetAll" class="button danger" type="button">全部重置</button></div>
     </aside>
 
     <main class="main">
       <section class="stage" aria-live="polite">
         <h2 class="page-title" id="pageTitle">國語作業</h2>
         <div class="panel">
-          <div class="status-bar">
-            <div class="stat"><strong id="doneCount">0</strong>已完成</div>
-            <div class="stat"><strong id="fixCount">0</strong>需訂正</div>
-            <div class="stat"><strong id="missingCount">0</strong>未交</div>
-          </div>
-          <div class="legend">
-            <span class="dot"></span> 未交
-            <span class="dot done"></span> 已交完成
-            <span class="dot fix"></span> 需訂正
-          </div>
+          <div class="status-bar"><div class="stat"><strong id="doneCount">0</strong>已完成</div><div class="stat"><strong id="fixCount">0</strong>需訂正</div><div class="stat"><strong id="missingCount">0</strong>未交</div></div>
+          <div class="legend"><span class="dot"></span> 未交 <span class="dot done"></span> 已交完成 <span class="dot fix"></span> 需訂正</div>
           <div id="content"></div>
         </div>
       </section>
@@ -499,66 +317,20 @@
     const content = document.querySelector("#content");
 
     const storageKey = "jessie-toolbox-homework-helper";
-    let state = {
-      studentCount: 28,
-      currentId: "a1",
-      view: "grid",
-      assignments: [
-        { id: "a1", name: "國語作業", statuses: {} },
-        { id: "a2", name: "數學習作", statuses: {} }
-      ]
-    };
+    let state = { studentCount: 28, currentId: "a1", view: "grid", assignments: [ { id: "a1", name: "國語作業", statuses: {} }, { id: "a2", name: "數學習作", statuses: {} } ] };
 
-    function saveState() {
-      localStorage.setItem(storageKey, JSON.stringify(state));
-    }
-
-    function loadState() {
-      try {
-        const saved = JSON.parse(localStorage.getItem(storageKey) || "{}");
-        if (saved.assignments && Array.isArray(saved.assignments)) state = saved;
-      } catch {
-        localStorage.removeItem(storageKey);
-      }
-    }
-
-    function currentAssignment() {
-      return state.assignments.find((item) => item.id === state.currentId) || state.assignments[0];
-    }
-
-    function studentNumbers() {
-      return Array.from({ length: state.studentCount }, (_, index) => index + 1);
-    }
-
-    function getStatus(assignment, number) {
-      return assignment.statuses[String(number)] || "missing";
-    }
-
-    function statusClass(status) {
-      if (status === "done") return "done";
-      if (status === "fix") return "fix";
-      return "";
-    }
-
-    function nextStatus(status) {
-      if (status === "missing") return "done";
-      if (status === "done") return "fix";
-      return "missing";
-    }
-
-    function setView(view) {
-      state.view = view;
-      render();
-    }
+    function saveState() { localStorage.setItem(storageKey, JSON.stringify(state)); }
+    function loadState() { try { const saved = JSON.parse(localStorage.getItem(storageKey) || "{}"); if (saved.assignments && Array.isArray(saved.assignments)) state = saved; } catch { localStorage.removeItem(storageKey); } }
+    function currentAssignment() { return state.assignments.find((item) => item.id === state.currentId) || state.assignments[0]; }
+    function studentNumbers() { return Array.from({ length: state.studentCount }, (_, index) => index + 1); }
+    function getStatus(assignment, number) { return assignment.statuses[String(number)] || "missing"; }
+    function statusClass(status) { if (status === "done") return "done"; if (status === "fix") return "fix"; return ""; }
+    function nextStatus(status) { if (status === "missing") return "done"; if (status === "done") return "fix"; return "missing"; }
+    function setView(view) { state.view = view; render(); }
 
     function updateStats() {
       const assignment = currentAssignment();
-      if (!assignment) {
-        doneCount.textContent = "0";
-        fixCount.textContent = "0";
-        missingCount.textContent = "0";
-        return;
-      }
+      if (!assignment) { doneCount.textContent = "0"; fixCount.textContent = "0"; missingCount.textContent = "0"; return; }
       const numbers = studentNumbers();
       const done = numbers.filter((number) => getStatus(assignment, number) === "done").length;
       const fix = numbers.filter((number) => getStatus(assignment, number) === "fix").length;
@@ -575,11 +347,7 @@
         button.type = "button";
         button.className = assignment.id === state.currentId ? "active" : "";
         button.textContent = assignment.name;
-        button.addEventListener("click", () => {
-          state.currentId = assignment.id;
-          state.view = "grid";
-          render();
-        });
+        button.addEventListener("click", () => { state.currentId = assignment.id; state.view = "grid"; render(); });
         item.appendChild(button);
         assignmentList.appendChild(item);
       });
@@ -587,11 +355,7 @@
 
     function renderGrid() {
       const assignment = currentAssignment();
-      if (!assignment) {
-        content.innerHTML = '<div class="empty">請先新增一項作業。</div>';
-        return;
-      }
-
+      if (!assignment) { content.innerHTML = '<div class="empty">請先新增一項作業。</div>'; return; }
       const grid = document.createElement("div");
       grid.className = "student-grid";
       studentNumbers().forEach((number) => {
@@ -603,11 +367,8 @@
         button.title = `${number} 號`;
         button.addEventListener("click", () => {
           const next = nextStatus(getStatus(assignment, number));
-          if (next === "missing") {
-            delete assignment.statuses[String(number)];
-          } else {
-            assignment.statuses[String(number)] = next;
-          }
+          if (next === "missing") delete assignment.statuses[String(number)];
+          else assignment.statuses[String(number)] = next;
           render();
         });
         grid.appendChild(button);
@@ -618,57 +379,34 @@
     function makeNumberList(numbers, className) {
       const list = document.createElement("ul");
       list.className = "number-list";
-      if (!numbers.length) {
-        const item = document.createElement("li");
-        item.textContent = "完成";
-        item.className = "done";
-        list.appendChild(item);
-        return list;
-      }
-      numbers.forEach((number) => {
-        const item = document.createElement("li");
-        item.className = className;
-        item.textContent = number;
-        list.appendChild(item);
-      });
+      if (!numbers.length) { const item = document.createElement("li"); item.textContent = "完成"; item.className = "done"; list.appendChild(item); return list; }
+      numbers.forEach((number) => { const item = document.createElement("li"); item.className = className; item.textContent = number; list.appendChild(item); });
       return list;
     }
 
     function renderSummary() {
-      if (!state.assignments.length) {
-        content.innerHTML = '<div class="empty">請先新增作業。</div>';
-        return;
-      }
-
+      if (!state.assignments.length) { content.innerHTML = '<div class="empty">請先新增作業。</div>'; return; }
       const wrapper = document.createElement("div");
       wrapper.className = "summary-list";
       state.assignments.forEach((assignment) => {
         const missing = [];
         const fix = [];
-        studentNumbers().forEach((number) => {
-          const status = getStatus(assignment, number);
-          if (status === "missing") missing.push(number);
-          if (status === "fix") fix.push(number);
-        });
-
+        studentNumbers().forEach((number) => { const status = getStatus(assignment, number); if (status === "missing") missing.push(number); if (status === "fix") fix.push(number); });
         const card = document.createElement("article");
         card.className = "summary-card";
         const title = document.createElement("h3");
         title.textContent = assignment.name;
         card.appendChild(title);
-
         const fixLabel = document.createElement("p");
         fixLabel.className = "label";
         fixLabel.textContent = "需訂正";
         card.appendChild(fixLabel);
         card.appendChild(makeNumberList(fix, "fix"));
-
         const missingLabel = document.createElement("p");
         missingLabel.className = "label";
         missingLabel.textContent = "未交";
         card.appendChild(missingLabel);
         card.appendChild(makeNumberList(missing, "missing"));
-
         wrapper.appendChild(card);
       });
       content.replaceChildren(wrapper);
@@ -683,76 +421,23 @@
       summaryView.classList.toggle("active", state.view === "summary");
       renderAssignments();
       updateStats();
-      if (state.view === "summary") renderSummary();
-      else renderGrid();
+      if (state.view === "summary") renderSummary(); else renderGrid();
       saveState();
     }
 
     applyCount.addEventListener("click", () => {
       state.studentCount = Math.min(Math.max(Number(studentCountInput.value) || 1, 1), 80);
-      state.assignments.forEach((assignment) => {
-        Object.keys(assignment.statuses).forEach((key) => {
-          if (Number(key) > state.studentCount) delete assignment.statuses[key];
-        });
-      });
+      state.assignments.forEach((assignment) => { Object.keys(assignment.statuses).forEach((key) => { if (Number(key) > state.studentCount) delete assignment.statuses[key]; }); });
       render();
     });
-
-    addAssignment.addEventListener("click", () => {
-      const name = assignmentName.value.trim() || `作業 ${state.assignments.length + 1}`;
-      const id = crypto.randomUUID();
-      state.assignments.push({ id, name, statuses: {} });
-      state.currentId = id;
-      state.view = "grid";
-      assignmentName.value = "";
-      render();
-      assignmentName.focus();
-    });
-
-    assignmentName.addEventListener("keydown", (event) => {
-      if (event.key === "Enter") addAssignment.click();
-    });
-
+    addAssignment.addEventListener("click", () => { const name = assignmentName.value.trim() || `作業 ${state.assignments.length + 1}`; const id = crypto.randomUUID(); state.assignments.push({ id, name, statuses: {} }); state.currentId = id; state.view = "grid"; assignmentName.value = ""; render(); assignmentName.focus(); });
+    assignmentName.addEventListener("keydown", (event) => { if (event.key === "Enter") addAssignment.click(); });
     gridView.addEventListener("click", () => setView("grid"));
     summaryView.addEventListener("click", () => setView("summary"));
-
-    markAllDone.addEventListener("click", () => {
-      const assignment = currentAssignment();
-      if (!assignment) return;
-      studentNumbers().forEach((number) => {
-        assignment.statuses[String(number)] = "done";
-      });
-      render();
-    });
-
-    clearCurrent.addEventListener("click", () => {
-      const assignment = currentAssignment();
-      if (!assignment) return;
-      assignment.statuses = {};
-      render();
-    });
-
-    deleteCurrent.addEventListener("click", () => {
-      if (!state.assignments.length) return;
-      state.assignments = state.assignments.filter((assignment) => assignment.id !== state.currentId);
-      state.currentId = state.assignments[0]?.id || "";
-      render();
-    });
-
-    resetAll.addEventListener("click", () => {
-      localStorage.removeItem(storageKey);
-      state = {
-        studentCount: 28,
-        currentId: "a1",
-        view: "grid",
-        assignments: [
-          { id: "a1", name: "國語作業", statuses: {} },
-          { id: "a2", name: "數學習作", statuses: {} }
-        ]
-      };
-      assignmentName.value = "國語作業";
-      render();
-    });
+    markAllDone.addEventListener("click", () => { const assignment = currentAssignment(); if (!assignment) return; studentNumbers().forEach((number) => { assignment.statuses[String(number)] = "done"; }); render(); });
+    clearCurrent.addEventListener("click", () => { const assignment = currentAssignment(); if (!assignment) return; assignment.statuses = {}; render(); });
+    deleteCurrent.addEventListener("click", () => { if (!state.assignments.length) return; state.assignments = state.assignments.filter((assignment) => assignment.id !== state.currentId); state.currentId = state.assignments[0]?.id || ""; render(); });
+    resetAll.addEventListener("click", () => { localStorage.removeItem(storageKey); state = { studentCount: 28, currentId: "a1", view: "grid", assignments: [ { id: "a1", name: "國語作業", statuses: {} }, { id: "a2", name: "數學習作", statuses: {} } ] }; assignmentName.value = "國語作業"; render(); });
 
     loadState();
     render();
