@@ -1,0 +1,1576 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>教師控制後台</title>
+  <style>
+    :root {
+      --ink: #243047;
+      --muted: #65758f;
+      --paper: #f7fbff;
+      --panel: #ffffff;
+      --pink: #ff8fc7;
+      --purple: #7b4ed8;
+      --blue: #4f8cff;
+      --green: #22b98f;
+      --yellow: #ffd24a;
+      --red: #ff5d73;
+      --line: rgba(79, 140, 255, 0.24);
+      --shadow: 0 18px 42px rgba(36, 48, 71, 0.13);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", "Noto Sans TC", system-ui, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 10% 12%, rgba(255, 210, 74, 0.38), transparent 22%),
+        radial-gradient(circle at 92% 8%, rgba(79, 140, 255, 0.22), transparent 24%),
+        linear-gradient(135deg, rgba(255, 143, 199, 0.16), transparent 44%),
+        var(--paper);
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .page {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 22px 0 42px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .home-link,
+    .button {
+      min-height: 42px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      color: var(--purple);
+      font-weight: 900;
+      box-shadow: 0 5px 0 rgba(79, 140, 255, 0.12);
+    }
+
+    .home-link {
+      padding: 0 12px;
+    }
+
+    .button {
+      padding: 0 14px;
+    }
+
+    .button.primary {
+      color: #fff;
+      border-color: transparent;
+      background: linear-gradient(135deg, var(--blue), var(--purple));
+    }
+
+    .button.good {
+      color: #fff;
+      border-color: transparent;
+      background: linear-gradient(135deg, var(--green), #82dfc6);
+    }
+
+    .button.danger {
+      color: #fff;
+      border-color: transparent;
+      background: linear-gradient(135deg, var(--red), #ff9a9e);
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(270px, 0.8fr);
+      gap: 16px;
+      align-items: stretch;
+      margin-bottom: 18px;
+    }
+
+    .intro,
+    .login,
+    .panel,
+    .stat,
+    .export-box {
+      border: 3px solid rgba(255, 255, 255, 0.92);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.88);
+      box-shadow: var(--shadow);
+    }
+
+    .intro,
+    .login,
+    .panel,
+    .export-box {
+      padding: 18px;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin-top: 0;
+    }
+
+    h1 {
+      margin-bottom: 10px;
+      color: var(--purple);
+      font-size: clamp(36px, 6vw, 72px);
+      line-height: 1;
+      letter-spacing: 0;
+      text-shadow: 0 5px 0 rgba(255, 210, 74, 0.42);
+    }
+
+    h2 {
+      color: var(--purple);
+      font-size: 26px;
+      letter-spacing: 0;
+    }
+
+    h3 {
+      color: #20304f;
+      font-size: 20px;
+      letter-spacing: 0;
+    }
+
+    .lead,
+    .muted {
+      color: var(--muted);
+      line-height: 1.55;
+      font-weight: 800;
+    }
+
+    .login {
+      display: grid;
+      gap: 10px;
+      align-content: start;
+    }
+
+    .label {
+      color: #55627a;
+      font-size: 14px;
+      font-weight: 900;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      min-height: 44px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 0 12px;
+      background: #fffdf4;
+      color: var(--ink);
+      font-weight: 850;
+    }
+
+    textarea {
+      min-height: 260px;
+      padding: 12px;
+      resize: vertical;
+      line-height: 1.45;
+      white-space: pre;
+    }
+
+    .status {
+      min-height: 28px;
+      color: var(--muted);
+      font-weight: 900;
+    }
+
+    .dashboard {
+      display: none;
+      gap: 16px;
+    }
+
+    .dashboard.unlocked {
+      display: grid;
+    }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      align-items: end;
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .stat {
+      min-height: 86px;
+      padding: 14px;
+      color: var(--muted);
+      font-weight: 900;
+    }
+
+    .stat strong {
+      display: block;
+      color: var(--purple);
+      font-size: 32px;
+      line-height: 1.05;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .list {
+      display: grid;
+      gap: 8px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .list li {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: center;
+      min-height: 44px;
+      padding: 9px 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fffdf4;
+      color: var(--muted);
+      font-weight: 850;
+    }
+
+    .list strong {
+      color: #20304f;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .export-box {
+      display: grid;
+      gap: 10px;
+    }
+
+    .export-box[hidden] {
+      display: none;
+    }
+
+    .export-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .writing-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .field-wide {
+      grid-column: 1 / -1;
+    }
+
+    .input-area {
+      min-height: 112px;
+    }
+
+    .scenario-tabs {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .scenario-tab {
+      min-height: 58px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fffdf4;
+      color: var(--muted);
+      font-weight: 950;
+      box-shadow: 0 5px 0 rgba(79, 140, 255, 0.1);
+    }
+
+    .scenario-tab.active {
+      color: #fff;
+      border-color: transparent;
+      background: linear-gradient(135deg, var(--blue), var(--purple));
+    }
+
+    .event-buttons {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .event-button {
+      min-height: 92px;
+      padding: 12px;
+      border: 1px solid rgba(79, 140, 255, 0.24);
+      border-radius: 8px;
+      background: #fffdf4;
+      color: var(--ink);
+      text-align: left;
+      box-shadow: 0 5px 0 rgba(79, 140, 255, 0.08);
+    }
+
+    .event-button strong,
+    .event-button span,
+    .event-detail-list {
+      display: block;
+    }
+
+    .event-button input {
+      width: auto;
+      min-height: auto;
+      margin-right: 6px;
+      accent-color: var(--purple);
+    }
+
+    .event-button strong {
+      cursor: pointer;
+      margin-bottom: 6px;
+      font-size: 16px;
+      font-weight: 950;
+    }
+
+    .event-button span {
+      color: var(--muted);
+      line-height: 1.45;
+      font-size: 13px;
+    }
+
+    .event-detail-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 10px;
+      margin-top: 8px;
+      color: var(--muted);
+      line-height: 1.45;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .event-detail-list label {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .event-button.active {
+      color: #fff;
+      border-color: transparent;
+      background: linear-gradient(135deg, var(--blue), var(--purple));
+    }
+
+    .event-button.active span,
+    .event-button.active .event-detail-list {
+      color: rgba(255, 255, 255, 0.86);
+    }
+
+    .writing-page {
+      display: none;
+      gap: 10px;
+    }
+
+    .writing-page.active {
+      display: grid;
+    }
+
+    .check-section {
+      display: grid;
+      gap: 8px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.72);
+    }
+
+    .check-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 34px;
+      padding: 0 10px;
+      border: 1px solid rgba(79, 140, 255, 0.24);
+      border-radius: 999px;
+      background: #fffdf4;
+      color: #40506b;
+      font-size: 14px;
+      font-weight: 900;
+    }
+
+    .chip input {
+      width: auto;
+      min-height: auto;
+      accent-color: var(--purple);
+    }
+
+    .choice-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .locked-note {
+      border-left: 6px solid var(--yellow);
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: #fff7d1;
+      color: #704100;
+      font-weight: 900;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 900px) {
+      .hero,
+      .grid,
+      .toolbar,
+      .writing-grid,
+      .scenario-tabs,
+      .event-buttons,
+      .stat-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="topbar">
+      <a class="home-link" href="../index.html">← 回首頁</a>
+      <a class="home-link" href="../pet-scoreboard/index.html">查看寵物板</a>
+    </header>
+
+    <section class="hero" aria-labelledby="pageTitle">
+      <div class="intro">
+        <h1 id="pageTitle">教師控制後台</h1>
+        <p class="lead">密碼登入後，集中查看個人寵物、小組積分與作業訂正資料，並產生每週或每月可複製的統計文字。</p>
+        <div class="locked-note">學生展示時可停留在一般工具頁；資料匯出與後台統整集中放在這裡，避免大螢幕誤觸後台內容。</div>
+      </div>
+
+      <form class="login" id="loginForm">
+        <label class="label" for="password">教師密碼</label>
+        <input id="password" type="password" autocomplete="current-password" placeholder="請輸入密碼">
+        <button class="button primary" type="submit">登入後台</button>
+        <div class="status" id="loginStatus">後台目前已鎖定。</div>
+      </form>
+    </section>
+
+    <main class="dashboard" id="dashboard" aria-live="polite">
+      <section class="panel">
+        <h2>匯出設定</h2>
+        <div class="toolbar">
+          <label>
+            <span class="label">統計範圍</span>
+            <select id="rangeSelect">
+              <option value="week">最近 7 天</option>
+              <option value="month">最近 31 天</option>
+              <option value="all">全部紀錄</option>
+            </select>
+          </label>
+          <label>
+            <span class="label">輸出用途</span>
+            <select id="formatSelect">
+              <option value="gradebook">成績系統表格</option>
+              <option value="comments">聯絡簿評語</option>
+            </select>
+          </label>
+          <button class="button primary" id="refresh" type="button">重新整理</button>
+          <button class="button good" id="generateExport" type="button">產生匯出</button>
+        </div>
+        <div class="export-actions">
+          <button class="button danger" id="lock" type="button">鎖定後台</button>
+        </div>
+      </section>
+
+      <section class="stat-grid" aria-label="資料摘要">
+        <div class="stat"><strong id="petCount">0</strong>個人寵物</div>
+        <div class="stat"><strong id="teamCount">0</strong>小組</div>
+        <div class="stat"><strong id="homeworkCount">0</strong>作業項目</div>
+        <div class="stat"><strong id="logCount">0</strong>期間紀錄</div>
+      </section>
+
+      <section class="grid">
+        <article class="panel">
+          <h2>個人積分</h2>
+          <ul class="list" id="personalList"></ul>
+        </article>
+        <article class="panel">
+          <h2>小組積分</h2>
+          <ul class="list" id="teamList"></ul>
+        </article>
+        <article class="panel">
+          <h2>作業訂正</h2>
+          <ul class="list" id="homeworkList"></ul>
+        </article>
+      </section>
+
+      <section class="export-box" id="exportPanel" hidden>
+        <h2>匯出結果</h2>
+        <p class="muted">需要送出或貼到其他系統時，再從這裡複製。</p>
+        <textarea id="exportText" readonly></textarea>
+        <div class="export-actions">
+          <button class="button good" id="copyExport" type="button">複製統計文字</button>
+          <button class="button" id="selectExport" type="button">全選文字</button>
+          <button class="button danger" id="closeExport" type="button">關閉匯出結果</button>
+          <span class="status" id="copyStatus"></span>
+        </div>
+      </section>
+
+      <section class="export-box">
+        <h2>教師 AI 文案助手</h2>
+        <p class="muted">由老師輸入關鍵字、勾選行為特徵與補充事件，產生流暢、有溫度且符合台灣校園語感的專業文字。</p>
+
+        <div class="check-section">
+          <span class="label">選擇應用情境</span>
+          <div class="scenario-tabs" role="tablist" aria-label="文案應用情境">
+            <button class="scenario-tab active" type="button" data-scenario="semester">期末/學期評語</button>
+            <button class="scenario-tab" type="button" data-scenario="parent">日常親師溝通</button>
+            <button class="scenario-tab" type="button" data-scenario="praise">正向鼓勵信</button>
+          </div>
+        </div>
+
+        <div class="writing-page active" id="semesterPage">
+          <label>
+            <span class="label">1. 學生或對象</span>
+            <input id="semesterName" type="text" placeholder="例如：12號小安、全班家長">
+          </label>
+
+          <div class="check-section">
+            <span class="label">2. 行為勾選：學習態度</span>
+            <div class="check-grid" id="learningTraits"></div>
+          </div>
+
+          <div class="check-section">
+            <span class="label">2. 行為勾選：人際常規</span>
+            <div class="check-grid" id="socialTraits"></div>
+          </div>
+
+          <div class="check-section">
+            <span class="label">2. 行為勾選：行政配合</span>
+            <div class="check-grid" id="adminTraits"></div>
+          </div>
+
+          <label>
+            <span class="label">其他補充</span>
+            <textarea class="input-area" id="semesterExtra" placeholder="例如：這學期閱讀進步，遇到困難會詢問；偶爾忘記帶學用品，但提醒後能補齊。"></textarea>
+          </label>
+
+          <div class="check-section">
+            <span class="label">3. 生成風格與長度：語氣</span>
+            <div class="choice-row" id="toneChoices"></div>
+          </div>
+
+          <div class="check-section">
+            <span class="label">3. 生成風格與長度：字數限制</span>
+            <div class="choice-row" id="lengthChoices"></div>
+          </div>
+
+          <button class="button primary" id="generateDraft" type="button">生成評語</button>
+          <textarea id="draftText" readonly placeholder="4. AI 生成結果區"></textarea>
+          <div class="export-actions">
+            <button class="button good" id="copyDraft" type="button">一鍵複製</button>
+            <button class="button" id="regenerateDraft" type="button">重新生成</button>
+            <button class="button danger" id="clearDraftForm" type="button">清除所有選項</button>
+            <span class="status" id="draftStatus"></span>
+          </div>
+        </div>
+
+        <div class="writing-page" id="parentPage">
+          <div class="check-section">
+            <span class="label">1. 選擇溝通情境（快速分類）</span>
+            <div class="event-buttons" id="parentScenarioChoices" role="radiogroup" aria-label="日常親師溝通情境"></div>
+          </div>
+
+          <label>
+            <span class="label">2. 事件關鍵字輸入（自由碎念區）</span>
+            <textarea class="input-area" id="parentEvent" placeholder="想說什麼就直接打，不用管錯字和語氣。例如：陳小明今天和李家豪搶掃把，小明推了家豪一下，家豪哭了，事後小明有道歉，但希望家長回家再跟孩子聊聊。"></textarea>
+          </label>
+
+          <div class="check-section">
+            <span class="label">3. 期望家長配合的事項</span>
+            <div class="choice-row" id="parentActionChoices"></div>
+          </div>
+
+          <div class="check-section">
+            <span class="label">4. 發送管道</span>
+            <div class="choice-row" id="parentChannelChoices"></div>
+          </div>
+
+          <div class="check-section">
+            <span class="label">4. 語氣風格</span>
+            <div class="choice-row" id="parentToneChoices"></div>
+          </div>
+
+          <button class="button primary" id="generateParentDraft" type="button">生成親師訊息</button>
+          <textarea id="parentDraftText" readonly placeholder="AI 優化文本框"></textarea>
+          <div class="export-actions">
+            <button class="button good" id="copyParentDraft" type="button">一鍵複製</button>
+            <button class="button" id="rewriteParentDraft" type="button">換一種說法</button>
+            <button class="button" id="warmParentDraft" type="button">加點溫暖</button>
+            <button class="button" id="shortenParentDraft" type="button">更精簡點</button>
+            <button class="button danger" id="clearParentDraft" type="button">清除所有選項</button>
+            <span class="status" id="parentDraftStatus"></span>
+          </div>
+        </div>
+
+        <div class="writing-page" id="praisePage">
+          <div class="locked-note">正向鼓勵信頁會用於誇誇卡，專門寫給孩子，放大優點並建立自信。先切到「期末/學期評語」可使用完整產生器。</div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const loginForm = document.querySelector("#loginForm");
+    const password = document.querySelector("#password");
+    const loginStatus = document.querySelector("#loginStatus");
+    const dashboard = document.querySelector("#dashboard");
+    const rangeSelect = document.querySelector("#rangeSelect");
+    const formatSelect = document.querySelector("#formatSelect");
+    const refresh = document.querySelector("#refresh");
+    const generateExport = document.querySelector("#generateExport");
+    const lock = document.querySelector("#lock");
+    const petCount = document.querySelector("#petCount");
+    const teamCount = document.querySelector("#teamCount");
+    const homeworkCount = document.querySelector("#homeworkCount");
+    const logCount = document.querySelector("#logCount");
+    const personalList = document.querySelector("#personalList");
+    const teamList = document.querySelector("#teamList");
+    const homeworkList = document.querySelector("#homeworkList");
+    const exportPanel = document.querySelector("#exportPanel");
+    const exportText = document.querySelector("#exportText");
+    const copyExport = document.querySelector("#copyExport");
+    const selectExport = document.querySelector("#selectExport");
+    const closeExport = document.querySelector("#closeExport");
+    const copyStatus = document.querySelector("#copyStatus");
+    const scenarioTabs = document.querySelectorAll(".scenario-tab");
+    const writingPages = document.querySelectorAll(".writing-page");
+    const semesterName = document.querySelector("#semesterName");
+    const semesterExtra = document.querySelector("#semesterExtra");
+    const learningTraits = document.querySelector("#learningTraits");
+    const socialTraits = document.querySelector("#socialTraits");
+    const adminTraits = document.querySelector("#adminTraits");
+    const toneChoices = document.querySelector("#toneChoices");
+    const lengthChoices = document.querySelector("#lengthChoices");
+    const generateDraft = document.querySelector("#generateDraft");
+    const regenerateDraft = document.querySelector("#regenerateDraft");
+    const clearDraftForm = document.querySelector("#clearDraftForm");
+    const draftText = document.querySelector("#draftText");
+    const copyDraft = document.querySelector("#copyDraft");
+    const draftStatus = document.querySelector("#draftStatus");
+    const parentScenarioChoices = document.querySelector("#parentScenarioChoices");
+    const parentEvent = document.querySelector("#parentEvent");
+    const parentActionChoices = document.querySelector("#parentActionChoices");
+    const parentChannelChoices = document.querySelector("#parentChannelChoices");
+    const parentToneChoices = document.querySelector("#parentToneChoices");
+    const generateParentDraft = document.querySelector("#generateParentDraft");
+    const copyParentDraft = document.querySelector("#copyParentDraft");
+    const rewriteParentDraft = document.querySelector("#rewriteParentDraft");
+    const warmParentDraft = document.querySelector("#warmParentDraft");
+    const shortenParentDraft = document.querySelector("#shortenParentDraft");
+    const clearParentDraft = document.querySelector("#clearParentDraft");
+    const parentDraftText = document.querySelector("#parentDraftText");
+    const parentDraftStatus = document.querySelector("#parentDraftStatus");
+
+    const teacherPassword = "0800";
+    const teacherAccessKey = "jessie-toolbox-teacher-unlocked";
+    const petKey = "jessie-toolbox-pet-scoreboard";
+    const teamKey = "jessie-toolbox-team-scoreboard";
+    const homeworkKey = "jessie-toolbox-homework-helper";
+    const activityLogKey = "jessie-toolbox-activity-log";
+    const learningTraitOptions = ["認真專注", "發言踴躍", "舉一反三", "粗心大意", "容易分心", "缺乏自信", "愛說話"];
+    const socialTraitOptions = ["熱心助人", "具領導力", "相處融洽", "溫和有禮", "誠實守分", "開朗活潑", "偶與同儕摩擦", "消極被動", "缺乏自信"];
+    const adminTraitOptions = ["打掃認真", "作業準時", "常忘記帶學用品", "責任心強"];
+    const toneOptions = ["客觀嚴謹", "溫暖鼓勵", "引導反思"];
+    const lengthOptions = ["50字以內", "100-150字", "200字以上"];
+    const parentScenarioOptions = [
+      { id: "conflict", title: "常規衝突/突發事件", mark: "紅", details: ["同學爭執", "肢體推擠", "搶/拿同一物品", "言語衝突", "破壞公物", "已道歉", "委屈落淚"] },
+      { id: "reminder", title: "學習/常規提醒", mark: "黃", details: ["忘記作業/學用品", "上課容易分心", "午休難安定"] },
+      { id: "praise", title: "正向表現誇獎", mark: "綠", details: ["主動幫忙", "進步明顯", "展現領導力", "誠實歸還"] },
+      { id: "care", title: "特殊狀態關懷", mark: "藍", details: ["身體不舒服", "心情低落", "精神不濟"] }
+    ];
+    const parentActionOptions = ["親自了解事件原委", "在家多給予正向鼓勵", "協助檢查書包聯絡簿", "引導孩子用言語表達情緒", "讓孩子提早入睡"];
+    const parentChannelOptions = ["聯絡簿格式", "通訊軟體 (LINE)"];
+    const parentToneOptions = ["溫柔堅定", "客觀陳述", "同理關懷"];
+    const traitReframes = {
+      "容易分心": "若能練習在活動開始前先整理注意力，學習狀態會更加穩定",
+      "粗心大意": "若能養成完成後再檢查一次的習慣，學習表現會更精準",
+      "缺乏自信": "若能看見自己已經完成的努力，並願意多嘗試一步，自信心會慢慢累積",
+      "常忘記帶學用品": "若能建立每日檢查聯絡簿與學用品的習慣，責任感會更穩定",
+      "偶與同儕摩擦": "若能練習傾聽同儕想法並用合適方式表達需求，人際互動會更順暢",
+      "消極被動": "若能嘗試主動舉手、提出想法或完成一個小任務，參與感會逐步提升",
+      "愛說話": "活潑開朗，若能學習在合適的時間展現發表欲，學習成效將更佳",
+      "發言踴躍": "能主動發表想法，若能同時練習聆聽同儕回應，討論品質會更好"
+    };
+    const bannedTermMap = {
+      "不帶作業": "若能加強個人物品的管理能力",
+      "愛講話": "若能學習在合適的時間展現發表欲",
+      "粗心": "若能在作答時多一份細心",
+      "給力": "有支持與鼓勵",
+      "學霸": "學習表現穩定",
+      "素質": "表現",
+      "優化": "調整",
+      "做作業": "完成作業"
+    };
+    const traitPraiseMap = {
+      "認真專注": "在校表現認真專注",
+      "發言踴躍": "課堂發言踴躍，樂於分享想法",
+      "舉一反三": "能舉一反三，展現良好的理解能力",
+      "熱心助人": "總是熱心助人，深得同儕喜愛",
+      "具領導力": "具領導力，能在活動中帶動同儕",
+      "相處融洽": "與同儕相處融洽",
+      "溫和有禮": "待人溫和有禮",
+      "誠實守分": "誠實守分，值得信任",
+      "開朗活潑": "個性開朗活潑",
+      "打掃認真": "打掃工作認真負責",
+      "作業準時": "作業能準時完成",
+      "責任心強": "責任心強，交付任務能盡力完成"
+    };
+    const closingByTone = {
+      "客觀嚴謹": ["期待下學期能延續優點並逐步提升自我管理能力。", "未來若能持續穩定發揮，整體表現定能更上一層樓。"],
+      "溫暖鼓勵": ["期許下學期能展翅高飛，看見更耀眼的自己！", "老師相信你會帶著這份努力繼續前進，加油！"],
+      "引導反思": ["期待孩子能在肯定自己的同時，把每一次提醒都化為成長的力量。", "若能持續練習與反思，未來定能百尺竿頭，更進一步。"]
+    };
+    const semesterToneProfiles = {
+      "客觀嚴謹": {
+        praise: [
+          "{name}本學期{praise}，整體表現穩定，值得肯定。",
+          "{name}在本學期展現出{praise}等特質，能依照班級規範完成多數學習任務。",
+          "綜觀本學期表現，{name}{praise}，在學習與生活常規上皆有可見的努力。"
+        ],
+        event: [
+          "此外，{event}，可看出其面對任務時具備負責態度。",
+          "在{event}的過程中，也能觀察到孩子願意完成任務並配合團體節奏。",
+          "{event}一事，反映出孩子在實際情境中能展現正向行為。"
+        ],
+        suggestion: [
+          "後續若能{growth}，整體學習表現將更趨穩定。",
+          "建議未來持續朝「{growth}」的方向練習，以提升自我管理與學習成效。",
+          "若能進一步{growth}，相信能在原有基礎上展現更成熟的表現。"
+        ]
+      },
+      "溫暖鼓勵": {
+        praise: [
+          "{name}是個{praise}的孩子，本學期在班級中留下許多令人欣賞的亮點。",
+          "這學期常能看見{name}{praise}，每一份努力都讓老師感到欣慰。",
+          "{name}本學期{praise}，在學習與班級生活中慢慢累積出屬於自己的光芒。"
+        ],
+        event: [
+          "尤其在{event}時，更能看見孩子勇敢、堅持與負責的一面。",
+          "在{event}的過程中，也展現出令人感動的努力與態度。",
+          "從{event}這件事可以看出，孩子願意嘗試，也願意把事情做好。"
+        ],
+        suggestion: [
+          "若能{growth}，相信未來會看見更有自信、更穩定的自己。",
+          "接下來只要持續練習{growth}，一定能把原有的優點發揮得更好。",
+          "老師期待孩子帶著這份努力，慢慢練習{growth}，讓自己越來越進步。"
+        ]
+      },
+      "引導反思": {
+        praise: [
+          "{name}本學期能在多次學習經驗中展現{praise}，這些都是值得珍惜的成長基礎。",
+          "回顧這一學期，{name}{praise}，也逐漸累積面對挑戰的能力。",
+          "{name}在本學期透過不同任務展現出{praise}，若能持續覺察自己的優勢，會更有力量。"
+        ],
+        event: [
+          "從{event}這件事中，也能看見孩子在真實情境裡學習承擔與調整。",
+          "在{event}的過程中，孩子有機會練習面對挑戰，也展現出願意前進的態度。",
+          "{event}讓孩子經歷了一次寶貴的學習，也提醒我們看見成長正在發生。"
+        ],
+        suggestion: [
+          "未來若能常常提醒自己{growth}，就能把每一次提醒轉化為下一次的進步。",
+          "接下來可以從小目標開始練習{growth}，讓好習慣在一次次反思中慢慢穩定。",
+          "若能在日常中持續覺察並練習{growth}，孩子會更懂得掌握自己的學習節奏。"
+        ]
+      }
+    };
+    const stages = [
+      { min: 0, name: "神祕蛋" },
+      { min: 5, name: "幼幼獸" },
+      { min: 15, name: "小萌獸" },
+      { min: 30, name: "成長獸" },
+      { min: 50, name: "閃亮獸" },
+      { min: 80, name: "守護獸" }
+    ];
+
+    let unlocked = false;
+    let selectedScenario = "semester";
+    let draftVariant = 0;
+    let selectedParentScenario = "conflict";
+    let parentDraftVariant = 0;
+    let parentWarmth = 0;
+    let parentCompact = false;
+
+    function readJson(key, fallback) {
+      try {
+        return JSON.parse(localStorage.getItem(key) || "null") || fallback;
+      } catch {
+        return fallback;
+      }
+    }
+
+    function rangeStart() {
+      const value = rangeSelect.value;
+      if (value === "all") return new Date(0);
+      const days = value === "month" ? 31 : 7;
+      const date = new Date();
+      date.setDate(date.getDate() - days);
+      return date;
+    }
+
+    function periodLabel() {
+      if (rangeSelect.value === "all") return "全部紀錄";
+      return rangeSelect.value === "month" ? "最近 31 天" : "最近 7 天";
+    }
+
+    function getStage(score) {
+      return stages.reduce((best, stage) => score >= stage.min ? stage : best, stages[0]).name;
+    }
+
+    function logsInRange() {
+      const start = rangeStart().getTime();
+      return readJson(activityLogKey, []).filter((item) => {
+        const time = new Date(item.time).getTime();
+        return Number.isFinite(time) && time >= start;
+      });
+    }
+
+    function summarize() {
+      const petState = readJson(petKey, { studentCount: 0, pets: [] });
+      const teamState = readJson(teamKey, { teams: [] });
+      const homeworkState = readJson(homeworkKey, { studentCount: 0, assignments: [] });
+      const logs = logsInRange();
+
+      const personalDeltas = new Map();
+      const teamDeltas = new Map();
+      logs.forEach((item) => {
+        if (item.category === "personal") {
+          personalDeltas.set(item.number, (personalDeltas.get(item.number) || 0) + (Number(item.delta) || 0));
+        }
+        if (item.category === "team") {
+          const key = item.teamId || item.subject;
+          teamDeltas.set(key, (teamDeltas.get(key) || 0) + (Number(item.delta) || 0));
+        }
+      });
+
+      const personal = (petState.pets || []).map((pet) => ({
+        number: pet.number,
+        current: Number(pet.score) || 0,
+        period: personalDeltas.get(pet.number) || 0,
+        stage: getStage(Number(pet.score) || 0),
+        generation: pet.generation || 1,
+        retired: (pet.retired || []).length,
+        hungry: Boolean(pet.hungry)
+      })).sort((a, b) => b.current - a.current || a.number - b.number);
+
+      const teams = (teamState.teams || []).map((team) => ({
+        id: team.id,
+        name: team.name,
+        current: Number(team.score) || 0,
+        period: teamDeltas.get(team.id) || teamDeltas.get(team.name) || 0
+      })).sort((a, b) => b.current - a.current || a.name.localeCompare(b.name, "zh-Hant"));
+
+      const homework = (homeworkState.assignments || []).map((assignment) => {
+        const statuses = assignment.statuses || {};
+        const done = Object.values(statuses).filter((status) => status === "done").length;
+        const fix = Object.values(statuses).filter((status) => status === "fix").length;
+        const missing = Math.max((homeworkState.studentCount || 0) - done - fix, 0);
+        return { name: assignment.name, done, fix, missing };
+      });
+
+      return { personal, teams, homework, logs };
+    }
+
+    function setList(list, items, emptyText) {
+      list.innerHTML = "";
+      if (!items.length) {
+        const empty = document.createElement("li");
+        empty.innerHTML = `<span>${emptyText}</span><strong>0</strong>`;
+        list.appendChild(empty);
+        return;
+      }
+      items.forEach((item) => {
+        const li = document.createElement("li");
+        li.innerHTML = item;
+        list.appendChild(li);
+      });
+    }
+
+    function buildGradebook(data) {
+      const rows = [`Jessie 教學工具箱統計\t${periodLabel()}`];
+      rows.push("");
+      rows.push("個人寵物積分");
+      rows.push("座號\t期間增減\t目前分數\t進化階段\t第幾代\t已收藏守護獸\t備註");
+      data.personal.forEach((item) => {
+        rows.push(`${item.number}\t${item.period}\t${item.current}\t${item.stage}\t${item.generation}\t${item.retired}\t${item.hungry ? "需鼓勵或餵食" : ""}`);
+      });
+      rows.push("");
+      rows.push("小組積分");
+      rows.push("小組\t期間增減\t目前分數");
+      data.teams.forEach((item) => rows.push(`${item.name}\t${item.period}\t${item.current}`));
+      rows.push("");
+      rows.push("作業訂正");
+      rows.push("作業\t完成\t需訂正\t未交");
+      data.homework.forEach((item) => rows.push(`${item.name}\t${item.done}\t${item.fix}\t${item.missing}`));
+      return rows.join("\n");
+    }
+
+    function buildComments(data) {
+      const lines = [`${periodLabel()}學習紀錄摘要：`];
+      data.personal.forEach((item) => {
+        const direction = item.period > 0 ? `本期增加 ${item.period} 分` : item.period < 0 ? `本期調整 ${item.period} 分` : "本期分數持平";
+        const care = item.hungry ? "，寵物目前需要再加油照顧" : "";
+        lines.push(`${item.number}號目前 ${item.current} 分，寵物進化到「${item.stage}」，${direction}${care}。`);
+      });
+      if (data.teams.length) {
+        const leader = data.teams[0];
+        lines.push(`小組目前由「${leader.name}」領先，總分 ${leader.current} 分。`);
+      }
+      data.homework.forEach((item) => {
+        lines.push(`${item.name}：完成 ${item.done} 人、需訂正 ${item.fix} 人、未交 ${item.missing} 人。`);
+      });
+      return lines.join("\n");
+    }
+
+    function splitIdeas(text) {
+      return text
+        .split(/\n|，|。|；|、/)
+        .map((item) => item.trim())
+        .filter(Boolean);
+    }
+
+    function makeTraitChips(container, items, groupName, type = "checkbox") {
+      container.innerHTML = "";
+      items.forEach((item, index) => {
+        const label = document.createElement("label");
+        label.className = "chip";
+        label.innerHTML = `<input type="${type}" name="${groupName}" value="${item}" ${index === 0 && type === "radio" ? "checked" : ""}><span>${item}</span>`;
+        container.appendChild(label);
+      });
+    }
+
+    function renderParentScenarioButtons() {
+      parentScenarioChoices.innerHTML = "";
+      parentScenarioOptions.forEach((item) => {
+        const card = document.createElement("div");
+        card.className = "event-button";
+        card.dataset.parentScenario = item.id;
+        const details = item.details.map((detail) => (
+          `<label><input type="checkbox" name="parentDetail" value="${detail}" data-owner="${item.id}">${detail}</label>`
+        )).join("");
+        card.innerHTML = `<strong>${item.mark}｜${item.title}</strong><div class="event-detail-list">${details}</div>`;
+        card.querySelector("strong").addEventListener("click", () => setParentScenario(item.id));
+        card.querySelectorAll('input[name="parentDetail"]').forEach((detailInput) => {
+          detailInput.addEventListener("change", () => {
+            if (parentDraftText.value) parentDraftText.value = buildParentMessage();
+          });
+        });
+        parentScenarioChoices.appendChild(card);
+      });
+    }
+
+    function setParentScenario(value) {
+      selectedParentScenario = value;
+      updateParentScenario();
+    }
+
+    function updateParentScenario() {
+      parentScenarioChoices.querySelectorAll(".event-button").forEach((card) => {
+        card.classList.toggle("active", card.dataset.parentScenario === selectedParentScenario);
+      });
+      if (parentDraftText.value) parentDraftText.value = buildParentMessage();
+    }
+
+    function checkedValues(groupName) {
+      return [...document.querySelectorAll(`input[name="${groupName}"]:checked`)].map((item) => item.value);
+    }
+
+    function listPhrase(items, fallback) {
+      if (!items.length) return fallback;
+      if (items.length === 1) return items[0];
+      return `${items.slice(0, -1).join("、")}，也展現出${items.at(-1)}`;
+    }
+
+    function selectedValue(groupName, fallback) {
+      return document.querySelector(`input[name="${groupName}"]:checked`)?.value || fallback;
+    }
+
+    function scenarioTitle() {
+      if (selectedScenario === "parent") return "日常親師溝通";
+      if (selectedScenario === "praise") return "正向鼓勵信";
+      return "期末/學期評語";
+    }
+
+    function traitSentence(items, categoryName) {
+      if (!items.length) return "";
+      return `在${categoryName}方面，能看見${listPhrase(items, "穩定努力")}。`;
+    }
+
+    function growthSentence(items) {
+      const reframed = items.map((item) => traitReframes[item]).filter(Boolean);
+      if (!reframed.length) return "";
+      return reframed.join("；");
+    }
+
+    function polishLocalTerms(text) {
+      return Object.entries(bannedTermMap).reduce((result, [bad, good]) => result.replaceAll(bad, good), text);
+    }
+
+    function polishParentTerms(text) {
+      const replacements = [
+        ["打架", "肢體動作較大"],
+        ["推了", "一時心急有推擠動作"],
+        ["搶", "在物品使用或順序上有些摩擦"],
+        ["口出惡言", "言語表達較激動"],
+        ["破壞公物", "使用班級物品時需要再練習珍惜與規範"],
+        ["故意", "當下還需要練習更合適的處理方式"],
+        ["惡意", "情緒表達上需要再引導"],
+        ["壞", "需要再練習合適的選擇"],
+        ["不睡覺", "午休時較難安定休息"],
+        ["忘記帶", "還在練習把學用品準備齊全"],
+        ["過度分心", "專注力較容易被周遭影響"]
+      ];
+      return replacements.reduce((result, [bad, good]) => result.replaceAll(bad, good), text.trim());
+    }
+
+    function parentActionSentence(actions) {
+      const actionMap = {
+        "親自了解事件原委": "回家後先聽聽孩子的說法，陪孩子整理今天發生的經過",
+        "在家多給予正向鼓勵": "多肯定孩子願意說出感受、修正行為或努力完成任務的地方",
+        "協助檢查書包聯絡簿": "協助固定檢查書包與聯絡簿，讓學用品與作業準備更穩定",
+        "引導孩子用言語表達情緒": "引導孩子練習用言語說出感受與需求，遇到衝突時先停一下、說清楚",
+        "讓孩子提早入睡": "協助孩子提早休息，讓隔天精神與情緒更穩定"
+      };
+      const selected = actions.map((item) => actionMap[item]).filter(Boolean);
+      if (!selected.length) return "回家後給孩子一點時間說說今天的感受，也溫柔提醒孩子下次可以怎麼做";
+      if (selected.length === 1) return selected[0];
+      return `${selected.slice(0, -1).join("；")}；${selected.at(-1)}`;
+    }
+
+    function detectParentRecipient(rawEvent) {
+      const text = rawEvent.trim();
+      const cried = text.match(/([\u4e00-\u9fa5]{2,3})(?:有些)?(?:委屈)?哭/);
+      if (cried) return cried[1].replace(/^和/, "");
+      const uncomfortable = text.match(/([\u4e00-\u9fa5]{2,3})(?:身體不舒服|心情低落|精神不濟)/);
+      if (uncomfortable) return uncomfortable[1];
+      const first = text.match(/([\u4e00-\u9fa5]{2,3})今天/);
+      if (first) return first[1].replace(/^陳|^林|^王|^張/, (family) => family);
+      const candidates = [...text.matchAll(/(?:^|和|與|跟)([\u4e00-\u9fa5]{2,3})/g)]
+        .map((item) => item[1])
+        .filter((item) => !["今天", "同學", "老師", "家長", "媽媽", "爸爸"].includes(item));
+      return candidates[0] || "貴子弟";
+    }
+
+    function scenarioHas(scenarios, id) {
+      return scenarios.includes(id);
+    }
+
+    function scenarioFallback(scenarios) {
+      if (scenarioHas(scenarios, "conflict")) return "conflict";
+      if (scenarioHas(scenarios, "care")) return "care";
+      if (scenarioHas(scenarios, "reminder")) return "reminder";
+      if (scenarioHas(scenarios, "praise")) return "praise";
+      return "conflict";
+    }
+
+    function inferParentScenario(selectedScenario, details, rawEvent) {
+      const text = `${rawEvent} ${details.join(" ")}`;
+      const hasAny = (words) => words.some((word) => text.includes(word));
+      if (hasAny(["身體不舒服", "心情低落", "精神不濟", "頭痛", "肚子痛", "不舒服"])) return "care";
+      if (hasAny(["主動幫忙", "進步明顯", "展現領導力", "誠實歸還", "撿到", "幫忙", "進步"])) return "praise";
+      if (hasAny(["忘記作業", "忘記帶", "學用品", "上課容易分心", "分心", "午休難安定", "午休", "聯絡簿", "書包"])) return "reminder";
+      if (hasAny(["同學爭執", "肢體推擠", "搶/拿同一物品", "言語衝突", "破壞公物", "已道歉", "委屈落淚", "推擠", "爭執", "搶", "哭", "道歉"])) return "conflict";
+      return selectedScenario || "conflict";
+    }
+
+    function describeParentEvent(rawEvent, scenarios, details, compact, tone) {
+      const polishedInput = polishParentTerms(rawEvent);
+      const detailText = details.join("、");
+      const event = [polishedInput, detailText].filter(Boolean).join("；") || "今日在校情形";
+      const main = inferParentScenario(scenarioFallback(scenarios), details, rawEvent);
+      const hasBroom = rawEvent.includes("掃把") || event.includes("掃把") || details.includes("搶/拿同一物品");
+      const hasApology = rawEvent.includes("道歉") || details.includes("已道歉");
+      const hasCrying = rawEvent.includes("哭") || details.includes("委屈落淚");
+      const toneEventOpeners = {
+        "溫柔堅定": {
+          conflict: "想跟您溫和同步孩子在學校的一點小狀況。",
+          reminder: "想和您一起陪孩子把近期的小提醒慢慢穩定下來。",
+          praise: "今天想和您分享孩子一個很值得肯定的好表現。",
+          care: "今天留意到孩子狀態和平常有些不同，想先跟您關心一下。"
+        },
+        "客觀陳述": {
+          conflict: "今天在校發生一件同儕互動狀況，先向您說明處理情形。",
+          reminder: "今日觀察到孩子在學習或常規上有需要持續提醒之處。",
+          praise: "今日孩子在校有正向表現，特別向您回饋。",
+          care: "今日觀察到孩子身心狀態與平時略有不同，先向您同步。"
+        },
+        "同理關懷": {
+          conflict: "今天孩子在互動中有些委屈或情緒起伏，想請您晚上也多陪伴一下。",
+          reminder: "孩子近期可能有些需要被支持的地方，我們一起慢慢陪他穩定下來。",
+          praise: "今天看見孩子很棒的一面，想把這份溫暖也分享給您。",
+          care: "今天感覺孩子需要多一點照顧與理解，所以先和您說一聲。"
+        }
+      };
+      const toneIntro = toneEventOpeners[tone]?.[main] || toneEventOpeners["溫柔堅定"][main];
+      if (main === "praise") {
+        return compact
+          ? `今天${event}，表現很值得肯定。`
+          : `${toneIntro}${event}，孩子能主動付出、負責完成任務或展現誠實態度，老師也已在班上給予肯定。`;
+      }
+      if (main === "care") {
+        return compact
+          ? `今天觀察到${event}，想請您回家再多留意。`
+          : `${toneIntro}在學校觀察到${event}，老師在校已先關心，也想請您晚上多陪孩子聊聊與休息。`;
+      }
+      if (main === "reminder") {
+        return compact
+          ? `今天${event}，需要再練習穩定常規。`
+          : `${toneIntro}今天在${event}這部分，孩子需要再練習更穩定的自我管理與班級常規。老師會在學校持續提醒，也希望和家裡用一致的方式陪孩子建立習慣。`;
+      }
+      if (compact) return `今天${event}，同儕互動上有些摩擦，老師已在校關心並引導。`;
+      const recipient = detectParentRecipient(rawEvent);
+      const conflictObjects = hasBroom ? {
+        "溫柔堅定": `下午打掃時間，${recipient}和同學因為想拿同一支掃把，在溝通上有些心急，發生了一點肢體摩擦${hasCrying ? `，${recipient}也因此有些委屈落淚` : ""}。`,
+        "客觀陳述": `下午打掃時間，${recipient}與同學因掃具使用順序產生爭執，過程中出現推擠情形${hasCrying ? `，${recipient}情緒受到影響並落淚` : ""}。`,
+        "同理關懷": `下午打掃時，${recipient}和同學都很想把工作完成，因為同時想拿掃把，一時著急而有了肢體碰觸${hasCrying ? `，${recipient}當下覺得委屈而哭了` : ""}。`
+      } : {
+        "溫柔堅定": `今天${event}，孩子與同儕在溝通上有些心急，互動中出現一點摩擦。`,
+        "客觀陳述": `今天${event}，孩子與同儕互動過程中出現溝通摩擦，需持續練習合宜表達。`,
+        "同理關懷": `今天${event}，孩子在情緒與需求表達上有些卡住，和同儕互動時出現摩擦。`
+      };
+      const objectText = `${toneIntro}${conflictObjects[tone] || conflictObjects["溫柔堅定"]}`;
+      const handledText = hasApology
+        ? {
+          "溫柔堅定": "老師第一時間已上前關心並引導，孩子們也有機會說明自己的想法，相關同學當下也已誠懇道歉，放學前互動已較為平穩。",
+          "客觀陳述": "老師已即時介入了解狀況，協助雙方說明事情經過，相關同學也已完成道歉與和解。",
+          "同理關懷": "老師當下先安撫孩子的情緒，再陪孩子們把事情說清楚；相關同學也有誠懇道歉，彼此後來已能比較平穩互動。"
+        }[tone]
+        : {
+          "溫柔堅定": "老師第一時間已上前關心並引導，讓孩子們練習說出自己的想法，也提醒彼此用更合適的方式處理衝突。",
+          "客觀陳述": "老師已即時介入處理，協助孩子釐清事件並提醒後續可採取的合宜做法。",
+          "同理關懷": "老師當下先陪孩子穩定情緒，再慢慢引導孩子用語言說出需求與感受。"
+        }[tone];
+      return `${objectText}\n\n${handledText}`;
+    }
+
+    function parentPositiveFrame(recipient, scenarios, tone) {
+      const main = scenarios[0] || "conflict";
+      if (main === "praise") return `${recipient}今天的表現很值得肯定，也讓老師看見孩子願意努力與成長的一面。`;
+      if (main === "care") return `${recipient}平時有自己的節奏與亮點，今天狀態較需要被理解與照顧。`;
+      if (main === "reminder") {
+        if (tone === "客觀陳述") return `${recipient}平時具備完成學習任務的能力，若能把每日準備流程再固定下來，學習節奏會更穩定。`;
+        if (tone === "同理關懷") return `${recipient}有時可能因為一時忙碌或分心而漏掉準備事項，需要大人用穩定的方式陪他建立習慣。`;
+        return `${recipient}其實有能力把事情做好，這次的小提醒也正好可以成為練習自我管理的機會。`;
+      }
+      if (tone === "客觀陳述") return `${recipient}平時在班上多能配合活動，也正在學習更成熟地面對同儕互動。`;
+      if (tone === "同理關懷") return `${recipient}平時有溫和、值得肯定的一面，今天遇到狀況時也很需要大人先理解感受，再陪他一起想方法。`;
+      return `${recipient}平時是個有可愛特質的孩子，遇到事情時也很需要大人一起陪著整理情緒與方法。`;
+    }
+
+    function buildParentMessage() {
+      const scenario = selectedParentScenario || "conflict";
+      const channel = selectedValue("parentChannel", "聯絡簿格式");
+      const tone = selectedValue("parentTone", "溫柔堅定");
+      const details = checkedValues("parentDetail");
+      const actions = checkedValues("parentAction");
+      const compact = parentCompact || channel === "聯絡簿格式";
+      const effectiveScenario = inferParentScenario(scenario, details, parentEvent.value);
+      const selected = [effectiveScenario];
+      const recipient = detectParentRecipient(parentEvent.value);
+      const greeting = channel === "通訊軟體 (LINE)" ? `${recipient}媽媽您好 😊：` : `${recipient}家長您好：`;
+      const event = describeParentEvent(parentEvent.value, selected, details, compact, tone);
+      const positive = parentPositiveFrame(recipient, selected, tone);
+      const action = parentActionSentence(actions);
+      const endingProfiles = {
+        "溫柔堅定": channel === "通訊軟體 (LINE)"
+          ? ["辛苦您了，謝謝您的配合 🙏", "我們一起溫柔但清楚地陪孩子練習，謝謝您 😊", "謝謝您回家後再陪孩子聊聊，也給他一個清楚的提醒 🙏"]
+          : ["謝謝您的配合。", "感謝您一起協助孩子練習。"],
+        "客觀陳述": channel === "通訊軟體 (LINE)"
+          ? ["以上先向您說明，謝謝您協助確認 🙏", "再麻煩您回家後協助提醒，謝謝您。", "若您了解孩子在家的補充情形，也歡迎再和老師說明，謝謝。"]
+          : ["以上先向您說明，謝謝。", "再麻煩您協助提醒，謝謝。"],
+        "同理關懷": channel === "通訊軟體 (LINE)"
+          ? ["也請您晚上多抱抱孩子、聽他說說感受，辛苦您了 😊🙏", "孩子今天可能也需要一點安定的陪伴，謝謝您一起支持他 😊", "我們一起先接住孩子的情緒，再陪他練習下一次怎麼做 🙏"]
+          : ["也請您回家後多聽聽孩子的感受，謝謝。", "辛苦您了，謝謝您一起陪孩子穩定下來。"]
+      };
+      const warmLineEndings = channel === "通訊軟體 (LINE)"
+        ? ["辛苦您了，謝謝您願意一起陪孩子慢慢練習 😊🙏", "也請您回家給孩子一點安定的陪伴，謝謝您 😊", "我們一起用溫柔但清楚的方式陪孩子成長，辛苦您了 🙏"]
+        : ["謝謝您一起用溫柔而穩定的方式陪孩子練習。", "辛苦您了，也謝謝您回家後再陪孩子整理心情。"];
+      const lineEndings = endingProfiles[tone] || endingProfiles["溫柔堅定"];
+      const lineEndingPool = parentWarmth > 0 ? warmLineEndings : lineEndings;
+      const lineEnding = lineEndingPool[parentDraftVariant % lineEndingPool.length];
+      const bridgeOptionsByTone = {
+        "溫柔堅定": [
+          "學校這邊會持續引導孩子用言語代替急躁或肢體動作來表達需求",
+          "老師也會在班上持續陪孩子練習先停一下、說出需求，再尋求協助",
+          "後續老師會溫和但清楚地提醒孩子，遇到衝突時先說、先等、再請大人協助"
+        ],
+        "客觀陳述": [
+          "學校端會持續提醒孩子遵守互動界線，並練習以合宜語言表達需求",
+          "後續會在班級常規中持續引導孩子建立清楚的表達與等待習慣",
+          "老師將持續觀察孩子後續互動狀況，並適時給予提醒與協助"
+        ],
+        "同理關懷": [
+          "學校這邊會先協助孩子穩定情緒，再陪他把感受轉成可以被理解的語言",
+          "老師也會持續接住孩子的情緒，並引導他慢慢練習用說的表達需要",
+          "後續會陪孩子練習先照顧自己的感受，再用更合適的方式和同儕溝通"
+        ]
+      };
+      const bridgeOptions = bridgeOptionsByTone[tone] || bridgeOptionsByTone["溫柔堅定"];
+      const bridge = bridgeOptions[parentDraftVariant % bridgeOptions.length];
+      const finalGoalByScenario = {
+        conflict: "讓孩子下次遇到類似情境時，可以先停一下、說清楚，或主動請老師協助",
+        reminder: "讓孩子逐步建立固定的準備流程，減少遺漏並讓學習更安心",
+        praise: "讓孩子知道自己的努力被看見，也更有信心持續展現好表現",
+        care: "讓孩子感受到家校都在關心他，也能好好休息並穩定身心狀態"
+      };
+      const finalGoal = finalGoalByScenario[effectiveScenario] || finalGoalByScenario.conflict;
+      const compactText = `${greeting}${event}${action}，${finalGoal}。${lineEnding}`;
+      const fullText = `${greeting}${event}\n\n${positive}${bridge}，也麻煩您${action}，${finalGoal}。\n\n${lineEnding}`;
+      return channel === "聯絡簿格式" ? compactText : fullText;
+    }
+
+    function naturalJoin(parts) {
+      return parts.filter(Boolean).join("");
+    }
+
+    function pick(list, offset = 0) {
+      return list[(draftVariant + offset) % list.length];
+    }
+
+    function applyTemplate(template, values) {
+      return Object.entries(values).reduce((result, [key, value]) => result.replaceAll(`{${key}}`, value), template);
+    }
+
+    function praiseClause(items) {
+      const clauses = items.map((item) => traitPraiseMap[item] || item);
+      if (!clauses.length) return "平時願意配合班級活動，能在提醒下完成學習任務";
+      if (clauses.length === 1) return clauses[0];
+      if (clauses.length === 2) return `${clauses[0]}，且${clauses[1]}`;
+      return `${clauses.slice(0, -1).join("，")}，且${clauses.at(-1)}`;
+    }
+
+    function eventSentence(extra, tone) {
+      if (!extra.length) return "";
+      const event = polishLocalTerms(extra.join("，"));
+      const profile = semesterToneProfiles[tone] || semesterToneProfiles["溫暖鼓勵"];
+      return applyTemplate(profile.event[(draftVariant + 1) % profile.event.length], { event });
+    }
+
+    function buildSemesterDraft() {
+      const target = semesterName.value.trim() || "孩子";
+      const tone = selectedValue("semesterTone", "溫暖鼓勵");
+      const lengthChoice = selectedValue("semesterLength", "100-150字");
+      const learning = checkedValues("learningTrait");
+      const social = checkedValues("socialTrait");
+      const admin = checkedValues("adminTrait");
+      const extra = splitIdeas(semesterExtra.value.trim());
+      const allTraits = [...learning, ...social, ...admin];
+      const positives = allTraits.filter((item) => !traitReframes[item]);
+      const growth = allTraits.filter((item) => traitReframes[item]);
+      const praiseText = praiseClause(positives);
+      const profile = semesterToneProfiles[tone] || semesterToneProfiles["溫暖鼓勵"];
+      const praise = applyTemplate(profile.praise[draftVariant % profile.praise.length], { name: target, praise: praiseText });
+      const eventText = eventSentence(extra, tone);
+      const suggestionText = growthSentence(growth);
+      const suggestion = suggestionText
+        ? applyTemplate(profile.suggestion[(draftVariant + 2) % profile.suggestion.length], { growth: suggestionText.replace(/^若能/, "") })
+        : {
+          "客觀嚴謹": "建議未來持續保持穩定的學習態度，並在不同任務中逐步提升自主性。",
+          "溫暖鼓勵": "若能持續保持這份積極態度，並勇於迎接不同任務，未來一定會有更亮眼的表現。",
+          "引導反思": "若能在每一次任務後回想自己的努力與收穫，會更清楚下一步可以怎麼進步。"
+        }[tone];
+      const closingPool = closingByTone[tone] || closingByTone["溫暖鼓勵"];
+      const closing = closingPool[draftVariant % closingPool.length];
+      const transitionByTone = {
+        "客觀嚴謹": ["在後續學習上，", "建議下階段可著重於", "為使表現更臻穩定，"],
+        "溫暖鼓勵": ["老師也期待，", "接下來只要慢慢練習，", "帶著這份努力繼續前進，"],
+        "引導反思": ["若能把提醒化為自我覺察，", "下一步可以先從小目標開始，", "當孩子能更理解自己的狀態，"]
+      };
+      const transition = transitionByTone[tone][draftVariant % transitionByTone[tone].length];
+      const shortText = naturalJoin([praise, eventText, suggestionText ? `${transition}${suggestion}` : "", closing]);
+      const mediumText = naturalJoin([praise, eventText, `${transition}${suggestion}`, closing]);
+      const longText = naturalJoin([
+        praise,
+        eventText,
+        suggestionText ? `${transition}面對需要再練習的部分，老師看見的是成長的機會。${suggestion}` : `${transition}${suggestion}`,
+        `相信以${target}原有的優點與努力，只要持續累積好習慣，定能在下學期展現更成熟、更穩定的自己。`,
+        closing
+      ]);
+      const byLength = {
+        "50字以內": shortText,
+        "100-150字": mediumText,
+        "200字以上": longText
+      };
+      return polishLocalTerms(byLength[lengthChoice] || mediumText);
+    }
+
+    function buildTeacherDraft() {
+      if (selectedScenario === "semester") return buildSemesterDraft();
+      if (selectedScenario === "praise") return "正向鼓勵信頁面已獨立保留，下一步可依同樣方式加入誇誇卡專屬欄位。";
+      return buildParentMessage();
+    }
+
+    function setScenario(value) {
+      selectedScenario = value;
+      scenarioTabs.forEach((button) => {
+        button.classList.toggle("active", button.dataset.scenario === value);
+        button.setAttribute("aria-selected", String(button.dataset.scenario === value));
+      });
+      writingPages.forEach((page) => {
+        page.classList.toggle("active", page.id === `${value}Page`);
+      });
+      draftStatus.textContent = `已切換為「${scenarioTitle()}」。`;
+      if (draftText.value) draftText.value = buildTeacherDraft();
+    }
+
+    function initializeWritingTools() {
+      makeTraitChips(learningTraits, learningTraitOptions, "learningTrait");
+      makeTraitChips(socialTraits, socialTraitOptions, "socialTrait");
+      makeTraitChips(adminTraits, adminTraitOptions, "adminTrait");
+      makeTraitChips(toneChoices, toneOptions, "semesterTone", "radio");
+      makeTraitChips(lengthChoices, lengthOptions, "semesterLength", "radio");
+      renderParentScenarioButtons();
+      makeTraitChips(parentActionChoices, parentActionOptions, "parentAction");
+      makeTraitChips(parentChannelChoices, parentChannelOptions, "parentChannel", "radio");
+      makeTraitChips(parentToneChoices, parentToneOptions, "parentTone", "radio");
+      updateParentScenario();
+      scenarioTabs.forEach((button) => {
+        button.addEventListener("click", () => setScenario(button.dataset.scenario));
+      });
+      setScenario(selectedScenario);
+      [...learningTraits.querySelectorAll("input"), ...socialTraits.querySelectorAll("input"), ...adminTraits.querySelectorAll("input"), ...toneChoices.querySelectorAll("input"), ...lengthChoices.querySelectorAll("input")].forEach((input) => {
+        input.addEventListener("change", () => {
+          if (draftText.value) draftText.value = buildTeacherDraft();
+        });
+      });
+      [...parentActionChoices.querySelectorAll("input"), ...parentChannelChoices.querySelectorAll("input"), ...parentToneChoices.querySelectorAll("input")].forEach((input) => {
+        input.addEventListener("change", () => {
+          if (parentDraftText.value) parentDraftText.value = buildParentMessage();
+        });
+      });
+      parentEvent.addEventListener("input", () => {
+        if (parentDraftText.value) parentDraftText.value = buildParentMessage();
+      });
+    }
+
+    function render() {
+      if (!unlocked) return;
+      const data = summarize();
+      petCount.textContent = data.personal.length;
+      teamCount.textContent = data.teams.length;
+      homeworkCount.textContent = data.homework.length;
+      logCount.textContent = data.logs.length;
+
+      setList(personalList, data.personal.slice(0, 8).map((item) => (
+        `<span>${item.number} 號 · ${item.stage}</span><strong>${item.current} 分</strong>`
+      )), "沒有個人資料");
+      setList(teamList, data.teams.map((item) => (
+        `<span>${item.name}</span><strong>${item.current} 分</strong>`
+      )), "沒有小組資料");
+      setList(homeworkList, data.homework.map((item) => (
+        `<span>${item.name}</span><strong>${item.done}/${item.fix}/${item.missing}</strong>`
+      )), "沒有作業資料");
+
+      if (!exportPanel.hidden) {
+        exportText.value = formatSelect.value === "comments" ? buildComments(data) : buildGradebook(data);
+      }
+    }
+
+    function unlock() {
+      unlocked = true;
+      sessionStorage.setItem(teacherAccessKey, "true");
+      dashboard.classList.add("unlocked");
+      loginStatus.textContent = "後台已解鎖。";
+      password.value = "";
+      render();
+    }
+
+    function lockDashboard() {
+      unlocked = false;
+      sessionStorage.removeItem(teacherAccessKey);
+      dashboard.classList.remove("unlocked");
+      loginStatus.textContent = "後台目前已鎖定。";
+      password.focus();
+    }
+
+    loginForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      if (password.value === teacherPassword) {
+        unlock();
+      } else {
+        loginStatus.textContent = "密碼錯誤，後台仍維持鎖定。";
+      }
+    });
+
+    refresh.addEventListener("click", render);
+    generateExport.addEventListener("click", () => {
+      const data = summarize();
+      exportText.value = formatSelect.value === "comments" ? buildComments(data) : buildGradebook(data);
+      exportPanel.hidden = false;
+      copyStatus.textContent = "已產生匯出內容。";
+    });
+    rangeSelect.addEventListener("change", () => {
+      if (!exportPanel.hidden) generateExport.click();
+      render();
+    });
+    formatSelect.addEventListener("change", () => {
+      if (!exportPanel.hidden) generateExport.click();
+    });
+    lock.addEventListener("click", lockDashboard);
+
+    copyExport.addEventListener("click", async () => {
+      exportText.select();
+      try {
+        await navigator.clipboard.writeText(exportText.value);
+        copyStatus.textContent = "已複製。";
+      } catch {
+        document.execCommand("copy");
+        copyStatus.textContent = "已選取並嘗試複製。";
+      }
+    });
+
+    selectExport.addEventListener("click", () => {
+      exportText.select();
+      copyStatus.textContent = "已全選。";
+    });
+
+    closeExport.addEventListener("click", () => {
+      exportPanel.hidden = true;
+      copyStatus.textContent = "";
+    });
+
+    generateDraft.addEventListener("click", () => {
+      draftVariant = 0;
+      draftText.value = buildTeacherDraft();
+      draftStatus.textContent = "已生成評語。";
+    });
+
+    regenerateDraft.addEventListener("click", () => {
+      draftVariant += 1;
+      draftText.value = buildTeacherDraft();
+      draftStatus.textContent = "已重新生成。";
+    });
+
+    clearDraftForm.addEventListener("click", () => {
+      semesterName.value = "";
+      semesterExtra.value = "";
+      draftText.value = "";
+      draftVariant = 0;
+      [...learningTraits.querySelectorAll("input"), ...socialTraits.querySelectorAll("input"), ...adminTraits.querySelectorAll("input")].forEach((input) => {
+        input.checked = false;
+      });
+      toneChoices.querySelector('input[value="客觀嚴謹"]').checked = true;
+      lengthChoices.querySelector('input[value="100-150字"]').checked = true;
+      draftStatus.textContent = "已清除，可輸入下一位學生。";
+      semesterName.focus();
+    });
+
+    copyDraft.addEventListener("click", async () => {
+      draftText.select();
+      try {
+        await navigator.clipboard.writeText(draftText.value);
+        draftStatus.textContent = "已複製到剪貼簿。";
+      } catch {
+        document.execCommand("copy");
+        draftStatus.textContent = "已選取並嘗試複製。";
+      }
+    });
+
+    generateParentDraft.addEventListener("click", () => {
+      parentDraftVariant = 0;
+      parentCompact = false;
+      parentDraftText.value = buildParentMessage();
+      parentDraftStatus.textContent = "已生成親師訊息。";
+    });
+
+    rewriteParentDraft.addEventListener("click", () => {
+      parentDraftVariant += 1;
+      parentDraftText.value = buildParentMessage();
+      parentDraftStatus.textContent = "已換一種說法。";
+    });
+
+    warmParentDraft.addEventListener("click", () => {
+      parentWarmth += 1;
+      parentDraftText.value = buildParentMessage();
+      parentDraftStatus.textContent = "已加點溫暖。";
+    });
+
+    shortenParentDraft.addEventListener("click", () => {
+      parentCompact = true;
+      parentDraftText.value = buildParentMessage();
+      parentDraftStatus.textContent = "已調整得更精簡。";
+    });
+
+    clearParentDraft.addEventListener("click", () => {
+      parentEvent.value = "";
+      parentDraftText.value = "";
+      parentDraftVariant = 0;
+      parentWarmth = 0;
+      parentCompact = false;
+      selectedParentScenario = "conflict";
+      parentScenarioChoices.querySelectorAll('input[name="parentDetail"]').forEach((input) => {
+        input.checked = false;
+      });
+      updateParentScenario();
+      parentActionChoices.querySelectorAll("input").forEach((input) => {
+        input.checked = false;
+      });
+      parentChannelChoices.querySelector('input[value="聯絡簿格式"]').checked = true;
+      parentToneChoices.querySelector('input[value="溫柔堅定"]').checked = true;
+      parentDraftStatus.textContent = "已清除，可輸入新的事件。";
+      parentEvent.focus();
+    });
+
+    copyParentDraft.addEventListener("click", async () => {
+      parentDraftText.select();
+      try {
+        await navigator.clipboard.writeText(parentDraftText.value);
+        parentDraftStatus.textContent = "已複製到剪貼簿。";
+      } catch {
+        document.execCommand("copy");
+        parentDraftStatus.textContent = "已選取並嘗試複製。";
+      }
+    });
+
+    initializeWritingTools();
+  </script>
+</body>
+</html>

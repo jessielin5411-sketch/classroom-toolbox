@@ -464,6 +464,8 @@
     const resetAll = document.querySelector("#resetAll");
 
     const storageKey = "jessie-toolbox-team-scoreboard";
+    const activityLogKey = "jessie-toolbox-activity-log";
+    const teacherAccessKey = "jessie-toolbox-teacher-unlocked";
     const colors = ["#ffd24a", "#ff8fc7", "#9b7bff", "#22b98f", "#4f8cff", "#ffad4d", "#ff5d73", "#82dfc6"];
     let teams = [
       { id: crypto.randomUUID(), name: "第 1 組", score: 0, order: 0 },
@@ -475,6 +477,31 @@
 
     function saveState() {
       localStorage.setItem(storageKey, JSON.stringify({ teams, boardMode }));
+    }
+
+    function logActivity(entry) {
+      try {
+        const logs = JSON.parse(localStorage.getItem(activityLogKey) || "[]");
+        logs.push({
+          id: crypto.randomUUID(),
+          time: new Date().toISOString(),
+          tool: "team-scoreboard",
+          ...entry
+        });
+        localStorage.setItem(activityLogKey, JSON.stringify(logs.slice(-1500)));
+      } catch {
+        localStorage.setItem(activityLogKey, "[]");
+      }
+    }
+
+    function confirmTeacherAction(actionName) {
+      if (sessionStorage.getItem(teacherAccessKey) === "true") return true;
+      window.alert(`教師後台尚未解鎖，無法執行「${actionName}」。請先到教師控制後台輸入密碼。`);
+      return false;
+    }
+
+    function confirmTeacherAccess(actionName) {
+      return confirmTeacherAction(actionName);
     }
 
     function loadState() {
@@ -499,16 +526,34 @@
     }
 
     function updateScore(id, delta) {
-      teams = teams.map((team) => team.id === id ? { ...team, score: team.score + delta } : team);
+      if (!confirmTeacherAccess("修改小組分數")) return;
+      teams = teams.map((team) => {
+        if (team.id !== id) return team;
+        const nextScore = team.score + delta;
+        if (delta !== 0) {
+          logActivity({
+            category: "team",
+            subject: team.name,
+            teamId: team.id,
+            delta,
+            before: team.score,
+            after: nextScore,
+            note: "小組計分"
+          });
+        }
+        return { ...team, score: nextScore };
+      });
       render();
     }
 
     function updateName(id, name) {
+      if (!confirmTeacherAccess("修改隊伍名稱")) return;
       teams = teams.map((team) => team.id === id ? { ...team, name: name.trim() || "未命名" } : team);
       render(false);
     }
 
     function removeTeam(id) {
+      if (!confirmTeacherAction("刪除隊伍")) return;
       teams = teams.filter((team) => team.id !== id);
       render();
     }
@@ -589,6 +634,7 @@
     }
 
     addTeam.addEventListener("click", () => {
+      if (!confirmTeacherAccess("新增隊伍")) return;
       const name = newTeamName.value.trim() || `第 ${teams.length + 1} 組`;
       const maxOrder = teams.reduce((max, team) => Math.max(max, team.order), -1);
       teams = [...teams, { id: crypto.randomUUID(), name, score: 0, order: maxOrder + 1 }];
@@ -611,17 +657,34 @@
     });
 
     bonusAll.addEventListener("click", () => {
+      if (!confirmTeacherAccess("全部隊伍加分")) return;
       const bonus = Number(bonusSelect.value);
-      teams = teams.map((team) => ({ ...team, score: team.score + bonus }));
+      teams = teams.map((team) => {
+        const nextScore = team.score + bonus;
+        if (bonus !== 0) {
+          logActivity({
+            category: "team",
+            subject: team.name,
+            teamId: team.id,
+            delta: bonus,
+            before: team.score,
+            after: nextScore,
+            note: "全部隊伍加分"
+          });
+        }
+        return { ...team, score: nextScore };
+      });
       render();
     });
 
     resetScores.addEventListener("click", () => {
+      if (!confirmTeacherAction("分數歸零")) return;
       teams = teams.map((team) => ({ ...team, score: 0 }));
       render();
     });
 
     resetAll.addEventListener("click", () => {
+      if (!confirmTeacherAction("重置全部")) return;
       localStorage.removeItem(storageKey);
       teams = [
         { id: crypto.randomUUID(), name: "第 1 組", score: 0, order: 0 },

@@ -100,6 +100,11 @@
       box-shadow: 0 5px 0 rgba(255, 143, 199, 0.18);
     }
 
+    .side-jump {
+      width: 100%;
+      margin-top: 8px;
+    }
+
     .brand {
       display: inline-block;
       margin: 0 0 20px;
@@ -259,6 +264,166 @@
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
       gap: 14px;
+    }
+
+    .honor-board {
+      margin-top: 28px;
+      padding-top: 22px;
+      border-top: 3px dashed rgba(255, 143, 199, 0.46);
+    }
+
+    .section-heading {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .section-heading h3 {
+      margin: 0;
+      color: #7b4ed8;
+      font-size: clamp(24px, 3vw, 38px);
+      line-height: 1.12;
+      letter-spacing: 0;
+    }
+
+    .section-heading p {
+      max-width: 520px;
+      margin: 0;
+      color: var(--muted);
+      font-weight: 800;
+      line-height: 1.5;
+    }
+
+    .honor-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+      gap: 12px;
+    }
+
+    .honor-card {
+      position: relative;
+      min-height: 276px;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 8px;
+      overflow: hidden;
+      padding: 14px;
+      border: 3px solid rgba(255, 255, 255, 0.92);
+      border-radius: 8px;
+      background:
+        radial-gradient(circle at 72% 18%, rgba(255, 210, 74, 0.26), transparent 34%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(255, 253, 244, 0.94));
+      box-shadow: 0 16px 34px rgba(111, 78, 143, 0.14);
+    }
+
+    .honor-card.maxed {
+      border-color: rgba(255, 210, 74, 0.95);
+      background:
+        radial-gradient(circle at 50% 24%, rgba(255, 210, 74, 0.36), transparent 38%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 247, 213, 0.92));
+    }
+
+    .rank-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      display: inline-grid;
+      place-items: center;
+      min-width: 38px;
+      height: 32px;
+      padding: 0 8px;
+      border: 2px solid rgba(255, 255, 255, 0.95);
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--yellow), var(--orange));
+      color: #704100;
+      font-weight: 950;
+      box-shadow: 0 8px 16px rgba(111, 78, 143, 0.13);
+      z-index: 2;
+    }
+
+    .honor-top {
+      display: grid;
+      gap: 3px;
+      padding-right: 46px;
+    }
+
+    .honor-name {
+      color: #20304f;
+      font-size: 20px;
+      font-weight: 950;
+    }
+
+    .honor-stage {
+      color: #7b4ed8;
+      font-size: 14px;
+      font-weight: 900;
+    }
+
+    .honor-yard {
+      min-height: 132px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      background:
+        radial-gradient(circle at 50% 80%, rgba(34, 185, 143, 0.14), transparent 42%),
+        rgba(255, 255, 255, 0.46);
+    }
+
+    .honor-yard .pet-atlas-frame {
+      width: min(100%, 142px);
+    }
+
+    .honor-yard .pet-atlas-frame.egg-stage,
+    .honor-yard .pet-atlas-frame.hatch-stage {
+      width: min(100%, 124px);
+    }
+
+    .honor-yard .pet-egg {
+      width: 88px;
+      height: 106px;
+      border-width: 5px;
+    }
+
+    .honor-yard .hatch-shell {
+      width: 108px;
+      height: 58px;
+      bottom: 14px;
+      border-width: 5px;
+    }
+
+    .honor-yard .hatch-stage .pet-atlas {
+      width: 88px;
+      height: 88px;
+      margin-bottom: 32px;
+    }
+
+    .honor-meta {
+      display: grid;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 850;
+    }
+
+    .honor-meta strong {
+      color: #20304f;
+      font-size: 18px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .evolution-note {
+      min-height: 30px;
+      display: inline-flex;
+      align-items: center;
+      width: fit-content;
+      padding: 0 10px;
+      border-radius: 999px;
+      background: #eef8ff;
+      color: #2453a6;
+      font-size: 12px;
+      font-weight: 950;
     }
 
     .pet-card {
@@ -806,6 +971,11 @@
       .summary-bar {
         grid-template-columns: repeat(2, 1fr);
       }
+
+      .section-heading {
+        align-items: start;
+        flex-direction: column;
+      }
     }
 
     @media (max-width: 560px) {
@@ -825,6 +995,7 @@
     <aside class="sidebar" aria-label="個人寵物記分設定">
       <a class="home-link" href="../index.html">← 回首頁</a>
       <h1 class="brand">個人寵物記分板</h1>
+      <a class="home-link side-jump" href="#honorBoard">全班寵物大集合</a>
 
       <div class="section stack">
         <label class="label" for="studentCount">班級人數</label>
@@ -865,6 +1036,13 @@
           <div class="stat"><strong id="topScore">0</strong>最高分</div>
         </div>
         <div class="pet-grid" id="petGrid"></div>
+        <section class="honor-board" id="honorBoard" aria-labelledby="honorTitle">
+          <div class="section-heading">
+            <h3 id="honorTitle">全班寵物大集合</h3>
+            <p>依照分數排序展示全班成果，讓學生一眼看到自己的寵物目前進化到哪個階段。</p>
+          </div>
+          <div class="honor-grid" id="honorGrid"></div>
+        </section>
       </section>
     </main>
   </div>
@@ -881,9 +1059,11 @@
     const hungryCount = document.querySelector("#hungryCount");
     const topScore = document.querySelector("#topScore");
     const petGrid = document.querySelector("#petGrid");
+    const honorGrid = document.querySelector("#honorGrid");
 
     const storageKey = "jessie-toolbox-pet-scoreboard";
-    const teacherPassword = "0800";
+    const activityLogKey = "jessie-toolbox-activity-log";
+    const teacherAccessKey = "jessie-toolbox-teacher-unlocked";
     const maxScore = 80;
     const stages = [
       { min: 0, name: "神祕蛋", icon: "🥚", scale: 0.72, details: 0 },
@@ -947,6 +1127,21 @@
       localStorage.setItem(storageKey, JSON.stringify(state));
     }
 
+    function logActivity(entry) {
+      try {
+        const logs = JSON.parse(localStorage.getItem(activityLogKey) || "[]");
+        logs.push({
+          id: crypto.randomUUID(),
+          time: new Date().toISOString(),
+          tool: "pet-scoreboard",
+          ...entry
+        });
+        localStorage.setItem(activityLogKey, JSON.stringify(logs.slice(-1500)));
+      } catch {
+        localStorage.setItem(activityLogKey, "[]");
+      }
+    }
+
     function loadState() {
       try {
         const saved = JSON.parse(localStorage.getItem(storageKey) || "{}");
@@ -961,7 +1156,13 @@
       return stages.reduce((best, stage) => score >= stage.min ? stage : best, stages[0]);
     }
 
+    function getNextStage(score) {
+      return stages.find((stage) => score < stage.min) || null;
+    }
+
     function updatePet(number, delta) {
+      if (!confirmTeacherAccess("修改個人寵物分數")) return;
+      const before = state.pets.find((pet) => pet.number === number);
       state.pets = state.pets.map((pet) => {
         if (pet.number !== number) return pet;
         const nextScore = Math.max(0, Math.min(maxScore, pet.score + delta));
@@ -971,10 +1172,24 @@
           hungry: delta < 0 ? true : (delta > 0 ? false : pet.hungry)
         };
       });
+      const after = state.pets.find((pet) => pet.number === number);
+      if (before && after && before.score !== after.score) {
+        logActivity({
+          category: "personal",
+          subject: `${number} 號`,
+          number,
+          delta: after.score - before.score,
+          before: before.score,
+          after: after.score,
+          note: after.hungry ? "寵物肚子餓" : "個人寵物積分"
+        });
+      }
       render();
     }
 
     function rebirth(number) {
+      if (!confirmTeacherAccess("重新養一個寵物")) return;
+      const before = state.pets.find((pet) => pet.number === number);
       state.pets = state.pets.map((pet) => {
         if (pet.number !== number) return pet;
         const nextGeneration = pet.generation + 1;
@@ -987,6 +1202,17 @@
         ];
         return { ...pet, score: 0, hungry: false, generation: nextGeneration, variant: variantFor(number, nextGeneration), retired };
       });
+      if (before) {
+        logActivity({
+          category: "personal",
+          subject: `${number} 號`,
+          number,
+          delta: 0,
+          before: before.score,
+          after: 0,
+          note: `第 ${before.generation} 代滿等收藏，開始新寵物`
+        });
+      }
       render();
     }
 
@@ -1234,34 +1460,106 @@
       });
     }
 
+    function renderHonorBoard() {
+      honorGrid.innerHTML = "";
+      const rankedPets = [...state.pets].sort((a, b) => {
+        const retiredDiff = (b.retired || []).length - (a.retired || []).length;
+        if (retiredDiff !== 0) return retiredDiff;
+        return b.score - a.score || a.number - b.number;
+      });
+
+      rankedPets.forEach((pet, index) => {
+        const stage = getStage(pet.score);
+        const nextStage = getNextStage(pet.score);
+        const variant = ensureVariant(pet);
+        const retiredCount = (pet.retired || []).length;
+        const note = nextStage
+          ? `再 ${nextStage.min - pet.score} 分進化`
+          : "已成為守護獸";
+        const card = document.createElement("article");
+        card.className = `honor-card ${pet.score >= maxScore ? "maxed" : ""}`;
+        card.innerHTML = `
+          <span class="rank-badge">#${index + 1}</span>
+          <div class="honor-top">
+            <div class="honor-name">${pet.number} 號</div>
+            <div class="honor-stage">${stage.icon} ${variant.name}${stage.name} · 第 ${pet.generation} 代</div>
+          </div>
+          <div class="honor-yard">
+            ${petAtlasHtml(pet, stage)}
+          </div>
+          <div class="honor-meta">
+            <span>目前分數 <strong>${pet.score}</strong></span>
+            <span>已收藏守護獸 <strong>${retiredCount}</strong></span>
+            <span class="evolution-note">${note}</span>
+          </div>
+        `;
+        honorGrid.appendChild(card);
+      });
+    }
+
     function render() {
       studentCountInput.value = state.studentCount;
       renderStats();
       renderPets();
+      renderHonorBoard();
       saveState();
     }
 
     function confirmTeacherAction(actionName) {
-      const input = window.prompt(`老師密碼確認：要執行「${actionName}」，請輸入密碼`);
-      if (input === null) return false;
-      if (input === teacherPassword) return true;
-      window.alert("密碼錯誤，資料沒有變更。");
+      if (sessionStorage.getItem(teacherAccessKey) === "true") return true;
+      window.alert(`教師後台尚未解鎖，無法執行「${actionName}」。請先到教師控制後台輸入密碼。`);
       return false;
     }
 
+    function confirmTeacherAccess(actionName) {
+      return confirmTeacherAction(actionName);
+    }
+
     applyCount.addEventListener("click", () => {
+      if (!confirmTeacherAccess("套用班級人數")) return;
       state.studentCount = Math.min(Math.max(Number(studentCountInput.value) || 1, 1), 80);
       syncPets();
       render();
     });
 
     addAll.addEventListener("click", () => {
-      state.pets = state.pets.map((pet) => ({ ...pet, score: Math.min(maxScore, pet.score + 1), hungry: false }));
+      if (!confirmTeacherAccess("全班加分")) return;
+      state.pets = state.pets.map((pet) => {
+        const nextScore = Math.min(maxScore, pet.score + 1);
+        if (nextScore !== pet.score) {
+          logActivity({
+            category: "personal",
+            subject: `${pet.number} 號`,
+            number: pet.number,
+            delta: nextScore - pet.score,
+            before: pet.score,
+            after: nextScore,
+            note: "全班 +1"
+          });
+        }
+        return { ...pet, score: nextScore, hungry: false };
+      });
       render();
     });
 
     feedHungry.addEventListener("click", () => {
-      state.pets = state.pets.map((pet) => pet.hungry ? { ...pet, score: Math.min(maxScore, pet.score + 1), hungry: false } : pet);
+      if (!confirmTeacherAccess("餵飽肚子餓")) return;
+      state.pets = state.pets.map((pet) => {
+        if (!pet.hungry) return pet;
+        const nextScore = Math.min(maxScore, pet.score + 1);
+        if (nextScore !== pet.score) {
+          logActivity({
+            category: "personal",
+            subject: `${pet.number} 號`,
+            number: pet.number,
+            delta: nextScore - pet.score,
+            before: pet.score,
+            after: nextScore,
+            note: "餵飽肚子餓"
+          });
+        }
+        return { ...pet, score: nextScore, hungry: false };
+      });
       render();
     });
 

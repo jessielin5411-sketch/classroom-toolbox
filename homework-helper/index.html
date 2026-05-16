@@ -317,16 +317,84 @@
     const content = document.querySelector("#content");
 
     const storageKey = "jessie-toolbox-homework-helper";
-    let state = { studentCount: 28, currentId: "a1", view: "grid", assignments: [ { id: "a1", name: "國語作業", statuses: {} }, { id: "a2", name: "數學習作", statuses: {} } ] };
+    const activityLogKey = "jessie-toolbox-activity-log";
+    const teacherAccessKey = "jessie-toolbox-teacher-unlocked";
+    let state = {
+      studentCount: 28,
+      currentId: "a1",
+      view: "grid",
+      assignments: [
+        { id: "a1", name: "國語作業", statuses: {} },
+        { id: "a2", name: "數學習作", statuses: {} }
+      ]
+    };
 
-    function saveState() { localStorage.setItem(storageKey, JSON.stringify(state)); }
-    function loadState() { try { const saved = JSON.parse(localStorage.getItem(storageKey) || "{}"); if (saved.assignments && Array.isArray(saved.assignments)) state = saved; } catch { localStorage.removeItem(storageKey); } }
-    function currentAssignment() { return state.assignments.find((item) => item.id === state.currentId) || state.assignments[0]; }
-    function studentNumbers() { return Array.from({ length: state.studentCount }, (_, index) => index + 1); }
-    function getStatus(assignment, number) { return assignment.statuses[String(number)] || "missing"; }
-    function statusClass(status) { if (status === "done") return "done"; if (status === "fix") return "fix"; return ""; }
-    function nextStatus(status) { if (status === "missing") return "done"; if (status === "done") return "fix"; return "missing"; }
-    function setView(view) { state.view = view; render(); }
+    function saveState() {
+      localStorage.setItem(storageKey, JSON.stringify(state));
+    }
+
+    function logActivity(entry) {
+      try {
+        const logs = JSON.parse(localStorage.getItem(activityLogKey) || "[]");
+        logs.push({
+          id: crypto.randomUUID(),
+          time: new Date().toISOString(),
+          tool: "homework-helper",
+          ...entry
+        });
+        localStorage.setItem(activityLogKey, JSON.stringify(logs.slice(-1500)));
+      } catch {
+        localStorage.setItem(activityLogKey, "[]");
+      }
+    }
+
+    function confirmTeacherAction(actionName) {
+      if (sessionStorage.getItem(teacherAccessKey) === "true") return true;
+      window.alert(`教師後台尚未解鎖，無法執行「${actionName}」。請先到教師控制後台輸入密碼。`);
+      return false;
+    }
+
+    function confirmTeacherAccess(actionName) {
+      return confirmTeacherAction(actionName);
+    }
+
+    function loadState() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(storageKey) || "{}");
+        if (saved.assignments && Array.isArray(saved.assignments)) state = saved;
+      } catch {
+        localStorage.removeItem(storageKey);
+      }
+    }
+
+    function currentAssignment() {
+      return state.assignments.find((item) => item.id === state.currentId) || state.assignments[0];
+    }
+
+    function studentNumbers() {
+      return Array.from({ length: state.studentCount }, (_, index) => index + 1);
+    }
+
+    function getStatus(assignment, number) {
+      return assignment.statuses[String(number)] || "missing";
+    }
+
+    function statusClass(status) {
+      if (status === "done") return "done";
+      if (status === "fix") return "fix";
+      return "";
+    }
+
+    function nextStatus(status) {
+      if (status === "missing") return "done";
+      if (status === "done") return "fix";
+      return "missing";
+    }
+
+    function setView(view) {
+      state.view = view;
+      render();
+    }
 
     function updateStats() {
       const assignment = currentAssignment();
@@ -366,9 +434,23 @@
         button.textContent = number;
         button.title = `${number} 號`;
         button.addEventListener("click", () => {
-          const next = nextStatus(getStatus(assignment, number));
-          if (next === "missing") delete assignment.statuses[String(number)];
-          else assignment.statuses[String(number)] = next;
+          if (!confirmTeacherAccess("修改作業狀態")) return;
+          const previous = getStatus(assignment, number);
+          const next = nextStatus(previous);
+          if (next === "missing") {
+            delete assignment.statuses[String(number)];
+          } else {
+            assignment.statuses[String(number)] = next;
+          }
+          logActivity({
+            category: "homework",
+            subject: `${number} 號`,
+            number,
+            assignment: assignment.name,
+            before: previous,
+            after: next,
+            note: "作業狀態變更"
+          });
           render();
         });
         grid.appendChild(button);
@@ -426,18 +508,84 @@
     }
 
     applyCount.addEventListener("click", () => {
+      if (!confirmTeacherAccess("套用班級人數")) return;
       state.studentCount = Math.min(Math.max(Number(studentCountInput.value) || 1, 1), 80);
       state.assignments.forEach((assignment) => { Object.keys(assignment.statuses).forEach((key) => { if (Number(key) > state.studentCount) delete assignment.statuses[key]; }); });
       render();
     });
-    addAssignment.addEventListener("click", () => { const name = assignmentName.value.trim() || `作業 ${state.assignments.length + 1}`; const id = crypto.randomUUID(); state.assignments.push({ id, name, statuses: {} }); state.currentId = id; state.view = "grid"; assignmentName.value = ""; render(); assignmentName.focus(); });
-    assignmentName.addEventListener("keydown", (event) => { if (event.key === "Enter") addAssignment.click(); });
+
+    addAssignment.addEventListener("click", () => {
+      if (!confirmTeacherAccess("新增作業")) return;
+      const name = assignmentName.value.trim() || `作業 ${state.assignments.length + 1}`;
+      const id = crypto.randomUUID();
+      state.assignments.push({ id, name, statuses: {} });
+      state.currentId = id;
+      state.view = "grid";
+      assignmentName.value = "";
+      render();
+      assignmentName.focus();
+    });
+
+    assignmentName.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") addAssignment.click();
+    });
+
     gridView.addEventListener("click", () => setView("grid"));
     summaryView.addEventListener("click", () => setView("summary"));
-    markAllDone.addEventListener("click", () => { const assignment = currentAssignment(); if (!assignment) return; studentNumbers().forEach((number) => { assignment.statuses[String(number)] = "done"; }); render(); });
-    clearCurrent.addEventListener("click", () => { const assignment = currentAssignment(); if (!assignment) return; assignment.statuses = {}; render(); });
-    deleteCurrent.addEventListener("click", () => { if (!state.assignments.length) return; state.assignments = state.assignments.filter((assignment) => assignment.id !== state.currentId); state.currentId = state.assignments[0]?.id || ""; render(); });
-    resetAll.addEventListener("click", () => { localStorage.removeItem(storageKey); state = { studentCount: 28, currentId: "a1", view: "grid", assignments: [ { id: "a1", name: "國語作業", statuses: {} }, { id: "a2", name: "數學習作", statuses: {} } ] }; assignmentName.value = "國語作業"; render(); });
+
+    markAllDone.addEventListener("click", () => {
+      if (!confirmTeacherAccess("全部標記完成")) return;
+      const assignment = currentAssignment();
+      if (!assignment) return;
+      studentNumbers().forEach((number) => {
+        const previous = getStatus(assignment, number);
+        if (previous !== "done") {
+          logActivity({
+            category: "homework",
+            subject: `${number} 號`,
+            number,
+            assignment: assignment.name,
+            before: previous,
+            after: "done",
+            note: "全部標記完成"
+          });
+        }
+        assignment.statuses[String(number)] = "done";
+      });
+      render();
+    });
+
+    clearCurrent.addEventListener("click", () => {
+      const assignment = currentAssignment();
+      if (!assignment) return;
+      if (!confirmTeacherAction("清空本項")) return;
+      assignment.statuses = {};
+      render();
+    });
+
+    deleteCurrent.addEventListener("click", () => {
+      if (!state.assignments.length) return;
+      if (!confirmTeacherAction("刪除本項")) return;
+      state.assignments = state.assignments.filter((assignment) => assignment.id !== state.currentId);
+      state.currentId = state.assignments[0]?.id || "";
+      render();
+    });
+
+    resetAll.addEventListener("click", () => {
+      if (!confirmTeacherAction("全部重置")) return;
+      localStorage.removeItem(storageKey);
+      state = {
+        studentCount: 28,
+        currentId: "a1",
+        view: "grid",
+        assignments: [
+          { id: "a1", name: "國語作業", statuses: {} },
+          { id: "a2", name: "數學習作", statuses: {} }
+        ]
+      };
+      assignmentName.value = "國語作業";
+      render();
+    });
 
     loadState();
     render();
