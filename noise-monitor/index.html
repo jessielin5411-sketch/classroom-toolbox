@@ -1,0 +1,685 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>課堂音量監測器</title>
+  <style>
+    :root {
+      --ink: #243047;
+      --muted: #65758f;
+      --paper: #f7fbff;
+      --panel: #ffffff;
+      --blue: #4f8cff;
+      --green: #22b98f;
+      --yellow: #ffd24a;
+      --orange: #ffad4d;
+      --red: #ff5d73;
+      --purple: #7b4ed8;
+      --line: rgba(79, 140, 255, 0.22);
+      --shadow: 0 20px 48px rgba(36, 48, 71, 0.14);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", "Noto Sans TC", system-ui, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 12% 12%, rgba(255, 210, 74, 0.38), transparent 24%),
+        radial-gradient(circle at 88% 16%, rgba(79, 140, 255, 0.24), transparent 26%),
+        linear-gradient(180deg, #fff8fb, var(--paper));
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    .page {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 22px 0 42px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 22px;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      min-height: 42px;
+      padding: 0 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.78);
+      color: var(--purple);
+      font-weight: 900;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 42px;
+      padding: 0 14px;
+      border-radius: 999px;
+      background: #e9fff7;
+      color: #087352;
+      font-weight: 900;
+      border: 1px solid rgba(34, 185, 143, 0.28);
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 0.92fr) minmax(320px, 1.08fr);
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .panel {
+      border: 2px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: var(--shadow);
+    }
+
+    .intro {
+      padding: clamp(22px, 4vw, 38px);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(36px, 6vw, 64px);
+      line-height: 1;
+      letter-spacing: 0;
+    }
+
+    .lead {
+      margin: 16px 0 0;
+      color: var(--muted);
+      font-size: 20px;
+      line-height: 1.6;
+      font-weight: 700;
+    }
+
+    .controls {
+      display: grid;
+      gap: 14px;
+      margin-top: 24px;
+    }
+
+    .control-row {
+      display: grid;
+      gap: 8px;
+    }
+
+    .label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      font-weight: 900;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--blue);
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 6px;
+    }
+
+    .button {
+      min-height: 48px;
+      padding: 0 18px;
+      border: 0;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 900;
+      color: #fff;
+      background: linear-gradient(135deg, var(--blue), var(--purple));
+      box-shadow: 0 8px 0 rgba(79, 140, 255, 0.18);
+    }
+
+    .button.secondary {
+      color: var(--purple);
+      border: 1px solid var(--line);
+      background: #fffdf4;
+      box-shadow: none;
+    }
+
+    .button:disabled {
+      cursor: not-allowed;
+      opacity: 0.58;
+    }
+
+    .monitor {
+      position: relative;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      min-height: 620px;
+      padding: clamp(18px, 3vw, 30px);
+      overflow: hidden;
+    }
+
+    .meter-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 14px;
+    }
+
+    .level-label {
+      margin: 0;
+      color: var(--muted);
+      font-weight: 900;
+    }
+
+    .level-number {
+      margin: 4px 0 0;
+      font-size: clamp(42px, 8vw, 78px);
+      font-weight: 950;
+      line-height: 1;
+    }
+
+    .level-number span {
+      font-size: 24px;
+      color: var(--muted);
+    }
+
+    .state-badge {
+      min-width: 128px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      text-align: center;
+      color: #087352;
+      background: #ddfff3;
+      font-weight: 950;
+    }
+
+    .balloon-stage {
+      position: relative;
+      display: grid;
+      place-items: center;
+      min-height: 330px;
+    }
+
+    .balloon-wrap {
+      position: relative;
+      width: min(58vw, 310px);
+      aspect-ratio: 1 / 1.25;
+      transform: scale(var(--balloon-scale, 1));
+      transition: transform 0.2s ease;
+    }
+
+    .balloon {
+      position: absolute;
+      inset: 6% 8% 20%;
+      border-radius: 50% 50% 46% 46%;
+      background:
+        radial-gradient(circle at 34% 24%, rgba(255, 255, 255, 0.86) 0 13%, transparent 14%),
+        linear-gradient(145deg, #82dfc6, #4f8cff);
+      box-shadow:
+        inset -18px -22px 0 rgba(36, 48, 71, 0.1),
+        0 22px 38px rgba(79, 140, 255, 0.22);
+      transition: background 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .face {
+      position: absolute;
+      left: 50%;
+      top: 44%;
+      width: 45%;
+      height: 20%;
+      transform: translate(-50%, -50%);
+    }
+
+    .eye {
+      position: absolute;
+      top: 0;
+      width: 18%;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background: #20304f;
+    }
+
+    .eye.left {
+      left: 8%;
+    }
+
+    .eye.right {
+      right: 8%;
+    }
+
+    .mouth {
+      position: absolute;
+      left: 50%;
+      bottom: 0;
+      width: 34%;
+      height: 26%;
+      border: 5px solid #20304f;
+      border-top: 0;
+      border-radius: 0 0 999px 999px;
+      transform: translateX(-50%);
+    }
+
+    .knot {
+      position: absolute;
+      left: 50%;
+      bottom: 13%;
+      width: 42px;
+      height: 34px;
+      border-radius: 45% 45% 8px 8px;
+      background: #2f6fbd;
+      transform: translateX(-50%) rotate(45deg);
+    }
+
+    .string {
+      position: absolute;
+      left: 50%;
+      bottom: 0;
+      width: 3px;
+      height: 18%;
+      background: repeating-linear-gradient(180deg, #65758f 0 8px, transparent 8px 16px);
+      transform: translateX(-50%);
+      opacity: 0.7;
+    }
+
+    .stress-lines {
+      position: absolute;
+      inset: 2% 0 auto;
+      height: 70px;
+      opacity: 0;
+      transition: opacity 0.18s ease;
+    }
+
+    .stress-lines span {
+      position: absolute;
+      width: 8px;
+      height: 46px;
+      border-radius: 999px;
+      background: var(--red);
+      transform-origin: center bottom;
+    }
+
+    .stress-lines span:nth-child(1) {
+      left: 18%;
+      top: 20px;
+      transform: rotate(-36deg);
+    }
+
+    .stress-lines span:nth-child(2) {
+      left: 48%;
+      top: 0;
+    }
+
+    .stress-lines span:nth-child(3) {
+      right: 18%;
+      top: 20px;
+      transform: rotate(36deg);
+    }
+
+    .meter {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+      margin-top: 10px;
+    }
+
+    .bar {
+      height: 28px;
+      border-radius: 999px;
+      border: 2px solid rgba(36, 48, 71, 0.08);
+      background: #ecf3ff;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      width: var(--level, 0%);
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--green), var(--yellow), var(--red));
+      transition: width 0.1s linear;
+    }
+
+    .meter-value {
+      min-width: 58px;
+      font-weight: 950;
+      text-align: right;
+    }
+
+    .hint {
+      margin: 16px 0 0;
+      color: var(--muted);
+      line-height: 1.55;
+      font-weight: 700;
+    }
+
+    .monitor.warning .state-badge {
+      color: #8a5a00;
+      background: #fff7d1;
+    }
+
+    .monitor.warning .balloon {
+      background:
+        radial-gradient(circle at 34% 24%, rgba(255, 255, 255, 0.86) 0 13%, transparent 14%),
+        linear-gradient(145deg, #ffd24a, #ffad4d);
+    }
+
+    .monitor.warning .mouth {
+      width: 24%;
+      height: 24%;
+      border: 5px solid #20304f;
+      border-radius: 50%;
+      background: transparent;
+    }
+
+    .monitor.loud .state-badge {
+      color: #fff;
+      background: var(--red);
+    }
+
+    .monitor.loud .balloon-wrap {
+      animation: shake 0.22s linear infinite;
+    }
+
+    .monitor.loud .balloon {
+      background:
+        radial-gradient(circle at 34% 24%, rgba(255, 255, 255, 0.84) 0 13%, transparent 14%),
+        linear-gradient(145deg, #ff8fc7, #ff5d73);
+      box-shadow:
+        inset -20px -24px 0 rgba(36, 48, 71, 0.12),
+        0 24px 44px rgba(255, 93, 115, 0.26);
+    }
+
+    .monitor.loud .eye {
+      height: 8px;
+      border-radius: 999px;
+      transform: rotate(10deg);
+    }
+
+    .monitor.loud .eye.right {
+      transform: rotate(-10deg);
+    }
+
+    .monitor.loud .mouth {
+      width: 38%;
+      height: 42%;
+      border-radius: 50%;
+      border: 0;
+      background: #20304f;
+    }
+
+    .monitor.loud .stress-lines {
+      opacity: 1;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0) rotate(0deg) scale(var(--balloon-scale, 1)); }
+      25% { transform: translateX(-4px) rotate(-1deg) scale(var(--balloon-scale, 1)); }
+      75% { transform: translateX(4px) rotate(1deg) scale(var(--balloon-scale, 1)); }
+    }
+
+    @media (max-width: 860px) {
+      .hero {
+        grid-template-columns: 1fr;
+      }
+
+      .monitor {
+        min-height: 560px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="topbar">
+      <a class="back-link" href="../index.html">← 回工具箱首頁</a>
+      <span class="status-pill" id="micStatus">尚未啟動</span>
+    </header>
+
+    <main class="hero">
+      <section class="panel intro" aria-labelledby="pageTitle">
+        <h1 id="pageTitle">課堂音量監測器</h1>
+        <p class="lead">打開麥克風後，畫面會用可愛氣球顯示目前教室音量。超過門檻時，氣球會緊張搖晃，並可發出輕微提示音。</p>
+
+        <div class="controls">
+          <label class="control-row">
+            <span class="label-row">
+              <span>提醒門檻</span>
+              <strong><span id="thresholdLabel">68</span>%</strong>
+            </span>
+            <input id="threshold" type="range" min="35" max="95" value="68">
+          </label>
+
+          <label class="control-row">
+            <span class="label-row">
+              <span>靈敏度</span>
+              <strong><span id="sensitivityLabel">70</span>%</strong>
+            </span>
+            <input id="sensitivity" type="range" min="35" max="100" value="70">
+          </label>
+
+          <div class="button-row">
+            <button class="button" id="startButton" type="button">啟動監測</button>
+            <button class="button secondary" id="stopButton" type="button" disabled>停止</button>
+            <button class="button secondary" id="soundButton" type="button" aria-pressed="true">提示音：開</button>
+          </div>
+        </div>
+
+        <p class="hint">音量百分比是依瀏覽器麥克風訊號換算，適合當課堂提醒工具，不是正式分貝計。首次啟動時瀏覽器會詢問麥克風權限。</p>
+      </section>
+
+      <section class="panel monitor" id="monitorPanel" aria-live="polite">
+        <div class="meter-head">
+          <div>
+            <p class="level-label">目前音量</p>
+            <div class="level-number"><span id="levelNumber">0</span><span>%</span></div>
+          </div>
+          <div class="state-badge" id="stateBadge">安靜舒適</div>
+        </div>
+
+        <div class="balloon-stage" aria-hidden="true">
+          <div class="balloon-wrap" id="balloonWrap">
+            <div class="stress-lines"><span></span><span></span><span></span></div>
+            <div class="balloon">
+              <div class="face">
+                <span class="eye left"></span>
+                <span class="eye right"></span>
+                <span class="mouth"></span>
+              </div>
+            </div>
+            <div class="knot"></div>
+            <div class="string"></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="meter">
+            <div class="bar"><div class="bar-fill" id="barFill"></div></div>
+            <div class="meter-value"><span id="meterValue">0</span>%</div>
+          </div>
+          <p class="hint" id="messageText">按下啟動後，讓氣球陪大家練習剛剛好的課堂音量。</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const startButton = document.querySelector("#startButton");
+    const stopButton = document.querySelector("#stopButton");
+    const soundButton = document.querySelector("#soundButton");
+    const micStatus = document.querySelector("#micStatus");
+    const threshold = document.querySelector("#threshold");
+    const sensitivity = document.querySelector("#sensitivity");
+    const thresholdLabel = document.querySelector("#thresholdLabel");
+    const sensitivityLabel = document.querySelector("#sensitivityLabel");
+    const monitorPanel = document.querySelector("#monitorPanel");
+    const levelNumber = document.querySelector("#levelNumber");
+    const meterValue = document.querySelector("#meterValue");
+    const barFill = document.querySelector("#barFill");
+    const stateBadge = document.querySelector("#stateBadge");
+    const messageText = document.querySelector("#messageText");
+    const balloonWrap = document.querySelector("#balloonWrap");
+
+    let audioContext = null;
+    let analyser = null;
+    let microphone = null;
+    let mediaStream = null;
+    let animationId = null;
+    let soundEnabled = true;
+    let lastBeepAt = 0;
+    let smoothedLevel = 0;
+
+    function setStatus(text, active = false) {
+      micStatus.textContent = text;
+      micStatus.style.background = active ? "#e9fff7" : "#fff7d1";
+      micStatus.style.color = active ? "#087352" : "#8a5a00";
+    }
+
+    function updateLabels() {
+      thresholdLabel.textContent = threshold.value;
+      sensitivityLabel.textContent = sensitivity.value;
+    }
+
+    function classify(level) {
+      const limit = Number(threshold.value);
+      if (level >= limit) return "loud";
+      if (level >= limit * 0.78) return "warning";
+      return "quiet";
+    }
+
+    function updateVisual(level) {
+      const rounded = Math.round(level);
+      const state = classify(level);
+      levelNumber.textContent = rounded;
+      meterValue.textContent = rounded;
+      barFill.style.setProperty("--level", `${Math.min(100, rounded)}%`);
+      balloonWrap.style.setProperty("--balloon-scale", String(0.92 + Math.min(0.18, level / 500)));
+      monitorPanel.classList.toggle("warning", state === "warning");
+      monitorPanel.classList.toggle("loud", state === "loud");
+
+      if (state === "loud") {
+        stateBadge.textContent = "太熱鬧了";
+        messageText.textContent = "氣球快撐不住了，請全班一起把聲音放輕。";
+        playBeep();
+      } else if (state === "warning") {
+        stateBadge.textContent = "接近門檻";
+        messageText.textContent = "音量有點升高，先放慢一點、說話小聲一點。";
+      } else {
+        stateBadge.textContent = "安靜舒適";
+        messageText.textContent = "現在音量剛剛好，適合專心學習。";
+      }
+    }
+
+    function playBeep() {
+      if (!soundEnabled || !audioContext) return;
+      const now = performance.now();
+      if (now - lastBeepAt < 1800) return;
+      lastBeepAt = now;
+
+      const oscillator = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+      oscillator.type = "sine";
+      oscillator.frequency.setValueAtTime(660, audioContext.currentTime);
+      gain.gain.setValueAtTime(0.0001, audioContext.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.06, audioContext.currentTime + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 0.18);
+      oscillator.connect(gain);
+      gain.connect(audioContext.destination);
+      oscillator.start();
+      oscillator.stop(audioContext.currentTime + 0.2);
+    }
+
+    function sampleVolume() {
+      if (!analyser) return;
+
+      const data = new Uint8Array(analyser.fftSize);
+      analyser.getByteTimeDomainData(data);
+      let sum = 0;
+      for (const value of data) {
+        const centered = value - 128;
+        sum += centered * centered;
+      }
+      const rms = Math.sqrt(sum / data.length);
+      const amplified = Math.min(100, rms * (Number(sensitivity.value) / 22));
+      smoothedLevel = (smoothedLevel * 0.82) + (amplified * 0.18);
+      updateVisual(smoothedLevel);
+      animationId = requestAnimationFrame(sampleVolume);
+    }
+
+    async function startMonitor() {
+      try {
+        mediaStream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: false,
+            autoGainControl: false
+          }
+        });
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        analyser = audioContext.createAnalyser();
+        analyser.fftSize = 1024;
+        microphone = audioContext.createMediaStreamSource(mediaStream);
+        microphone.connect(analyser);
+        startButton.disabled = true;
+        stopButton.disabled = false;
+        setStatus("監測中", true);
+        sampleVolume();
+      } catch (error) {
+        setStatus("麥克風未授權");
+        messageText.textContent = "請允許瀏覽器使用麥克風，才能開始監測課堂音量。";
+      }
+    }
+
+    function stopMonitor() {
+      if (animationId) cancelAnimationFrame(animationId);
+      animationId = null;
+      if (mediaStream) mediaStream.getTracks().forEach((track) => track.stop());
+      if (audioContext) audioContext.close();
+      audioContext = null;
+      analyser = null;
+      microphone = null;
+      mediaStream = null;
+      smoothedLevel = 0;
+      startButton.disabled = false;
+      stopButton.disabled = true;
+      setStatus("已停止");
+      updateVisual(0);
+      messageText.textContent = "已停止監測。需要時可再次啟動。";
+    }
+
+    threshold.addEventListener("input", updateLabels);
+    sensitivity.addEventListener("input", updateLabels);
+    startButton.addEventListener("click", startMonitor);
+    stopButton.addEventListener("click", stopMonitor);
+    soundButton.addEventListener("click", () => {
+      soundEnabled = !soundEnabled;
+      soundButton.textContent = soundEnabled ? "提示音：開" : "提示音：關";
+      soundButton.setAttribute("aria-pressed", String(soundEnabled));
+    });
+
+    updateLabels();
+    updateVisual(0);
+  </script>
+</body>
+</html>
