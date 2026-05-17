@@ -6,24 +6,26 @@
   <title>智慧聯絡簿</title>
   <style>
     :root {
-      --ink: #eaf2ff;
-      --muted: #94a8c6;
-      --deep: #0f1726;
-      --rail: #151d2c;
-      --rail-2: #101827;
-      --panel: #182437;
-      --panel-2: #20304a;
-      --line: rgba(148, 168, 198, 0.24);
-      --purple: #635bff;
-      --blue: #4f8cff;
-      --green: #22b98f;
-      --yellow: #ffe94d;
-      --red: #ff5d73;
-      --pink: #ff8fc7;
-      --orange: #ffad4d;
-      --chalk: #f7fff5;
-      --chalk-soft: rgba(247, 255, 245, 0.62);
-      --chalk-font: "Comic Sans MS", "DFKai-SB", "KaiTi", "Microsoft JhengHei", cursive;
+      --ink: #27415f;
+      --muted: #6d7f96;
+      --paper: #fffaf0;
+      --sky: #dff4ff;
+      --mint: #dcf8eb;
+      --sun: #ffe58a;
+      --pink: #ffddec;
+      --peach: #ffe2c8;
+      --purple: #d9d6ff;
+      --blue: #8ac8ff;
+      --green: #62d2a2;
+      --red: #ff6f8d;
+      --orange: #ffad5b;
+      --line: rgba(73, 97, 127, 0.18);
+      --chalkboard: #2c785f;
+      --chalk: #fffdf1;
+      --chalk-yellow: #fff06a;
+      --shadow: 0 18px 44px rgba(60, 87, 118, 0.16);
+      --font-ui: "Segoe UI", "Noto Sans TC", "Microsoft JhengHei", system-ui, sans-serif;
+      --font-board: "Comic Sans MS", "DFKai-SB", "KaiTi", "Microsoft JhengHei", cursive;
     }
 
     * { box-sizing: border-box; }
@@ -31,29 +33,59 @@
     body {
       margin: 0;
       min-height: 100vh;
-      font-family: "Segoe UI", "Noto Sans TC", system-ui, sans-serif;
+      font-family: var(--font-ui);
       color: var(--ink);
-      background: #080b10;
+      background:
+        radial-gradient(circle at 8% 12%, rgba(255, 225, 128, 0.7), transparent 22%),
+        radial-gradient(circle at 85% 14%, rgba(255, 194, 220, 0.8), transparent 23%),
+        linear-gradient(135deg, #eaf8ff 0%, #fff5d9 52%, #f4eaff 100%);
+      overflow-x: hidden;
+    }
+
+    body::before,
+    body::after {
+      position: fixed;
+      z-index: 0;
+      font-size: clamp(54px, 7vw, 110px);
+      opacity: 0.18;
+      pointer-events: none;
+    }
+
+    body::before {
+      content: "✏️";
+      left: 26px;
+      bottom: 28px;
+      transform: rotate(-16deg);
+    }
+
+    body::after {
+      content: "🌈";
+      right: 28px;
+      top: 74px;
+      transform: rotate(8deg);
     }
 
     a { color: inherit; text-decoration: none; }
-    button, input, textarea, select { font: inherit; }
+    button, input, select { font: inherit; }
 
     .app {
+      position: relative;
+      z-index: 1;
       min-height: 100vh;
       display: grid;
-      grid-template-rows: 56px 1fr;
-      background: #07090d;
+      grid-template-rows: auto 1fr;
     }
 
     .topbar {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 14px;
-      padding: 0 16px;
-      border-bottom: 1px solid var(--line);
-      background: #111827;
+      gap: 16px;
+      padding: 14px 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.72);
+      background: rgba(255, 255, 255, 0.68);
+      backdrop-filter: blur(16px);
+      box-shadow: 0 10px 30px rgba(80, 110, 145, 0.1);
     }
 
     .brand {
@@ -66,442 +98,525 @@
     .brand-mark {
       display: grid;
       place-items: center;
-      width: 36px;
-      height: 36px;
-      border-radius: 10px;
-      background: #28236f;
-      color: #b9c4ff;
-      font-size: 22px;
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #7fc8ff, #ffd66e);
+      box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.08);
+      font-size: 24px;
     }
 
     .brand h1 {
       margin: 0;
-      font-size: 19px;
+      color: #263b5b;
+      font-size: 22px;
       line-height: 1.1;
+      letter-spacing: 0;
     }
 
-    .brand span {
+    .brand span span {
       display: block;
-      margin-top: 3px;
+      margin-top: 4px;
       color: var(--muted);
       font-size: 12px;
-      font-weight: 700;
+      font-weight: 800;
     }
 
     .top-actions {
       display: flex;
       align-items: center;
+      flex-wrap: wrap;
+      justify-content: flex-end;
       gap: 10px;
     }
 
     .select,
     .icon-button,
-    .back-link {
-      min-height: 36px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      color: var(--ink);
-      background: #1a2638;
-      font-weight: 850;
+    .back-link,
+    .primary-button,
+    .ghost-button {
+      min-height: 38px;
+      border: 0;
+      border-radius: 999px;
+      color: #284466;
+      background: #fff;
+      box-shadow: 0 6px 16px rgba(74, 99, 130, 0.14);
+      font-weight: 900;
     }
 
     .select {
-      padding: 0 10px;
+      padding: 0 12px;
+      border: 2px solid rgba(116, 150, 190, 0.22);
     }
 
     .icon-button,
-    .back-link {
+    .back-link,
+    .primary-button,
+    .ghost-button {
       display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 6px;
-      padding: 0 12px;
+      padding: 0 14px;
       cursor: pointer;
+    }
+
+    .primary-button {
+      color: #fff;
+      background: linear-gradient(135deg, #ff8a62, #ff6f9f);
+    }
+
+    .ghost-button.danger,
+    .delete-button {
+      color: #a42d45;
+      background: #ffe3eb;
     }
 
     .workspace {
       display: grid;
-      grid-template-columns: 280px 1fr 300px;
-      min-height: calc(100vh - 56px);
+      grid-template-columns: 285px 1fr 255px;
+      gap: 16px;
+      padding: 18px;
+      min-height: calc(100vh - 71px);
     }
 
-    .left-rail,
-    .right-rail {
-      background: var(--rail);
-      border-color: var(--line);
-      overflow: auto;
+    .side-panel,
+    .tool-panel,
+    .calendar-panel {
+      border: 2px solid rgba(255, 255, 255, 0.72);
+      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.72);
+      box-shadow: var(--shadow);
+      overflow: hidden;
     }
 
-    .left-rail {
-      border-right: 1px solid var(--line);
+    .side-panel {
+      display: grid;
+      grid-template-rows: auto auto 1fr;
+      align-content: start;
     }
 
-    .right-rail {
-      border-left: 1px solid var(--line);
-    }
-
-    .rail-section {
+    .panel-section {
       padding: 16px;
-      border-bottom: 1px solid var(--line);
+      border-bottom: 1px dashed rgba(79, 109, 146, 0.22);
     }
 
-    .rail-title {
+    .panel-section:last-child { border-bottom: 0; }
+
+    .panel-title {
       display: flex;
       align-items: center;
       justify-content: space-between;
       margin: 0 0 12px;
-      font-size: 15px;
-      color: #dce8ff;
-    }
-
-    .countdown-list {
-      display: grid;
-      gap: 8px;
-    }
-
-    .event-card {
-      display: grid;
-      gap: 4px;
-      padding: 11px 12px;
-      border: 1px solid #334762;
-      border-radius: 8px;
-      background: #1e2b40;
-    }
-
-    .event-card.urgent {
-      border-color: rgba(255, 93, 115, 0.8);
-      background: #4b1830;
-      animation: alertPulse 1.1s ease-in-out infinite;
-    }
-
-    @keyframes alertPulse {
-      50% { box-shadow: 0 0 0 5px rgba(255, 93, 115, 0.16); }
-    }
-
-    .event-card strong {
-      color: #fff;
-      font-size: 15px;
-    }
-
-    .event-card span {
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: 800;
+      color: #355174;
+      font-size: 16px;
+      font-weight: 1000;
     }
 
     label {
       display: grid;
       gap: 6px;
+      margin-bottom: 10px;
       color: var(--muted);
       font-size: 13px;
-      font-weight: 850;
-      margin-bottom: 10px;
-    }
-
-    input,
-    textarea,
-    select {
-      width: 100%;
-      border: 1px solid #334762;
-      border-radius: 8px;
-      color: #fff;
-      background: #1d2a3e;
-      font-weight: 850;
-    }
-
-    input,
-    select {
-      min-height: 38px;
-      padding: 0 10px;
-    }
-
-    textarea {
-      min-height: 100px;
-      padding: 10px;
-      resize: vertical;
-      line-height: 1.55;
-    }
-
-    .primary-button {
-      width: 100%;
-      min-height: 40px;
-      border: 0;
-      border-radius: 8px;
-      color: #fff;
-      background: linear-gradient(135deg, var(--purple), var(--blue));
-      cursor: pointer;
-      font-weight: 950;
-    }
-
-    .month-title {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 12px;
-      color: #fff;
-      font-weight: 950;
-    }
-
-    .calendar {
-      display: grid;
-      grid-template-columns: repeat(7, minmax(0, 1fr));
-      gap: 7px;
-    }
-
-    .week-head,
-    .day-button {
-      min-height: 31px;
-      display: grid;
-      place-items: center;
-      border: 0;
-      border-radius: 7px;
-      background: transparent;
-      color: #b8cef2;
-      font-weight: 850;
-    }
-
-    .week-head {
-      color: #7f91ad;
-      font-size: 12px;
-    }
-
-    .day-button {
-      position: relative;
-      cursor: pointer;
-      font-size: 13px;
-    }
-
-    .day-button.active {
-      color: #fff;
-      background: var(--purple);
-    }
-
-    .day-button .dot {
-      position: absolute;
-      right: 3px;
-      top: 3px;
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--green);
-    }
-
-    .history-item {
-      width: 100%;
-      min-height: 48px;
-      margin-bottom: 8px;
-      padding: 0 14px;
-      border: 1px solid #4f46e5;
-      border-radius: 10px;
-      text-align: left;
-      color: #d8dcff;
-      background: #241e5a;
-      cursor: pointer;
       font-weight: 900;
     }
 
-    .stage {
+    input {
+      width: 100%;
+      min-height: 38px;
+      padding: 0 12px;
+      border: 2px solid rgba(116, 150, 190, 0.22);
+      border-radius: 14px;
+      color: var(--ink);
+      background: #fff;
+      font-weight: 900;
+    }
+
+    .countdown-list,
+    .history-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .event-card,
+    .history-item {
+      display: grid;
+      gap: 5px;
+      position: relative;
+      width: 100%;
+      padding: 12px 42px 12px 13px;
+      border: 2px solid rgba(255, 255, 255, 0.8);
+      border-radius: 18px;
+      color: #2b4769;
+      background: linear-gradient(135deg, #fff4b8, #ffe0ed);
+      box-shadow: 0 8px 18px rgba(93, 112, 142, 0.12);
+      text-align: left;
+      font-weight: 900;
+    }
+
+    .event-card.today {
+      color: #7b2330;
+      background: linear-gradient(135deg, #ff7f7f, #ffd166);
+      animation: pulse 1s ease-in-out infinite;
+    }
+
+    .event-card.soon {
+      color: #7f3c00;
+      background: linear-gradient(135deg, #ffd166, #fff1a8);
+    }
+
+    @keyframes pulse {
+      50% { transform: translateY(-1px); box-shadow: 0 0 0 6px rgba(255, 111, 141, 0.18); }
+    }
+
+    .event-card strong,
+    .history-item strong {
+      color: inherit;
+      font-size: 15px;
+    }
+
+    .event-card span,
+    .history-item span {
+      color: rgba(39, 65, 95, 0.72);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .delete-button {
+      position: absolute;
+      top: 9px;
+      right: 9px;
       display: grid;
       place-items: center;
-      padding: 32px;
-      background: #05070b;
-      overflow: auto;
+      width: 28px;
+      height: 28px;
+      border: 0;
+      border-radius: 50%;
+      cursor: pointer;
+      font-weight: 1000;
+    }
+
+    .stage-wrap {
+      display: grid;
+      grid-template-rows: 1fr auto;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .stage {
+      position: relative;
+      display: grid;
+      place-items: stretch;
+      min-height: 560px;
+      padding: 18px;
+      border-radius: 30px;
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.28)),
+        repeating-linear-gradient(90deg, transparent 0 64px, rgba(255, 255, 255, 0.45) 64px 66px);
+      box-shadow: var(--shadow);
+    }
+
+    .stage::before,
+    .stage::after {
+      position: absolute;
+      z-index: 2;
+      font-size: 42px;
+      pointer-events: none;
+    }
+
+    .stage::before {
+      content: "⭐";
+      top: 8px;
+      left: 18px;
+      transform: rotate(-10deg);
+    }
+
+    .stage::after {
+      content: "🎒";
+      right: 18px;
+      bottom: 12px;
+      transform: rotate(8deg);
     }
 
     .blackboard {
       position: relative;
-      width: min(100%, 1210px);
-      min-height: min(76vh, 760px);
-      padding: clamp(34px, 4vw, 54px);
-      border-radius: 16px;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: 20px;
+      min-height: 100%;
+      padding: 42px 46px 58px;
+      border: 10px solid #d9ad72;
+      border-radius: 24px;
       color: var(--chalk);
       background:
-        radial-gradient(circle, rgba(255, 255, 255, 0.055) 1px, transparent 1.5px) 0 0 / 24px 24px,
-        linear-gradient(135deg, rgba(255, 255, 255, 0.04), transparent 36%),
-        #204f42;
-      font-family: var(--chalk-font);
-      box-shadow:
-        inset 0 -16px 0 rgba(0, 0, 0, 0.16),
-        0 22px 60px rgba(0, 0, 0, 0.4);
+        radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.07) 0 1px, transparent 2px),
+        linear-gradient(135deg, #2d8467, #1f5a49);
+      background-size: 22px 22px, auto;
+      box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.08), 0 16px 28px rgba(50, 70, 90, 0.16);
+      font-family: var(--font-board);
     }
 
     .blackboard::after {
       content: "";
       position: absolute;
-      left: 0;
-      right: 0;
-      bottom: -13px;
-      height: 18px;
-      border-radius: 0 0 12px 12px;
-      background: linear-gradient(180deg, #c3a47a, #71593a);
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.34);
-    }
-
-    .chalks {
-      position: absolute;
-      left: 50%;
-      bottom: -18px;
-      display: flex;
-      gap: 12px;
-      transform: translateX(-50%);
-      z-index: 2;
-    }
-
-    .chalk {
-      width: 34px;
-      height: 5px;
+      left: 36px;
+      right: 36px;
+      bottom: 18px;
+      height: 10px;
       border-radius: 999px;
-      background: var(--chalk-color);
+      background: linear-gradient(90deg, #b98953, #f1d39b, #9a6b41);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.22);
     }
 
     .date-line {
-      margin: 0 0 32px;
-      color: var(--yellow);
-      font-size: clamp(32px, 4vw, 44px);
-      line-height: 1.2;
-      font-weight: 900;
+      margin: 0;
+      color: var(--chalk-yellow);
+      font-size: clamp(28px, 3vw, 44px);
+      font-weight: 1000;
       letter-spacing: 0;
     }
 
-    .board-list {
+    .board-sections {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+      min-height: 0;
+    }
+
+    .board-section {
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .board-section h2 {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
       margin: 0;
-      padding: 0 8% 0 4%;
-      list-style: none;
-      display: grid;
-      gap: 28px;
-      font-size: clamp(28px, 3vw, 42px);
+      padding-bottom: 9px;
+      border-bottom: 2px solid rgba(255, 255, 255, 0.22);
+      color: #eafffb;
+      font-size: clamp(21px, 2vw, 30px);
+      font-weight: 1000;
+    }
+
+    .editable-board {
+      min-height: 330px;
+      padding: 8px 2px 18px;
+      outline: 0;
+      color: var(--chalk);
+      font-size: clamp(25px, 2.25vw, 36px);
       font-weight: 900;
-      line-height: 1.35;
+      line-height: 1.8;
+      white-space: pre-wrap;
+      word-break: break-word;
+      caret-color: var(--chalk-yellow);
     }
 
-    .board-list li {
-      display: grid;
-      grid-template-columns: 56px 1fr;
-      gap: 10px;
-      align-items: baseline;
-      border-bottom: 1px solid rgba(247, 255, 245, 0.15);
-      padding-bottom: 12px;
+    .editable-board:empty::before {
+      content: attr(data-placeholder);
+      color: rgba(255, 255, 255, 0.42);
     }
 
-    .item-number {
-      color: rgba(247, 255, 245, 0.62);
-      text-align: right;
-    }
-
-    .item-text.notice {
-      color: #ffd3de;
-    }
-
-    .item-text.items {
-      color: #d8f5ff;
-    }
-
-    .empty-line {
-      color: rgba(247, 255, 245, 0.32);
+    .editable-board:focus {
+      text-shadow: 0 0 10px rgba(255, 240, 106, 0.22);
     }
 
     .blackboard.vertical {
       display: flex;
       flex-direction: row-reverse;
-      align-items: flex-start;
-      gap: clamp(42px, 6vw, 86px);
-      min-height: min(76vh, 760px);
-      padding-right: clamp(44px, 5vw, 72px);
+      align-items: stretch;
+      gap: 28px;
+      overflow-x: auto;
+      padding: 36px 46px 64px;
     }
 
     .blackboard.vertical .date-line {
+      flex: 0 0 auto;
       writing-mode: vertical-rl;
-      margin: 0;
-      min-height: 430px;
-      font-size: clamp(31px, 3.8vw, 44px);
-      line-height: 1.55;
+      text-orientation: upright;
+      line-height: 1.15;
+      white-space: nowrap;
     }
 
-    .blackboard.vertical .board-list {
+    .blackboard.vertical .board-sections {
       display: flex;
       flex-direction: row-reverse;
-      align-items: flex-start;
-      gap: clamp(36px, 5vw, 72px);
-      padding: 34px 0 0;
-      font-size: clamp(30px, 3.4vw, 44px);
+      align-items: stretch;
+      gap: 26px;
+      min-width: max-content;
     }
 
-    .blackboard.vertical .board-list li {
+    .blackboard.vertical .board-section {
       display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 14px;
-      min-height: 430px;
-      border-bottom: 0;
-      padding: 0;
+      flex-direction: row-reverse;
+      gap: 12px;
+      min-width: 150px;
+      height: 100%;
+    }
+
+    .blackboard.vertical .board-section h2,
+    .blackboard.vertical .editable-board {
       writing-mode: vertical-rl;
+      text-orientation: upright;
+      line-height: 1.45;
     }
 
-    .blackboard.vertical .item-number {
-      text-align: center;
-      writing-mode: horizontal-tb;
+    .blackboard.vertical .board-section h2 {
+      align-items: flex-start;
+      min-height: 330px;
+      padding: 0 0 0 10px;
+      border-bottom: 0;
+      border-left: 2px solid rgba(255, 255, 255, 0.24);
     }
 
-    .right-head {
-      min-height: 60px;
+    .blackboard.vertical .editable-board {
+      min-width: 88px;
+      min-height: 360px;
+      max-height: 520px;
+      overflow: auto;
+      white-space: pre-wrap;
+    }
+
+    .tool-panel {
+      align-self: start;
+      padding: 16px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(255, 245, 209, 0.72));
+    }
+
+    .tool-grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    .quick-button {
+      width: 100%;
+      min-height: 44px;
+      padding: 10px 12px;
+      border: 2px solid rgba(255, 255, 255, 0.86);
+      border-radius: 16px;
+      color: #2d496c;
+      background: #eef8ff;
+      box-shadow: 0 8px 16px rgba(80, 105, 135, 0.12);
+      text-align: left;
+      cursor: pointer;
+      font-weight: 1000;
+    }
+
+    .quick-button:nth-child(3n + 1) { background: #e6f8ff; }
+    .quick-button:nth-child(3n + 2) { background: #fff0b8; }
+    .quick-button:nth-child(3n) { background: #ffe3ee; }
+    .quick-button.alert { color: #a51f42; background: #ffd8e4; }
+
+    .status {
+      min-height: 24px;
+      margin-top: 12px;
+      color: #6a7e95;
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .calendar-panel {
+      padding: 14px;
+    }
+
+    .calendar-toolbar {
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 10px;
-      padding: 0 16px;
-      border-bottom: 1px solid var(--line);
-      color: #fff;
-      font-weight: 950;
-      background: #13203a;
+      margin-bottom: 10px;
     }
 
-    .quick-list {
+    .month-title {
+      color: #2e4b6e;
+      font-size: 18px;
+      font-weight: 1000;
+      text-align: center;
+    }
+
+    .calendar {
       display: grid;
-      gap: 10px;
-      padding: 14px;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 8px;
     }
 
-    .quick-button {
-      min-height: 40px;
-      padding: 10px 12px;
-      border: 1px solid #334762;
-      border-radius: 10px;
-      color: #fff;
-      background: #1e2b40;
+    .week-head {
+      color: #7890aa;
+      font-size: 12px;
+      font-weight: 1000;
+      text-align: center;
+    }
+
+    .day-button {
+      position: relative;
+      display: grid;
+      place-items: center;
+      min-height: 44px;
+      border: 0;
+      border-radius: 14px;
+      color: #385779;
+      background: rgba(255, 255, 255, 0.72);
       cursor: pointer;
-      font-weight: 900;
-      text-align: left;
+      font-weight: 1000;
     }
 
-    .quick-button.alert {
+    .day-button.outside {
+      opacity: 0.42;
+    }
+
+    .day-button.active {
       color: #fff;
-      border-color: #ff0f62;
-      background: #4b1230;
+      background: linear-gradient(135deg, #6fb6ff, #8d7dff);
     }
 
-    .editor-block {
-      padding: 0 14px 16px;
+    .day-button.has-content::after {
+      content: "";
+      position: absolute;
+      bottom: 6px;
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: #4bd58f;
     }
 
-    .status {
-      min-height: 24px;
-      padding: 0 14px 14px;
-      color: #b9c4ff;
-      font-weight: 850;
-    }
-
-    @media (max-width: 1180px) {
+    @media (max-width: 1120px) {
       .workspace {
         grid-template-columns: 1fr;
       }
 
-      .left-rail,
-      .right-rail {
-        border: 0;
+      .side-panel {
+        grid-template-rows: auto;
       }
 
-      .stage {
-        padding: 18px;
+      .board-sections {
+        grid-template-columns: 1fr;
+      }
+
+      .tool-panel {
+        order: -1;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .top-actions {
+        justify-content: flex-start;
+      }
+
+      .workspace {
+        padding: 10px;
+      }
+
+      .blackboard {
+        padding: 30px 22px 56px;
       }
     }
   </style>
@@ -513,7 +628,7 @@
         <span class="brand-mark">📖</span>
         <span>
           <h1>智慧聯絡簿</h1>
-          <span>聯絡事項、作業與倒數提醒</span>
+          <span>直接在黑板書寫，投影更清楚</span>
         </span>
       </a>
       <div class="top-actions">
@@ -521,19 +636,19 @@
           <option value="horizontal">橫排顯示</option>
           <option value="vertical">直排顯示</option>
         </select>
-        <button class="icon-button" id="fullscreenButton" type="button">大屏投影模式</button>
-        <button class="icon-button" id="copyButton" type="button">輸出</button>
+        <button class="icon-button" id="fullscreenButton" type="button">🔍 大屏投影</button>
+        <button class="icon-button" id="copyButton" type="button">📋 複製內容</button>
       </div>
     </header>
 
     <main class="workspace">
-      <aside class="left-rail">
-        <section class="rail-section">
-          <h2 class="rail-title">倒數事件</h2>
+      <aside class="side-panel">
+        <section class="panel-section">
+          <h2 class="panel-title">⏰ 倒數事件</h2>
           <div class="countdown-list" id="eventCards"></div>
           <label>
             事件名稱
-            <input id="eventTitle" type="text" placeholder="期末考、校外教學">
+            <input id="eventTitle" type="text" placeholder="例如：期末考">
           </label>
           <label>
             事件日期
@@ -542,61 +657,46 @@
           <button class="primary-button" id="saveEvent" type="button">新增倒數</button>
         </section>
 
-        <section class="rail-section">
-          <div class="month-title">
-            <span id="monthTitle"></span>
-            <span>近 14 天</span>
-          </div>
-          <div class="calendar" id="calendarGrid"></div>
-        </section>
-
-        <section class="rail-section">
-          <h2 class="rail-title">歷史紀錄</h2>
-          <div id="historyList"></div>
+        <section class="panel-section">
+          <h2 class="panel-title">🗂 歷史紀錄</h2>
+          <div class="history-list" id="historyList"></div>
         </section>
       </aside>
 
-      <section class="stage">
-        <article class="blackboard" id="blackboard" aria-live="polite">
-          <p class="date-line" id="selectedDateText"></p>
-          <ol class="board-list" id="boardList"></ol>
-          <div class="chalks" aria-hidden="true">
-            <span class="chalk" style="--chalk-color: #fff"></span>
-            <span class="chalk" style="--chalk-color: #ffe94d"></span>
-            <span class="chalk" style="--chalk-color: #ff8fc7"></span>
-            <span class="chalk" style="--chalk-color: #8bd7ff"></span>
+      <section class="stage-wrap">
+        <section class="stage">
+          <article class="blackboard" id="blackboard" aria-live="polite">
+            <p class="date-line" id="selectedDateText"></p>
+            <div class="board-sections">
+              <section class="board-section" data-category="homework">
+                <h2>📝 今日作業</h2>
+                <div class="editable-board" id="homeworkEditor" contenteditable="true" spellcheck="false" data-placeholder="點這裡直接輸入作業..."></div>
+              </section>
+              <section class="board-section" data-category="items">
+                <h2>🎒 準備物品</h2>
+                <div class="editable-board" id="itemsEditor" contenteditable="true" spellcheck="false" data-placeholder="點這裡輸入明天要帶的物品..."></div>
+              </section>
+              <section class="board-section" data-category="notice">
+                <h2>📣 重要宣導</h2>
+                <div class="editable-board" id="noticeEditor" contenteditable="true" spellcheck="false" data-placeholder="點這裡輸入提醒事項..."></div>
+              </section>
+            </div>
+          </article>
+        </section>
+
+        <section class="calendar-panel">
+          <div class="calendar-toolbar">
+            <button class="ghost-button" id="prevMonth" type="button">‹ 上個月</button>
+            <div class="month-title" id="monthTitle"></div>
+            <button class="ghost-button" id="nextMonth" type="button">下個月 ›</button>
           </div>
-        </article>
+          <div class="calendar" id="calendarGrid"></div>
+        </section>
       </section>
 
-      <aside class="right-rail">
-        <div class="right-head">
-          <span>快速插入面板</span>
-          <button class="icon-button" id="saveContent" type="button">儲存</button>
-        </div>
-        <div class="quick-list" id="quickList"></div>
-        <div class="editor-block">
-          <label>
-            插入到
-            <select id="targetCategory">
-              <option value="homework">今日作業</option>
-              <option value="items">準備物品</option>
-              <option value="notice">重要宣導</option>
-            </select>
-          </label>
-          <label>
-            今日作業
-            <textarea id="homeworkText"></textarea>
-          </label>
-          <label>
-            準備物品
-            <textarea id="itemsText"></textarea>
-          </label>
-          <label>
-            重要宣導
-            <textarea id="noticeText"></textarea>
-          </label>
-        </div>
+      <aside class="tool-panel">
+        <h2 class="panel-title">✨ 快捷貼紙</h2>
+        <div class="tool-grid" id="quickList"></div>
         <div class="status" id="statusText"></div>
       </aside>
     </main>
@@ -605,7 +705,6 @@
   <script>
     const storageKey = "jessie-toolbox-contact-book";
     const blackboard = document.querySelector("#blackboard");
-    const boardList = document.querySelector("#boardList");
     const selectedDateText = document.querySelector("#selectedDateText");
     const viewMode = document.querySelector("#viewMode");
     const fullscreenButton = document.querySelector("#fullscreenButton");
@@ -614,24 +713,26 @@
     const eventTitle = document.querySelector("#eventTitle");
     const eventDate = document.querySelector("#eventDate");
     const saveEvent = document.querySelector("#saveEvent");
-    const monthTitle = document.querySelector("#monthTitle");
-    const calendarGrid = document.querySelector("#calendarGrid");
     const historyList = document.querySelector("#historyList");
     const quickList = document.querySelector("#quickList");
-    const targetCategory = document.querySelector("#targetCategory");
-    const homeworkText = document.querySelector("#homeworkText");
-    const itemsText = document.querySelector("#itemsText");
-    const noticeText = document.querySelector("#noticeText");
-    const saveContent = document.querySelector("#saveContent");
     const statusText = document.querySelector("#statusText");
+    const calendarGrid = document.querySelector("#calendarGrid");
+    const monthTitle = document.querySelector("#monthTitle");
+    const prevMonth = document.querySelector("#prevMonth");
+    const nextMonth = document.querySelector("#nextMonth");
+    const editors = {
+      homework: document.querySelector("#homeworkEditor"),
+      items: document.querySelector("#itemsEditor"),
+      notice: document.querySelector("#noticeEditor")
+    };
 
     const quickButtons = [
-      { label: "國習 P.～P.", text: "國習 P. ～ P.", category: "homework" },
-      { label: "甲本 P.～P.", text: "甲本 P. ～ P.", category: "homework" },
-      { label: "乙本 P.～P.", text: "乙本 P. ～ P.", category: "homework" },
-      { label: "社習 P.～P.", text: "社習 P. ～ P.", category: "homework" },
-      { label: "自習 P.～P.", text: "自習 P. ～ P.", category: "homework" },
-      { label: "數習 P.～P.", text: "數習 P. ～ P.", category: "homework" },
+      { label: "國習 P.～P.", text: "國習 P.～P.", category: "homework" },
+      { label: "甲本 P.～P.", text: "甲本 P.～P.", category: "homework" },
+      { label: "乙本 P.～P.", text: "乙本 P.～P.", category: "homework" },
+      { label: "社習 P.～P.", text: "社習 P.～P.", category: "homework" },
+      { label: "自習 P.～P.", text: "自習 P.～P.", category: "homework" },
+      { label: "數習 P.～P.", text: "數習 P.～P.", category: "homework" },
       { label: "考", text: "考", category: "notice" },
       { label: "★ 訂正", text: "訂正", category: "homework", alert: true },
       { label: "★ 簽名", text: "簽名", category: "items", alert: true },
@@ -640,7 +741,15 @@
       { label: "閱讀「」", text: "閱讀「」", category: "homework" }
     ];
 
+    const categoryNames = {
+      homework: "今日作業",
+      items: "準備物品",
+      notice: "重要宣導"
+    };
+
     let selectedDate = toDateKey(new Date());
+    let visibleMonth = new Date();
+    let activeCategory = "homework";
     let state = loadState();
 
     function loadState() {
@@ -685,48 +794,71 @@
       return `${date.getMonth() + 1}/${date.getDate()}`;
     }
 
+    function normalizeEntry(entry = {}) {
+      return {
+        homework: Array.isArray(entry.homework) ? entry.homework.join("\n") : (entry.homework || ""),
+        items: Array.isArray(entry.items) ? entry.items.join("\n") : (entry.items || ""),
+        notice: Array.isArray(entry.notice) ? entry.notice.join("\n") : (entry.notice || "")
+      };
+    }
+
     function currentEntry() {
       if (!state.entries[selectedDate]) {
         state.entries[selectedDate] = { homework: "", items: "", notice: "" };
       }
+      state.entries[selectedDate] = normalizeEntry(state.entries[selectedDate]);
       return state.entries[selectedDate];
     }
 
-    function hasContent(key) {
-      const entry = state.entries[key];
-      return !!entry && Object.values(entry).some((value) => value.trim());
-    }
-
-    function lines(text, category) {
-      return text
+    function lines(value) {
+      return (value || "")
         .split(/\n+/)
         .map((line) => line.trim())
-        .filter(Boolean)
-        .map((text) => ({ text: text.replace(/^▶\s*/, ""), category }));
+        .filter(Boolean);
     }
 
-    function boardItems() {
+    function hasContent(key) {
+      const entry = normalizeEntry(state.entries[key] || {});
+      return Object.values(entry).some((value) => value.trim());
+    }
+
+    function entryCount(key) {
+      const entry = normalizeEntry(state.entries[key] || {});
+      return Object.values(entry).flatMap(lines).length;
+    }
+
+    function editorText(editor) {
+      return editor.innerText
+        .replace(/\u00a0/g, " ")
+        .replace(/\n{3,}/g, "\n\n")
+        .trim();
+    }
+
+    function setEditorText(editor, text) {
+      editor.textContent = text || "";
+    }
+
+    function loadEntryToEditors() {
       const entry = currentEntry();
-      return [
-        ...lines(entry.homework || "", "homework"),
-        ...lines(entry.items || "", "items"),
-        ...lines(entry.notice || "", "notice")
-      ];
+      Object.entries(editors).forEach(([category, editor]) => {
+        setEditorText(editor, entry[category] || "");
+      });
+      selectedDateText.textContent = formatRocDate(selectedDate);
+      statusText.textContent = `正在編輯 ${shortDate(selectedDate)}`;
     }
 
-    function renderBoard() {
-      const items = boardItems();
-      selectedDateText.textContent = formatRocDate(selectedDate);
-      blackboard.classList.toggle("vertical", viewMode.value === "vertical");
-      boardList.innerHTML = "";
-
-      const rows = items.length ? items : [{ text: "輸入後按 Enter，或點右側模板", category: "empty" }];
-      rows.forEach((item, index) => {
-        const li = document.createElement("li");
-        li.innerHTML = `<span class="item-number">${items.length ? `${index + 1}.` : "+"}</span><span class="item-text ${item.category}">${item.text}</span>`;
-        if (!items.length) li.classList.add("empty-line");
-        boardList.appendChild(li);
-      });
+    function saveEditors() {
+      state.entries[selectedDate] = {
+        homework: editorText(editors.homework),
+        items: editorText(editors.items),
+        notice: editorText(editors.notice)
+      };
+      if (!hasContent(selectedDate)) {
+        delete state.entries[selectedDate];
+      }
+      saveState();
+      renderCalendar();
+      renderHistory();
     }
 
     function renderEvents() {
@@ -734,121 +866,28 @@
       const today = parseKey(toDateKey(new Date()));
       const events = state.events.slice().sort((a, b) => parseKey(a.date) - parseKey(b.date));
       if (!events.length) {
-        eventCards.innerHTML = '<article class="event-card"><strong>尚未新增倒數</strong><span>可加入考試、校外教學、活動提醒。</span></article>';
+        eventCards.innerHTML = '<article class="event-card"><strong>尚未新增倒數</strong><span>可加入考試、活動或重要提醒。</span></article>';
         return;
       }
       events.forEach((event) => {
         const days = Math.ceil((parseKey(event.date) - today) / 86400000);
         const card = document.createElement("article");
-        card.className = `event-card ${days <= 3 && days >= 0 ? "urgent" : ""}`;
-        card.innerHTML = `<strong>📅 ${event.title || "重要事件"}：${days < 0 ? "已到期" : `還有 ${days} 天`}</strong><span>${event.date}</span>`;
+        card.className = `event-card ${days === 0 ? "today" : days > 0 && days <= 3 ? "soon" : ""}`;
+        card.innerHTML = `
+          <strong>📌 ${event.title || "重要事件"}</strong>
+          <span>${days < 0 ? `已過 ${Math.abs(days)} 天` : days === 0 ? "就是今天" : `還有 ${days} 天`}｜${event.date}</span>
+          <button class="delete-button" type="button" aria-label="刪除 ${event.title || "倒數事件"}">×</button>
+        `;
+        card.querySelector("button").addEventListener("click", () => deleteEvent(event.id));
         eventCards.appendChild(card);
       });
-    }
-
-    function renderCalendar() {
-      calendarGrid.innerHTML = "";
-      const today = new Date();
-      monthTitle.textContent = `${today.getFullYear()} 年 ${today.getMonth() + 1} 月`;
-      "日一二三四五六".split("").forEach((day) => {
-        const head = document.createElement("div");
-        head.className = "week-head";
-        head.textContent = day;
-        calendarGrid.appendChild(head);
-      });
-      const start = new Date();
-      start.setDate(start.getDate() - 3);
-      for (let index = 0; index < 14; index += 1) {
-        const date = new Date(start);
-        date.setDate(start.getDate() + index);
-        const key = toDateKey(date);
-        const button = document.createElement("button");
-        button.className = `day-button ${key === selectedDate ? "active" : ""}`;
-        button.type = "button";
-        button.innerHTML = `${date.getDate()}${hasContent(key) ? '<span class="dot"></span>' : ""}`;
-        button.addEventListener("click", () => {
-          selectedDate = key;
-          loadEntryToEditors();
-          render();
-        });
-        calendarGrid.appendChild(button);
-      }
-    }
-
-    function renderHistory() {
-      historyList.innerHTML = "";
-      const keys = Object.keys(state.entries).filter(hasContent).sort().reverse().slice(0, 8);
-      if (!keys.length) {
-        historyList.innerHTML = '<div class="event-card"><span>尚未有歷史紀錄</span></div>';
-        return;
-      }
-      keys.forEach((key) => {
-        const count = Object.values(state.entries[key]).flatMap((text) => text.split(/\n+/).filter(Boolean)).length;
-        const button = document.createElement("button");
-        button.className = "history-item";
-        button.type = "button";
-        button.textContent = `${key} (${count} 項)`;
-        button.addEventListener("click", () => {
-          selectedDate = key;
-          loadEntryToEditors();
-          render();
-        });
-        historyList.appendChild(button);
-      });
-    }
-
-    function renderQuickButtons() {
-      quickList.innerHTML = "";
-      quickButtons.forEach((item) => {
-        const button = document.createElement("button");
-        button.className = `quick-button ${item.alert ? "alert" : ""}`;
-        button.type = "button";
-        button.textContent = item.label;
-        button.addEventListener("click", () => {
-          targetCategory.value = item.category;
-          insertText(item.text);
-        });
-        quickList.appendChild(button);
-      });
-    }
-
-    function editorByCategory(category) {
-      return { homework: homeworkText, items: itemsText, notice: noticeText }[category];
-    }
-
-    function loadEntryToEditors() {
-      const entry = currentEntry();
-      homeworkText.value = entry.homework || "";
-      itemsText.value = entry.items || "";
-      noticeText.value = entry.notice || "";
-      statusText.textContent = `已切換到 ${shortDate(selectedDate)}`;
-    }
-
-    function saveEditors() {
-      state.entries[selectedDate] = {
-        homework: homeworkText.value,
-        items: itemsText.value,
-        notice: noticeText.value
-      };
-      saveState();
-      statusText.textContent = "已更新黑板";
-      render();
-    }
-
-    function insertText(text) {
-      const editor = editorByCategory(targetCategory.value);
-      const prefix = editor.value.trim() ? "\n" : "";
-      editor.value += `${prefix}${text}`;
-      editor.focus();
-      editor.selectionStart = editor.selectionEnd = editor.value.length;
-      saveEditors();
     }
 
     function addEvent() {
       const title = eventTitle.value.trim();
       const date = eventDate.value;
       if (!title || !date) {
-        statusText.textContent = "請輸入事件名稱與日期";
+        statusText.textContent = "請輸入事件名稱和日期";
         return;
       }
       const id = crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
@@ -860,8 +899,138 @@
       renderEvents();
     }
 
+    function deleteEvent(id) {
+      state.events = state.events.filter((event) => event.id !== id);
+      saveState();
+      statusText.textContent = "已刪除倒數事件";
+      renderEvents();
+    }
+
+    function renderHistory() {
+      historyList.innerHTML = "";
+      const keys = Object.keys(state.entries).filter(hasContent).sort().reverse();
+      if (!keys.length) {
+        historyList.innerHTML = '<article class="history-item"><strong>尚未有歷史紀錄</strong><span>寫過的日期會自動出現在這裡。</span></article>';
+        return;
+      }
+      keys.forEach((key) => {
+        const item = document.createElement("article");
+        item.className = "history-item";
+        item.innerHTML = `
+          <strong>${key}（${entryCount(key)} 項）</strong>
+          <span>點日期可回到該日聯絡簿</span>
+          <button class="delete-button" type="button" aria-label="刪除 ${key} 歷史紀錄">×</button>
+        `;
+        item.addEventListener("click", (event) => {
+          if (event.target.closest("button")) return;
+          selectedDate = key;
+          visibleMonth = parseKey(key);
+          loadEntryToEditors();
+          render();
+        });
+        item.querySelector("button").addEventListener("click", () => deleteHistory(key));
+        historyList.appendChild(item);
+      });
+    }
+
+    function deleteHistory(key) {
+      delete state.entries[key];
+      saveState();
+      if (key === selectedDate) {
+        Object.values(editors).forEach((editor) => setEditorText(editor, ""));
+      }
+      statusText.textContent = "已刪除歷史紀錄";
+      render();
+    }
+
+    function renderCalendar() {
+      calendarGrid.innerHTML = "";
+      const year = visibleMonth.getFullYear();
+      const month = visibleMonth.getMonth();
+      monthTitle.textContent = `${year} 年 ${month + 1} 月`;
+      "日一二三四五六".split("").forEach((day) => {
+        const head = document.createElement("div");
+        head.className = "week-head";
+        head.textContent = day;
+        calendarGrid.appendChild(head);
+      });
+
+      const first = new Date(year, month, 1);
+      const start = new Date(year, month, 1 - first.getDay());
+      for (let index = 0; index < 42; index += 1) {
+        const date = new Date(start);
+        date.setDate(start.getDate() + index);
+        const key = toDateKey(date);
+        const button = document.createElement("button");
+        button.className = [
+          "day-button",
+          date.getMonth() !== month ? "outside" : "",
+          key === selectedDate ? "active" : "",
+          hasContent(key) ? "has-content" : ""
+        ].filter(Boolean).join(" ");
+        button.type = "button";
+        button.textContent = date.getDate();
+        button.addEventListener("click", () => {
+          saveEditors();
+          selectedDate = key;
+          visibleMonth = new Date(date);
+          loadEntryToEditors();
+          render();
+        });
+        calendarGrid.appendChild(button);
+      }
+    }
+
+    function renderQuickButtons() {
+      quickList.innerHTML = "";
+      quickButtons.forEach((item) => {
+        const button = document.createElement("button");
+        button.className = `quick-button ${item.alert ? "alert" : ""}`;
+        button.type = "button";
+        button.textContent = item.label;
+        button.addEventListener("click", () => {
+          insertText(item.text, item.category);
+        });
+        quickList.appendChild(button);
+      });
+    }
+
+    function insertText(text, fallbackCategory) {
+      const category = activeCategory || fallbackCategory;
+      const editor = editors[category] || editors[fallbackCategory] || editors.homework;
+      const current = editorText(editor);
+      setEditorText(editor, `${current ? `${current}\n` : ""}${text}`);
+      activeCategory = category;
+      editor.focus();
+      placeCaretAtEnd(editor);
+      saveEditors();
+      statusText.textContent = `已加入「${text}」到${categoryNames[category]}`;
+    }
+
+    function placeCaretAtEnd(element) {
+      const range = document.createRange();
+      const selection = window.getSelection();
+      range.selectNodeContents(element);
+      range.collapse(false);
+      selection.removeAllRanges();
+      selection.addRange(range);
+    }
+
     async function copyBoard() {
-      const text = `${formatRocDate(selectedDate)}\n${boardItems().map((item, index) => `${index + 1}. ${item.text}`).join("\n")}`;
+      saveEditors();
+      const entry = currentEntry();
+      const text = [
+        formatRocDate(selectedDate),
+        "",
+        "【今日作業】",
+        entry.homework || "無",
+        "",
+        "【準備物品】",
+        entry.items || "無",
+        "",
+        "【重要宣導】",
+        entry.notice || "無"
+      ].join("\n");
       try {
         await navigator.clipboard.writeText(text);
         statusText.textContent = "已複製聯絡簿內容";
@@ -871,22 +1040,42 @@
     }
 
     function render() {
-      renderBoard();
+      blackboard.classList.toggle("vertical", viewMode.value === "vertical");
+      selectedDateText.textContent = formatRocDate(selectedDate);
       renderEvents();
-      renderCalendar();
       renderHistory();
+      renderCalendar();
     }
 
+    Object.entries(editors).forEach(([category, editor]) => {
+      editor.addEventListener("focus", () => {
+        activeCategory = category;
+      });
+      editor.addEventListener("input", () => {
+        activeCategory = category;
+        saveEditors();
+      });
+      editor.addEventListener("paste", (event) => {
+        event.preventDefault();
+        const text = event.clipboardData.getData("text/plain");
+        document.execCommand("insertText", false, text);
+      });
+    });
+
     saveEvent.addEventListener("click", addEvent);
-    saveContent.addEventListener("click", saveEditors);
     copyButton.addEventListener("click", copyBoard);
-    viewMode.addEventListener("change", renderBoard);
+    viewMode.addEventListener("change", render);
     fullscreenButton.addEventListener("click", async () => {
       if (!document.fullscreenElement) await blackboard.requestFullscreen();
       else await document.exitFullscreen();
     });
-    [homeworkText, itemsText, noticeText].forEach((editor) => {
-      editor.addEventListener("blur", saveEditors);
+    prevMonth.addEventListener("click", () => {
+      visibleMonth = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() - 1, 1);
+      renderCalendar();
+    });
+    nextMonth.addEventListener("click", () => {
+      visibleMonth = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() + 1, 1);
+      renderCalendar();
     });
 
     renderQuickButtons();
