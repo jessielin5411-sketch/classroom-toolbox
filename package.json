@@ -4,14 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vercel dev",
-    "start": "vercel dev"
+    "build": "node -e \"console.log('No build step required')\""
   },
   "engines": {
-    "node": ">=20"
-  },
-  "dependencies": {},
-  "devDependencies": {
-    "vercel": "^34.0.0"
+    "node": "20.x"
   }
 }
