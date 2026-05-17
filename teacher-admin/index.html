@@ -1078,7 +1078,8 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       });
-      const data = await response.json().catch(() => ({}));
+      const raw = await response.text();
+      const data = raw ? JSON.parse(raw) : {};
       if (!response.ok) {
         throw new Error(data.error || "AI 後端暫時無法產生內容。");
       }
@@ -1086,6 +1087,17 @@
         throw new Error("AI 後端沒有回傳文字。");
       }
       return data.text;
+    }
+
+    function rewriteErrorMessage(error) {
+      const message = error.message || "";
+      if (message.includes("DEPLOYMENT_NOT_FOUND") || message.includes("Unexpected token")) {
+        return "AI 後端尚未部署，或 Vercel API 網址尚未設定完成。請確認 /api/rewrite 已部署並完成後端環境變數設定。";
+      }
+      if (message.includes("Failed to fetch") || message.includes("NetworkError")) {
+        return "無法連線到 AI 後端，請確認 Vercel API 網址與網路狀態。";
+      }
+      return message || "AI 後端暫時無法產生內容。";
     }
 
     function setDraftLoading(isLoading) {
@@ -1100,7 +1112,7 @@
         draftText.value = await requestRewrite(semesterPayload(action));
         draftStatus.textContent = action === "regenerate" ? "已換一種寫法。" : "已由 AI 後端生成評語。";
       } catch (error) {
-        draftStatus.textContent = error.message;
+        draftStatus.textContent = rewriteErrorMessage(error);
       } finally {
         setDraftLoading(false);
       }
@@ -1125,7 +1137,7 @@
           shorter: "已更精簡。"
         }[action] || "已生成。";
       } catch (error) {
-        parentDraftStatus.textContent = error.message;
+        parentDraftStatus.textContent = rewriteErrorMessage(error);
       } finally {
         setParentDraftLoading(false);
       }
