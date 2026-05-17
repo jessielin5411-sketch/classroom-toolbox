@@ -1,0 +1,602 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>心情簽到燈號</title>
+  <style>
+    :root {
+      --ink: #243047;
+      --muted: #65758f;
+      --paper: #fff8fb;
+      --panel: #ffffff;
+      --pink: #ff8fc7;
+      --purple: #7b4ed8;
+      --blue: #4f8cff;
+      --green: #22b98f;
+      --yellow: #ffd24a;
+      --orange: #ffad4d;
+      --red: #ff5d73;
+      --line: rgba(155, 123, 255, 0.22);
+      --shadow: 0 20px 48px rgba(36, 48, 71, 0.14);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", "Noto Sans TC", system-ui, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 10% 10%, rgba(255, 210, 74, 0.42), transparent 24%),
+        radial-gradient(circle at 92% 18%, rgba(255, 143, 199, 0.28), transparent 24%),
+        linear-gradient(180deg, #fff8fb, #f7fbff);
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    .page {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 22px 0 42px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 22px;
+    }
+
+    .back-link,
+    .ghost-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 42px;
+      padding: 0 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.82);
+      color: var(--purple);
+      font-weight: 900;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 0.95fr) minmax(340px, 1.05fr);
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .panel {
+      border: 2px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.92);
+      box-shadow: var(--shadow);
+    }
+
+    .checkin {
+      padding: clamp(22px, 4vw, 38px);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(36px, 6vw, 62px);
+      line-height: 1;
+      letter-spacing: 0;
+    }
+
+    .lead {
+      margin: 16px 0 0;
+      color: var(--muted);
+      font-size: 20px;
+      line-height: 1.6;
+      font-weight: 700;
+    }
+
+    .student-form {
+      display: grid;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    label {
+      display: grid;
+      gap: 8px;
+      font-weight: 900;
+    }
+
+    input[type="number"],
+    input[type="text"] {
+      min-height: 48px;
+      width: 100%;
+      padding: 0 14px;
+      border: 2px solid var(--line);
+      border-radius: 8px;
+      color: var(--ink);
+      background: #fff;
+      font-weight: 800;
+    }
+
+    .mood-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .mood-button {
+      min-height: 132px;
+      display: grid;
+      place-items: center;
+      gap: 8px;
+      padding: 16px 10px;
+      border: 2px solid transparent;
+      border-radius: 8px;
+      cursor: pointer;
+      color: var(--ink);
+      background: var(--mood-bg);
+      box-shadow: 0 9px 0 rgba(36, 48, 71, 0.08);
+      transition: transform 0.15s ease, border-color 0.15s ease;
+    }
+
+    .mood-button:hover,
+    .mood-button.active {
+      transform: translateY(-2px);
+      border-color: rgba(36, 48, 71, 0.18);
+    }
+
+    .emoji {
+      font-size: 44px;
+      line-height: 1;
+    }
+
+    .mood-name {
+      font-size: 22px;
+      font-weight: 950;
+    }
+
+    .mood-note {
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .primary-button,
+    .danger-button {
+      min-height: 48px;
+      padding: 0 18px;
+      border: 0;
+      border-radius: 8px;
+      cursor: pointer;
+      color: #fff;
+      font-weight: 950;
+    }
+
+    .primary-button {
+      background: linear-gradient(135deg, var(--blue), var(--purple));
+      box-shadow: 0 8px 0 rgba(79, 140, 255, 0.18);
+    }
+
+    .danger-button {
+      background: linear-gradient(135deg, var(--orange), var(--red));
+    }
+
+    .status {
+      min-height: 26px;
+      margin-top: 12px;
+      color: var(--purple);
+      font-weight: 900;
+    }
+
+    .dashboard {
+      display: grid;
+      grid-template-rows: auto auto 1fr;
+      gap: 16px;
+      padding: clamp(18px, 3vw, 28px);
+    }
+
+    .dashboard-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .dashboard h2 {
+      margin: 0;
+      font-size: clamp(26px, 4vw, 36px);
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .summary-card {
+      min-height: 98px;
+      display: grid;
+      place-items: center;
+      gap: 4px;
+      padding: 12px;
+      border-radius: 8px;
+      background: var(--mood-bg);
+      text-align: center;
+    }
+
+    .summary-card strong {
+      font-size: 30px;
+      line-height: 1;
+    }
+
+    .chart {
+      display: grid;
+      gap: 12px;
+    }
+
+    .bar-row {
+      display: grid;
+      grid-template-columns: 92px 1fr 48px;
+      gap: 10px;
+      align-items: center;
+      font-weight: 900;
+    }
+
+    .bar-track {
+      height: 28px;
+      border-radius: 999px;
+      background: #eef3ff;
+      overflow: hidden;
+      border: 1px solid rgba(36, 48, 71, 0.08);
+    }
+
+    .bar-fill {
+      width: var(--bar, 0%);
+      height: 100%;
+      border-radius: inherit;
+      background: var(--mood-color);
+      transition: width 0.2s ease;
+    }
+
+    .lists {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .list-panel {
+      min-height: 180px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(247, 251, 255, 0.78);
+    }
+
+    .list-panel h3 {
+      margin: 0 0 10px;
+      font-size: 18px;
+    }
+
+    .student-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .student-list li {
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: #fff;
+      color: var(--ink);
+      font-weight: 850;
+      border: 1px solid rgba(36, 48, 71, 0.1);
+    }
+
+    .empty {
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    @media (max-width: 920px) {
+      .hero,
+      .lists {
+        grid-template-columns: 1fr;
+      }
+
+      .summary {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 560px) {
+      .mood-grid,
+      .summary {
+        grid-template-columns: 1fr;
+      }
+
+      .bar-row {
+        grid-template-columns: 80px 1fr 40px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="topbar">
+      <a class="back-link" href="../index.html">← 回工具箱首頁</a>
+      <button class="ghost-button" id="exportButton" type="button">複製統計</button>
+    </header>
+
+    <main class="hero">
+      <section class="panel checkin" aria-labelledby="pageTitle">
+        <h1 id="pageTitle">心情簽到燈號</h1>
+        <p class="lead">學生進教室時點一下當下心情，老師可以馬上看到全班狀態，提早發現需要關心的孩子。</p>
+
+        <div class="student-form">
+          <label>
+            座號
+            <input id="studentNumber" type="number" min="1" max="99" inputmode="numeric" placeholder="例如：12">
+          </label>
+          <label>
+            姓名或暱稱
+            <input id="studentName" type="text" maxlength="12" placeholder="可留空，會用座號顯示">
+          </label>
+        </div>
+
+        <div class="mood-grid" id="moodGrid"></div>
+
+        <div class="button-row">
+          <button class="primary-button" id="submitButton" type="button">完成簽到</button>
+          <button class="danger-button" id="resetButton" type="button">清空本次簽到</button>
+        </div>
+        <div class="status" id="statusText">請先輸入座號，再選擇心情。</div>
+      </section>
+
+      <section class="panel dashboard" aria-labelledby="dashboardTitle">
+        <div class="dashboard-head">
+          <div>
+            <h2 id="dashboardTitle">全班心情統計</h2>
+            <p class="lead" id="totalText">目前 0 位完成簽到</p>
+          </div>
+        </div>
+
+        <div class="summary" id="summaryGrid"></div>
+        <div class="chart" id="chartGrid"></div>
+
+        <div class="lists">
+          <article class="list-panel">
+            <h3>今天可以多關心</h3>
+            <ul class="student-list" id="careList"></ul>
+          </article>
+          <article class="list-panel">
+            <h3>最近簽到</h3>
+            <ul class="student-list" id="recentList"></ul>
+          </article>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const storageKey = "jessie-toolbox-mood-checkin";
+    const moodGrid = document.querySelector("#moodGrid");
+    const summaryGrid = document.querySelector("#summaryGrid");
+    const chartGrid = document.querySelector("#chartGrid");
+    const careList = document.querySelector("#careList");
+    const recentList = document.querySelector("#recentList");
+    const studentNumber = document.querySelector("#studentNumber");
+    const studentName = document.querySelector("#studentName");
+    const submitButton = document.querySelector("#submitButton");
+    const resetButton = document.querySelector("#resetButton");
+    const exportButton = document.querySelector("#exportButton");
+    const statusText = document.querySelector("#statusText");
+    const totalText = document.querySelector("#totalText");
+
+    const moods = [
+      { id: "happy", emoji: "😊", name: "快樂", note: "準備好了", color: "#22b98f", bg: "#e9fff7" },
+      { id: "tired", emoji: "😴", name: "疲倦", note: "需要慢慢暖機", color: "#4f8cff", bg: "#ecf3ff" },
+      { id: "angry", emoji: "😠", name: "生氣", note: "需要一點空間", color: "#ff5d73", bg: "#fff0f3" },
+      { id: "worried", emoji: "😟", name: "焦慮", note: "需要被安心陪伴", color: "#ffad4d", bg: "#fff5e6" }
+    ];
+
+    let selectedMood = "";
+    let records = loadRecords();
+
+    function todayKey() {
+      return new Date().toISOString().slice(0, 10);
+    }
+
+    function loadRecords() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(storageKey) || "[]");
+        return Array.isArray(saved) ? saved : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveRecords() {
+      localStorage.setItem(storageKey, JSON.stringify(records));
+    }
+
+    function todayRecords() {
+      const key = todayKey();
+      return records.filter((record) => record.date === key);
+    }
+
+    function renderMoodButtons() {
+      moodGrid.innerHTML = "";
+      moods.forEach((mood) => {
+        const button = document.createElement("button");
+        button.className = `mood-button ${selectedMood === mood.id ? "active" : ""}`;
+        button.type = "button";
+        button.style.setProperty("--mood-bg", mood.bg);
+        button.innerHTML = `
+          <span class="emoji">${mood.emoji}</span>
+          <span class="mood-name">${mood.name}</span>
+          <span class="mood-note">${mood.note}</span>
+        `;
+        button.addEventListener("click", () => {
+          selectedMood = mood.id;
+          statusText.textContent = `已選擇「${mood.name}」。`;
+          renderMoodButtons();
+        });
+        moodGrid.appendChild(button);
+      });
+    }
+
+    function upsertRecord() {
+      const number = Number(studentNumber.value);
+      if (!number) {
+        statusText.textContent = "請先輸入座號。";
+        studentNumber.focus();
+        return;
+      }
+      if (!selectedMood) {
+        statusText.textContent = "請選擇一個心情燈號。";
+        return;
+      }
+
+      const key = todayKey();
+      const mood = moods.find((item) => item.id === selectedMood);
+      const name = studentName.value.trim() || `${number}號`;
+      records = records.filter((record) => !(record.date === key && record.number === number));
+      records.push({
+        date: key,
+        number,
+        name,
+        mood: selectedMood,
+        time: new Date().toISOString()
+      });
+      records.sort((a, b) => a.number - b.number);
+      saveRecords();
+      statusText.textContent = `${name} 已簽到：${mood.emoji} ${mood.name}`;
+      studentNumber.value = "";
+      studentName.value = "";
+      selectedMood = "";
+      render();
+      studentNumber.focus();
+    }
+
+    function renderSummary(list) {
+      totalText.textContent = `目前 ${list.length} 位完成簽到`;
+      summaryGrid.innerHTML = "";
+      chartGrid.innerHTML = "";
+      const max = Math.max(1, ...moods.map((mood) => list.filter((record) => record.mood === mood.id).length));
+
+      moods.forEach((mood) => {
+        const count = list.filter((record) => record.mood === mood.id).length;
+        const card = document.createElement("article");
+        card.className = "summary-card";
+        card.style.setProperty("--mood-bg", mood.bg);
+        card.innerHTML = `<span class="emoji">${mood.emoji}</span><strong>${count}</strong><span>${mood.name}</span>`;
+        summaryGrid.appendChild(card);
+
+        const row = document.createElement("div");
+        row.className = "bar-row";
+        row.innerHTML = `
+          <span>${mood.emoji} ${mood.name}</span>
+          <div class="bar-track"><div class="bar-fill" style="--mood-color: ${mood.color}; --bar: ${(count / max) * 100}%"></div></div>
+          <span>${count}人</span>
+        `;
+        chartGrid.appendChild(row);
+      });
+    }
+
+    function renderLists(list) {
+      const care = list
+        .filter((record) => record.mood === "angry" || record.mood === "worried" || record.mood === "tired")
+        .sort((a, b) => {
+          const priority = { angry: 0, worried: 1, tired: 2, happy: 3 };
+          return priority[a.mood] - priority[b.mood] || a.number - b.number;
+        });
+      const recent = [...list].sort((a, b) => new Date(b.time) - new Date(a.time)).slice(0, 10);
+      setList(careList, care, "目前沒有特別需要關心的燈號。");
+      setList(recentList, recent, "尚未有人簽到。");
+    }
+
+    function setList(container, list, emptyText) {
+      container.innerHTML = "";
+      if (!list.length) {
+        const empty = document.createElement("li");
+        empty.className = "empty";
+        empty.textContent = emptyText;
+        container.appendChild(empty);
+        return;
+      }
+      list.forEach((record) => {
+        const mood = moods.find((item) => item.id === record.mood);
+        const item = document.createElement("li");
+        item.textContent = `${mood.emoji} ${record.name}`;
+        container.appendChild(item);
+      });
+    }
+
+    function resetToday() {
+      const key = todayKey();
+      records = records.filter((record) => record.date !== key);
+      saveRecords();
+      statusText.textContent = "已清空本次簽到。";
+      render();
+    }
+
+    async function copySummary() {
+      const list = todayRecords();
+      const lines = [`${todayKey()} 心情簽到統計`, `總人數：${list.length}`];
+      moods.forEach((mood) => {
+        const names = list.filter((record) => record.mood === mood.id).map((record) => record.name);
+        lines.push(`${mood.emoji} ${mood.name}：${names.length}人${names.length ? `（${names.join("、")}）` : ""}`);
+      });
+      try {
+        await navigator.clipboard.writeText(lines.join("\n"));
+        statusText.textContent = "已複製今日心情統計。";
+      } catch {
+        statusText.textContent = lines.join(" / ");
+      }
+    }
+
+    function render() {
+      const list = todayRecords();
+      renderMoodButtons();
+      renderSummary(list);
+      renderLists(list);
+    }
+
+    submitButton.addEventListener("click", upsertRecord);
+    resetButton.addEventListener("click", resetToday);
+    exportButton.addEventListener("click", copySummary);
+    studentNumber.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") studentName.focus();
+    });
+    studentName.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") upsertRecord();
+    });
+
+    render();
+  </script>
+</body>
+</html>
