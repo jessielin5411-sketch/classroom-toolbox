@@ -18,6 +18,7 @@
       --purple: #7b4ed8;
       --line: rgba(36, 48, 71, 0.14);
       --shadow: 0 18px 44px rgba(36, 48, 71, 0.14);
+      --chalk-font: "Comic Sans MS", "DFKai-SB", "KaiTi", "Microsoft JhengHei", cursive;
     }
 
     * { box-sizing: border-box; }
@@ -30,7 +31,20 @@
       background:
         radial-gradient(circle at 8% 12%, rgba(255, 210, 74, 0.36), transparent 24%),
         radial-gradient(circle at 92% 14%, rgba(79, 140, 255, 0.22), transparent 24%),
+        radial-gradient(circle at 84% 86%, rgba(255, 143, 199, 0.2), transparent 22%),
         linear-gradient(180deg, #fff8fb, var(--paper));
+    }
+
+    body::before {
+      content: "✏️ 📒 ⭐ 🎒";
+      position: fixed;
+      right: 18px;
+      bottom: 14px;
+      pointer-events: none;
+      color: rgba(123, 78, 216, 0.16);
+      font-size: clamp(42px, 7vw, 86px);
+      letter-spacing: 12px;
+      transform: rotate(-4deg);
     }
 
     a { color: inherit; text-decoration: none; }
@@ -80,6 +94,20 @@
       border-radius: 8px;
       background: rgba(255, 255, 255, 0.92);
       box-shadow: var(--shadow);
+      position: relative;
+    }
+
+    .panel::before {
+      content: "";
+      position: absolute;
+      left: 22px;
+      top: -10px;
+      width: 82px;
+      height: 20px;
+      border-radius: 4px;
+      background: rgba(255, 210, 74, 0.72);
+      transform: rotate(-2deg);
+      box-shadow: 0 3px 0 rgba(36, 48, 71, 0.08);
     }
 
     .side,
@@ -97,7 +125,9 @@
       gap: 10px;
       padding: 12px;
       border-radius: 8px;
-      background: #ecf3ff;
+      background:
+        linear-gradient(90deg, rgba(255, 255, 255, 0.58), transparent),
+        #ecf3ff;
       border: 1px solid rgba(79, 140, 255, 0.18);
       margin-bottom: 10px;
     }
@@ -241,10 +271,13 @@
       min-height: 680px;
       padding: clamp(18px, 3vw, 34px);
       color: #f8fff2;
+      font-family: var(--chalk-font);
       background:
-        linear-gradient(135deg, rgba(255, 255, 255, 0.04), transparent 32%),
+        radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.06), transparent 18%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.05), transparent 32%),
         #163d32;
       overflow: auto;
+      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.08);
     }
 
     .date-line {
@@ -284,11 +317,12 @@
     .blackboard.vertical .board-content {
       min-height: 560px;
       display: flex;
-      flex-direction: row-reverse;
+      flex-direction: row;
       justify-content: flex-start;
       align-items: flex-start;
       gap: 28px;
-      writing-mode: vertical-rl;
+      direction: rtl;
+      writing-mode: horizontal-tb;
     }
 
     .blackboard.vertical .date-line {
@@ -300,11 +334,19 @@
       border-left: 3px solid rgba(255, 210, 74, 0.88);
       padding: 0 0 0 8px;
       margin: 0 0 0 10px;
+      writing-mode: vertical-rl;
     }
 
     .blackboard.vertical .board-section ul {
       padding-left: 0;
       padding-top: 1em;
+      writing-mode: vertical-rl;
+      direction: ltr;
+      text-align: start;
+    }
+
+    .blackboard.vertical .board-section {
+      direction: ltr;
     }
 
     .editor-stack {
@@ -538,20 +580,24 @@
     function renderEvents() {
       eventCards.innerHTML = "";
       const today = parseKey(toDateKey(new Date()));
-      state.events.slice(0, 2).forEach((event) => {
+      state.events
+        .slice()
+        .sort((a, b) => parseKey(a.date) - parseKey(b.date))
+        .forEach((event) => {
         const target = parseKey(event.date);
         const days = Math.ceil((target - today) / 86400000);
         const card = document.createElement("article");
         card.className = `event-card ${days <= 3 && days >= 0 ? "urgent" : ""}`;
+        const label = days < 0 ? "已到期" : `還有 ${days} 天`;
         card.innerHTML = `
-          <strong>📅 距離【${event.title || "重要事件"}】還有 ${Math.max(0, days)} 天</strong>
+          <strong>📅 距離【${event.title || "重要事件"}】${label}</strong>
           <span>${event.date || ""}</span>
         `;
         eventCards.appendChild(card);
       });
-      const first = state.events[0] || {};
-      eventTitle.value = first.title || "";
-      eventDate.value = first.date || "";
+      if (!state.events.length) {
+        eventCards.innerHTML = '<article class="event-card"><strong>📅 尚未新增倒數事件</strong><span>可以新增校外教學、考試、運動會等提醒。</span></article>';
+      }
     }
 
     function renderCalendar() {
@@ -653,10 +699,14 @@
         statusText.textContent = "請先輸入事件名稱與日期。";
         return;
       }
-      state.events = [{ title, date }, ...state.events.slice(1)].slice(0, 2);
+      const id = crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
+      state.events = [...state.events, { id, title, date }]
+        .sort((a, b) => parseKey(a.date) - parseKey(b.date));
       saveState();
+      eventTitle.value = "";
+      eventDate.value = "";
       renderEvents();
-      statusText.textContent = "已儲存倒數事件。";
+      statusText.textContent = "已新增倒數事件。";
     }
 
     function render() {
