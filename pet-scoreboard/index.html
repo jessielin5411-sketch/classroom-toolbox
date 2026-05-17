@@ -1063,7 +1063,6 @@
 
     const storageKey = "jessie-toolbox-pet-scoreboard";
     const activityLogKey = "jessie-toolbox-activity-log";
-    const teacherAccessKey = "jessie-toolbox-teacher-unlocked";
     const maxScore = 80;
     const stages = [
       { min: 0, name: "神祕蛋", icon: "🥚", scale: 0.72, details: 0 },
@@ -1161,7 +1160,6 @@
     }
 
     function updatePet(number, delta) {
-      if (!confirmTeacherAccess("修改個人寵物分數")) return;
       const before = state.pets.find((pet) => pet.number === number);
       state.pets = state.pets.map((pet) => {
         if (pet.number !== number) return pet;
@@ -1188,7 +1186,6 @@
     }
 
     function rebirth(number) {
-      if (!confirmTeacherAccess("重新養一個寵物")) return;
       const before = state.pets.find((pet) => pet.number === number);
       state.pets = state.pets.map((pet) => {
         if (pet.number !== number) return pet;
@@ -1505,25 +1502,14 @@
       saveState();
     }
 
-    function confirmTeacherAction(actionName) {
-      if (sessionStorage.getItem(teacherAccessKey) === "true") return true;
-      window.alert(`教師後台尚未解鎖，無法執行「${actionName}」。請先到教師控制後台輸入密碼。`);
-      return false;
-    }
-
-    function confirmTeacherAccess(actionName) {
-      return confirmTeacherAction(actionName);
-    }
 
     applyCount.addEventListener("click", () => {
-      if (!confirmTeacherAccess("套用班級人數")) return;
       state.studentCount = Math.min(Math.max(Number(studentCountInput.value) || 1, 1), 80);
       syncPets();
       render();
     });
 
     addAll.addEventListener("click", () => {
-      if (!confirmTeacherAccess("全班加分")) return;
       state.pets = state.pets.map((pet) => {
         const nextScore = Math.min(maxScore, pet.score + 1);
         if (nextScore !== pet.score) {
@@ -1543,7 +1529,6 @@
     });
 
     feedHungry.addEventListener("click", () => {
-      if (!confirmTeacherAccess("餵飽肚子餓")) return;
       state.pets = state.pets.map((pet) => {
         if (!pet.hungry) return pet;
         const nextScore = Math.min(maxScore, pet.score + 1);
@@ -1564,13 +1549,11 @@
     });
 
     resetScores.addEventListener("click", () => {
-      if (!confirmTeacherAction("分數歸零")) return;
       state.pets = state.pets.map((pet) => ({ ...pet, score: 0, hungry: false }));
       render();
     });
 
     resetAll.addEventListener("click", () => {
-      if (!confirmTeacherAction("全部重置")) return;
       localStorage.removeItem(storageKey);
       state = { studentCount: 28, pets: [] };
       syncPets();

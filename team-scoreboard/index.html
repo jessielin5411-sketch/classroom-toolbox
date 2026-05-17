@@ -465,7 +465,6 @@
 
     const storageKey = "jessie-toolbox-team-scoreboard";
     const activityLogKey = "jessie-toolbox-activity-log";
-    const teacherAccessKey = "jessie-toolbox-teacher-unlocked";
     const colors = ["#ffd24a", "#ff8fc7", "#9b7bff", "#22b98f", "#4f8cff", "#ffad4d", "#ff5d73", "#82dfc6"];
     let teams = [
       { id: crypto.randomUUID(), name: "第 1 組", score: 0, order: 0 },
@@ -494,15 +493,6 @@
       }
     }
 
-    function confirmTeacherAction(actionName) {
-      if (sessionStorage.getItem(teacherAccessKey) === "true") return true;
-      window.alert(`教師後台尚未解鎖，無法執行「${actionName}」。請先到教師控制後台輸入密碼。`);
-      return false;
-    }
-
-    function confirmTeacherAccess(actionName) {
-      return confirmTeacherAction(actionName);
-    }
 
     function loadState() {
       try {
@@ -526,7 +516,6 @@
     }
 
     function updateScore(id, delta) {
-      if (!confirmTeacherAccess("修改小組分數")) return;
       teams = teams.map((team) => {
         if (team.id !== id) return team;
         const nextScore = team.score + delta;
@@ -547,13 +536,11 @@
     }
 
     function updateName(id, name) {
-      if (!confirmTeacherAccess("修改隊伍名稱")) return;
       teams = teams.map((team) => team.id === id ? { ...team, name: name.trim() || "未命名" } : team);
       render(false);
     }
 
     function removeTeam(id) {
-      if (!confirmTeacherAction("刪除隊伍")) return;
       teams = teams.filter((team) => team.id !== id);
       render();
     }
@@ -634,7 +621,6 @@
     }
 
     addTeam.addEventListener("click", () => {
-      if (!confirmTeacherAccess("新增隊伍")) return;
       const name = newTeamName.value.trim() || `第 ${teams.length + 1} 組`;
       const maxOrder = teams.reduce((max, team) => Math.max(max, team.order), -1);
       teams = [...teams, { id: crypto.randomUUID(), name, score: 0, order: maxOrder + 1 }];
@@ -657,7 +643,6 @@
     });
 
     bonusAll.addEventListener("click", () => {
-      if (!confirmTeacherAccess("全部隊伍加分")) return;
       const bonus = Number(bonusSelect.value);
       teams = teams.map((team) => {
         const nextScore = team.score + bonus;
@@ -678,13 +663,11 @@
     });
 
     resetScores.addEventListener("click", () => {
-      if (!confirmTeacherAction("分數歸零")) return;
       teams = teams.map((team) => ({ ...team, score: 0 }));
       render();
     });
 
     resetAll.addEventListener("click", () => {
-      if (!confirmTeacherAction("重置全部")) return;
       localStorage.removeItem(storageKey);
       teams = [
         { id: crypto.randomUUID(), name: "第 1 組", score: 0, order: 0 },

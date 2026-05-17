@@ -318,7 +318,6 @@
 
     const storageKey = "jessie-toolbox-homework-helper";
     const activityLogKey = "jessie-toolbox-activity-log";
-    const teacherAccessKey = "jessie-toolbox-teacher-unlocked";
     let state = {
       studentCount: 28,
       currentId: "a1",
@@ -348,15 +347,6 @@
       }
     }
 
-    function confirmTeacherAction(actionName) {
-      if (sessionStorage.getItem(teacherAccessKey) === "true") return true;
-      window.alert(`教師後台尚未解鎖，無法執行「${actionName}」。請先到教師控制後台輸入密碼。`);
-      return false;
-    }
-
-    function confirmTeacherAccess(actionName) {
-      return confirmTeacherAction(actionName);
-    }
 
     function loadState() {
       try {
@@ -434,7 +424,6 @@
         button.textContent = number;
         button.title = `${number} 號`;
         button.addEventListener("click", () => {
-          if (!confirmTeacherAccess("修改作業狀態")) return;
           const previous = getStatus(assignment, number);
           const next = nextStatus(previous);
           if (next === "missing") {
@@ -508,14 +497,12 @@
     }
 
     applyCount.addEventListener("click", () => {
-      if (!confirmTeacherAccess("套用班級人數")) return;
       state.studentCount = Math.min(Math.max(Number(studentCountInput.value) || 1, 1), 80);
       state.assignments.forEach((assignment) => { Object.keys(assignment.statuses).forEach((key) => { if (Number(key) > state.studentCount) delete assignment.statuses[key]; }); });
       render();
     });
 
     addAssignment.addEventListener("click", () => {
-      if (!confirmTeacherAccess("新增作業")) return;
       const name = assignmentName.value.trim() || `作業 ${state.assignments.length + 1}`;
       const id = crypto.randomUUID();
       state.assignments.push({ id, name, statuses: {} });
@@ -534,7 +521,6 @@
     summaryView.addEventListener("click", () => setView("summary"));
 
     markAllDone.addEventListener("click", () => {
-      if (!confirmTeacherAccess("全部標記完成")) return;
       const assignment = currentAssignment();
       if (!assignment) return;
       studentNumbers().forEach((number) => {
@@ -558,21 +544,18 @@
     clearCurrent.addEventListener("click", () => {
       const assignment = currentAssignment();
       if (!assignment) return;
-      if (!confirmTeacherAction("清空本項")) return;
       assignment.statuses = {};
       render();
     });
 
     deleteCurrent.addEventListener("click", () => {
       if (!state.assignments.length) return;
-      if (!confirmTeacherAction("刪除本項")) return;
       state.assignments = state.assignments.filter((assignment) => assignment.id !== state.currentId);
       state.currentId = state.assignments[0]?.id || "";
       render();
     });
 
     resetAll.addEventListener("click", () => {
-      if (!confirmTeacherAction("全部重置")) return;
       localStorage.removeItem(storageKey);
       state = {
         studentCount: 28,

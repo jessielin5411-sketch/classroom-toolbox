@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="rewrite-api-base" content="">
   <title>教師控制後台</title>
   <style>
     :root {
@@ -716,6 +717,9 @@
     const teamKey = "jessie-toolbox-team-scoreboard";
     const homeworkKey = "jessie-toolbox-homework-helper";
     const activityLogKey = "jessie-toolbox-activity-log";
+    const rewriteApiBase = document.querySelector('meta[name="rewrite-api-base"]')?.content.trim()
+      || ((location.hostname === "127.0.0.1" || location.hostname === "localhost") && location.port === "4173" ? "http://localhost:3000" : "")
+      || (location.hostname.endsWith("github.io") ? "https://classroom-toolbox.vercel.app" : "");
     const learningTraitOptions = ["認真專注", "發言踴躍", "舉一反三", "粗心大意", "容易分心", "缺乏自信", "愛說話"];
     const socialTraitOptions = ["熱心助人", "具領導力", "相處融洽", "溫和有禮", "誠實守分", "開朗活潑", "偶與同儕摩擦", "消極被動", "缺乏自信"];
     const adminTraitOptions = ["打掃認真", "作業準時", "常忘記帶學用品", "責任心強"];
@@ -1000,7 +1004,7 @@
         card.querySelector("strong").addEventListener("click", () => setParentScenario(item.id));
         card.querySelectorAll('input[name="parentDetail"]').forEach((detailInput) => {
           detailInput.addEventListener("change", () => {
-            if (parentDraftText.value) parentDraftText.value = buildParentMessage();
+            if (parentDraftText.value) parentDraftStatus.textContent = "條件已更新，請重新生成親師溝通文字。";
           });
         });
         parentScenarioChoices.appendChild(card);
@@ -1016,7 +1020,7 @@
       parentScenarioChoices.querySelectorAll(".event-button").forEach((card) => {
         card.classList.toggle("active", card.dataset.parentScenario === selectedParentScenario);
       });
-      if (parentDraftText.value) parentDraftText.value = buildParentMessage();
+      if (parentDraftText.value) parentDraftStatus.textContent = "條件已更新，請重新生成親師溝通文字。";
     }
 
     function checkedValues(groupName) {
@@ -1031,6 +1035,100 @@
 
     function selectedValue(groupName, fallback) {
       return document.querySelector(`input[name="${groupName}"]:checked`)?.value || fallback;
+    }
+
+    function rewriteApiEndpoint() {
+      const base = rewriteApiBase.replace(/\/$/, "");
+      return `${base}/api/rewrite`;
+    }
+
+    function semesterPayload(action = "generate") {
+      return {
+        mode: "semester",
+        action,
+        studentName: semesterName.value.trim(),
+        selectedTags: [
+          ...checkedValues("learningTrait"),
+          ...checkedValues("socialTrait"),
+          ...checkedValues("adminTrait")
+        ],
+        specificEvent: semesterExtra.value.trim(),
+        style: selectedValue("semesterTone", "溫暖鼓勵"),
+        wordCount: selectedValue("semesterLength", "100-150字"),
+        variation: draftVariant
+      };
+    }
+
+    function parentPayload(action = "generate") {
+      return {
+        mode: "parent",
+        adjustment: action,
+        rawEvent: parentEvent.value.trim(),
+        details: checkedValues("parentDetail"),
+        actions: checkedValues("parentAction"),
+        channel: selectedValue("parentChannel", "聯絡簿格式"),
+        tone: selectedValue("parentTone", "溫柔堅定"),
+        variation: parentDraftVariant
+      };
+    }
+
+    async function requestRewrite(payload) {
+      const response = await fetch(rewriteApiEndpoint(), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.error || "AI 後端暫時無法產生內容。");
+      }
+      if (!data.text) {
+        throw new Error("AI 後端沒有回傳文字。");
+      }
+      return data.text;
+    }
+
+    function setDraftLoading(isLoading) {
+      generateDraft.disabled = isLoading;
+      regenerateDraft.disabled = isLoading;
+      draftStatus.textContent = isLoading ? "AI 正在生成評語，請稍候..." : draftStatus.textContent;
+    }
+
+    async function generateSemesterDraft(action = "generate") {
+      setDraftLoading(true);
+      try {
+        draftText.value = await requestRewrite(semesterPayload(action));
+        draftStatus.textContent = action === "regenerate" ? "已換一種寫法。" : "已由 AI 後端生成評語。";
+      } catch (error) {
+        draftStatus.textContent = error.message;
+      } finally {
+        setDraftLoading(false);
+      }
+    }
+
+    function setParentDraftLoading(isLoading) {
+      generateParentDraft.disabled = isLoading;
+      rewriteParentDraft.disabled = isLoading;
+      warmParentDraft.disabled = isLoading;
+      shortenParentDraft.disabled = isLoading;
+      parentDraftStatus.textContent = isLoading ? "AI 正在生成親師溝通文字，請稍候..." : parentDraftStatus.textContent;
+    }
+
+    async function generateParentRewrite(action = "generate") {
+      setParentDraftLoading(true);
+      try {
+        parentDraftText.value = await requestRewrite(parentPayload(action));
+        parentDraftStatus.textContent = {
+          generate: "已由 AI 後端生成親師溝通文字。",
+          regenerate: "已換一種說法。",
+          warmer: "已加點溫暖。",
+          shorter: "已更精簡。"
+        }[action] || "已生成。";
+      } catch (error) {
+        parentDraftStatus.textContent = error.message;
+      } finally {
+        setParentDraftLoading(false);
+      }
     }
 
     function scenarioTitle() {
@@ -1412,7 +1510,7 @@
         page.classList.toggle("active", page.id === `${value}Page`);
       });
       draftStatus.textContent = `已切換為「${scenarioTitle()}」。`;
-      if (draftText.value) draftText.value = buildTeacherDraft();
+      if (draftText.value) draftStatus.textContent = "內容已切換，請重新按「生成評語」。";
     }
 
     function initializeWritingTools() {
@@ -1432,16 +1530,21 @@
       setScenario(selectedScenario);
       [...learningTraits.querySelectorAll("input"), ...socialTraits.querySelectorAll("input"), ...adminTraits.querySelectorAll("input"), ...toneChoices.querySelectorAll("input"), ...lengthChoices.querySelectorAll("input")].forEach((input) => {
         input.addEventListener("change", () => {
-          if (draftText.value) draftText.value = buildTeacherDraft();
+          if (draftText.value) draftStatus.textContent = "條件已更新，請重新按「生成評語」。";
         });
       });
       [...parentActionChoices.querySelectorAll("input"), ...parentChannelChoices.querySelectorAll("input"), ...parentToneChoices.querySelectorAll("input")].forEach((input) => {
         input.addEventListener("change", () => {
-          if (parentDraftText.value) parentDraftText.value = buildParentMessage();
+          if (parentDraftText.value) parentDraftStatus.textContent = "條件已更新，請重新生成親師溝通文字。";
+        });
+      });
+      [semesterName, semesterExtra].forEach((input) => {
+        input.addEventListener("input", () => {
+          if (draftText.value) draftStatus.textContent = "內容已更新，請重新按「生成評語」。";
         });
       });
       parentEvent.addEventListener("input", () => {
-        if (parentDraftText.value) parentDraftText.value = buildParentMessage();
+        if (parentDraftText.value) parentDraftStatus.textContent = "內容已更新，請重新生成親師溝通文字。";
       });
     }
 
@@ -1531,16 +1634,14 @@
       copyStatus.textContent = "";
     });
 
-    generateDraft.addEventListener("click", () => {
+    generateDraft.addEventListener("click", async () => {
       draftVariant = 0;
-      draftText.value = buildTeacherDraft();
-      draftStatus.textContent = "已生成評語。";
+      await generateSemesterDraft("generate");
     });
 
-    regenerateDraft.addEventListener("click", () => {
+    regenerateDraft.addEventListener("click", async () => {
       draftVariant += 1;
-      draftText.value = buildTeacherDraft();
-      draftStatus.textContent = "已重新生成。";
+      await generateSemesterDraft("regenerate");
     });
 
     clearDraftForm.addEventListener("click", () => {
@@ -1568,29 +1669,25 @@
       }
     });
 
-    generateParentDraft.addEventListener("click", () => {
+    generateParentDraft.addEventListener("click", async () => {
       parentDraftVariant = 0;
       parentCompact = false;
-      parentDraftText.value = buildParentMessage();
-      parentDraftStatus.textContent = "已生成親師訊息。";
+      await generateParentRewrite("generate");
     });
 
-    rewriteParentDraft.addEventListener("click", () => {
+    rewriteParentDraft.addEventListener("click", async () => {
       parentDraftVariant += 1;
-      parentDraftText.value = buildParentMessage();
-      parentDraftStatus.textContent = "已換一種說法。";
+      await generateParentRewrite("regenerate");
     });
 
-    warmParentDraft.addEventListener("click", () => {
+    warmParentDraft.addEventListener("click", async () => {
       parentWarmth += 1;
-      parentDraftText.value = buildParentMessage();
-      parentDraftStatus.textContent = "已加點溫暖。";
+      await generateParentRewrite("warmer");
     });
 
-    shortenParentDraft.addEventListener("click", () => {
+    shortenParentDraft.addEventListener("click", async () => {
       parentCompact = true;
-      parentDraftText.value = buildParentMessage();
-      parentDraftStatus.textContent = "已調整得更精簡。";
+      await generateParentRewrite("shorter");
     });
 
     clearParentDraft.addEventListener("click", () => {
