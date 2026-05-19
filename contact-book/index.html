@@ -375,6 +375,7 @@
       font-size: clamp(28px, 3vw, 44px);
       font-weight: 1000;
       letter-spacing: 0;
+      white-space: pre-line;
     }
 
     .editable-board {
@@ -388,14 +389,7 @@
       white-space: pre-wrap;
       word-break: break-word;
       caret-color: var(--chalk-yellow);
-      background:
-        repeating-linear-gradient(
-          to bottom,
-          transparent 0,
-          transparent calc(1.9em - 2px),
-          rgba(255, 255, 255, 0.18) calc(1.9em - 2px),
-          rgba(255, 255, 255, 0.18) 1.9em
-        );
+      background: transparent;
     }
 
     .editable-board:empty::before {
@@ -418,10 +412,14 @@
 
     .blackboard.vertical .date-line {
       flex: 0 0 auto;
-      writing-mode: vertical-rl;
-      text-orientation: upright;
-      line-height: 1.15;
-      white-space: nowrap;
+      align-self: flex-start;
+      width: 118px;
+      writing-mode: horizontal-tb;
+      text-orientation: mixed;
+      line-height: 1.35;
+      text-align: center;
+      white-space: pre-line;
+      font-size: clamp(24px, 2.25vw, 34px);
     }
 
     .blackboard.vertical .editable-board {
@@ -436,14 +434,7 @@
       line-height: 1.55;
       overflow: auto;
       white-space: pre-wrap;
-      background:
-        repeating-linear-gradient(
-          to left,
-          transparent 0,
-          transparent calc(1.55em - 2px),
-          rgba(255, 255, 255, 0.18) calc(1.55em - 2px),
-          rgba(255, 255, 255, 0.18) 1.55em
-        );
+      background: transparent;
     }
 
     .tool-panel {
@@ -726,6 +717,13 @@
       return `民國 ${year} 年 ${date.getMonth() + 1} 月 ${date.getDate()} 日（${"日一二三四五六"[date.getDay()]}）`;
     }
 
+    function formatBoardDate(key) {
+      if (viewMode.value !== "vertical") return formatRocDate(key);
+      const date = parseKey(key);
+      const year = date.getFullYear() - 1911;
+      return `民國${year}年\n${date.getMonth() + 1}月${date.getDate()}日\n星期${"日一二三四五六"[date.getDay()]}`;
+    }
+
     function shortDate(key) {
       const date = parseKey(key);
       return `${date.getMonth() + 1}/${date.getDate()}`;
@@ -780,16 +778,38 @@
       editor.textContent = text || "";
     }
 
+    function verticalFriendlyText(text) {
+      return text.replace(/[,.!?;:()[\]{}<>~\-\/]/g, (mark) => ({
+        ",": "，",
+        ".": "．",
+        "!": "！",
+        "?": "？",
+        ";": "；",
+        ":": "：",
+        "(": "（",
+        ")": "）",
+        "[": "【",
+        "]": "】",
+        "{": "〔",
+        "}": "〕",
+        "<": "〈",
+        ">": "〉",
+        "~": "～",
+        "-": "－",
+        "/": "／"
+      }[mark] || mark));
+    }
+
     function loadEntryToEditors() {
       const entry = currentEntry();
       setEditorText(boardEditor, entry.content || "");
-      selectedDateText.textContent = formatRocDate(selectedDate);
+      selectedDateText.textContent = formatBoardDate(selectedDate);
       statusText.textContent = `正在編輯 ${shortDate(selectedDate)}`;
     }
 
     function saveEditors() {
       state.entries[selectedDate] = {
-        content: editorText(boardEditor)
+        content: verticalFriendlyText(editorText(boardEditor))
       };
       if (!hasContent(selectedDate)) {
         delete state.entries[selectedDate];
@@ -935,7 +955,7 @@
 
     function insertText(text) {
       const current = editorText(boardEditor);
-      setEditorText(boardEditor, `${current ? `${current}\n` : ""}${text}`);
+      setEditorText(boardEditor, `${current ? `${current}\n` : ""}${verticalFriendlyText(text)}`);
       boardEditor.focus();
       placeCaretAtEnd(boardEditor);
       saveEditors();
@@ -969,16 +989,24 @@
 
     function render() {
       blackboard.classList.toggle("vertical", viewMode.value === "vertical");
-      selectedDateText.textContent = formatRocDate(selectedDate);
+      selectedDateText.textContent = formatBoardDate(selectedDate);
       renderEvents();
       renderHistory();
       renderCalendar();
     }
 
-    boardEditor.addEventListener("input", saveEditors);
+    boardEditor.addEventListener("input", () => {
+      const current = editorText(boardEditor);
+      const friendly = verticalFriendlyText(current);
+      if (current !== friendly) {
+        setEditorText(boardEditor, friendly);
+        placeCaretAtEnd(boardEditor);
+      }
+      saveEditors();
+    });
     boardEditor.addEventListener("paste", (event) => {
       event.preventDefault();
-      const text = event.clipboardData.getData("text/plain");
+      const text = verticalFriendlyText(event.clipboardData.getData("text/plain"));
       document.execCommand("insertText", false, text);
     });
 
