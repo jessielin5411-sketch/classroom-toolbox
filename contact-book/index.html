@@ -415,7 +415,7 @@
       align-self: flex-start;
       width: 84px;
       writing-mode: vertical-rl;
-      text-orientation: upright;
+      text-orientation: mixed;
       line-height: 1.15;
       text-align: center;
       white-space: nowrap;
@@ -424,7 +424,7 @@
 
     .blackboard.vertical .editable-board {
       writing-mode: vertical-rl;
-      text-orientation: upright;
+      text-orientation: mixed;
       unicode-bidi: isolate;
       flex: 1 0 auto;
       min-width: 720px;
@@ -778,28 +778,6 @@
       editor.textContent = text || "";
     }
 
-    function verticalFriendlyText(text) {
-      return text.replace(/[,.!?;:()[\]{}<>~\-\/]/g, (mark) => ({
-        ",": "，",
-        ".": "．",
-        "!": "！",
-        "?": "？",
-        ";": "；",
-        ":": "：",
-        "(": "（",
-        ")": "）",
-        "[": "【",
-        "]": "】",
-        "{": "〔",
-        "}": "〕",
-        "<": "〈",
-        ">": "〉",
-        "~": "～",
-        "-": "－",
-        "/": "／"
-      }[mark] || mark));
-    }
-
     function loadEntryToEditors() {
       const entry = currentEntry();
       setEditorText(boardEditor, entry.content || "");
@@ -809,7 +787,7 @@
 
     function saveEditors() {
       state.entries[selectedDate] = {
-        content: verticalFriendlyText(editorText(boardEditor))
+        content: editorText(boardEditor)
       };
       if (!hasContent(selectedDate)) {
         delete state.entries[selectedDate];
@@ -955,7 +933,7 @@
 
     function insertText(text) {
       const current = editorText(boardEditor);
-      setEditorText(boardEditor, `${current ? `${current}\n` : ""}${verticalFriendlyText(text)}`);
+      setEditorText(boardEditor, `${current ? `${current}\n` : ""}${text}`);
       boardEditor.focus();
       placeCaretAtEnd(boardEditor);
       saveEditors();
@@ -995,18 +973,10 @@
       renderCalendar();
     }
 
-    boardEditor.addEventListener("input", () => {
-      const current = editorText(boardEditor);
-      const friendly = verticalFriendlyText(current);
-      if (current !== friendly) {
-        setEditorText(boardEditor, friendly);
-        placeCaretAtEnd(boardEditor);
-      }
-      saveEditors();
-    });
+    boardEditor.addEventListener("input", saveEditors);
     boardEditor.addEventListener("paste", (event) => {
       event.preventDefault();
-      const text = verticalFriendlyText(event.clipboardData.getData("text/plain"));
+      const text = event.clipboardData.getData("text/plain");
       document.execCommand("insertText", false, text);
     });
 
