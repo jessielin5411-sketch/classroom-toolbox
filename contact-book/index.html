@@ -377,43 +377,25 @@
       letter-spacing: 0;
     }
 
-    .board-sections {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 18px;
-      min-height: 0;
-    }
-
-    .board-section {
-      display: grid;
-      grid-template-rows: auto 1fr;
-      gap: 12px;
-      min-width: 0;
-    }
-
-    .board-section h2 {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      margin: 0;
-      padding-bottom: 9px;
-      border-bottom: 2px solid rgba(255, 255, 255, 0.22);
-      color: #eafffb;
-      font-size: clamp(21px, 2vw, 30px);
-      font-weight: 1000;
-    }
-
     .editable-board {
-      min-height: 330px;
-      padding: 8px 2px 18px;
+      min-height: 390px;
+      padding: 10px 8px 20px 48px;
       outline: 0;
       color: var(--chalk);
       font-size: clamp(25px, 2.25vw, 36px);
       font-weight: 900;
-      line-height: 1.8;
+      line-height: 1.9;
       white-space: pre-wrap;
       word-break: break-word;
       caret-color: var(--chalk-yellow);
+      background:
+        repeating-linear-gradient(
+          to bottom,
+          transparent 0,
+          transparent calc(1.9em - 2px),
+          rgba(255, 255, 255, 0.18) calc(1.9em - 2px),
+          rgba(255, 255, 255, 0.18) 1.9em
+        );
     }
 
     .editable-board:empty::before {
@@ -442,43 +424,26 @@
       white-space: nowrap;
     }
 
-    .blackboard.vertical .board-sections {
-      display: flex;
-      flex-direction: row-reverse;
-      align-items: stretch;
-      gap: 26px;
-      min-width: max-content;
-    }
-
-    .blackboard.vertical .board-section {
-      display: flex;
-      flex-direction: row-reverse;
-      gap: 12px;
-      min-width: 150px;
-      height: 100%;
-    }
-
-    .blackboard.vertical .board-section h2,
     .blackboard.vertical .editable-board {
       writing-mode: vertical-rl;
       text-orientation: upright;
-      line-height: 1.45;
-    }
-
-    .blackboard.vertical .board-section h2 {
-      align-items: flex-start;
-      min-height: 330px;
-      padding: 0 0 0 10px;
-      border-bottom: 0;
-      border-left: 2px solid rgba(255, 255, 255, 0.24);
-    }
-
-    .blackboard.vertical .editable-board {
-      min-width: 88px;
-      min-height: 360px;
+      unicode-bidi: isolate;
+      flex: 1 0 auto;
+      min-width: 720px;
+      min-height: 420px;
       max-height: 520px;
+      padding: 10px 18px 18px;
+      line-height: 1.55;
       overflow: auto;
       white-space: pre-wrap;
+      background:
+        repeating-linear-gradient(
+          to left,
+          transparent 0,
+          transparent calc(1.55em - 2px),
+          rgba(255, 255, 255, 0.18) calc(1.55em - 2px),
+          rgba(255, 255, 255, 0.18) 1.55em
+        );
     }
 
     .tool-panel {
@@ -592,10 +557,6 @@
         grid-template-rows: auto;
       }
 
-      .board-sections {
-        grid-template-columns: 1fr;
-      }
-
       .tool-panel {
         order: -1;
       }
@@ -667,20 +628,7 @@
         <section class="stage">
           <article class="blackboard" id="blackboard" aria-live="polite">
             <p class="date-line" id="selectedDateText"></p>
-            <div class="board-sections">
-              <section class="board-section" data-category="homework">
-                <h2>📝 今日作業</h2>
-                <div class="editable-board" id="homeworkEditor" contenteditable="true" spellcheck="false" data-placeholder="點這裡直接輸入作業..."></div>
-              </section>
-              <section class="board-section" data-category="items">
-                <h2>🎒 準備物品</h2>
-                <div class="editable-board" id="itemsEditor" contenteditable="true" spellcheck="false" data-placeholder="點這裡輸入明天要帶的物品..."></div>
-              </section>
-              <section class="board-section" data-category="notice">
-                <h2>📣 重要宣導</h2>
-                <div class="editable-board" id="noticeEditor" contenteditable="true" spellcheck="false" data-placeholder="點這裡輸入提醒事項..."></div>
-              </section>
-            </div>
+            <div class="editable-board" id="boardEditor" contenteditable="true" spellcheck="false" data-placeholder="點這裡直接輸入聯絡簿內容，每一行一個項目..."></div>
           </article>
         </section>
 
@@ -720,36 +668,25 @@
     const monthTitle = document.querySelector("#monthTitle");
     const prevMonth = document.querySelector("#prevMonth");
     const nextMonth = document.querySelector("#nextMonth");
-    const editors = {
-      homework: document.querySelector("#homeworkEditor"),
-      items: document.querySelector("#itemsEditor"),
-      notice: document.querySelector("#noticeEditor")
-    };
+    const boardEditor = document.querySelector("#boardEditor");
 
     const quickButtons = [
-      { label: "國習 P.～P.", text: "國習 P.～P.", category: "homework" },
-      { label: "甲本 P.～P.", text: "甲本 P.～P.", category: "homework" },
-      { label: "乙本 P.～P.", text: "乙本 P.～P.", category: "homework" },
-      { label: "社習 P.～P.", text: "社習 P.～P.", category: "homework" },
-      { label: "自習 P.～P.", text: "自習 P.～P.", category: "homework" },
-      { label: "數習 P.～P.", text: "數習 P.～P.", category: "homework" },
-      { label: "考", text: "考", category: "notice" },
-      { label: "★ 訂正", text: "訂正", category: "homework", alert: true },
-      { label: "★ 簽名", text: "簽名", category: "items", alert: true },
-      { label: "★ 帶", text: "帶", category: "items", alert: true },
-      { label: "小日記「」", text: "小日記「」", category: "homework" },
-      { label: "閱讀「」", text: "閱讀「」", category: "homework" }
+      { label: "國習 P.～P.", text: "國習 P.～P." },
+      { label: "甲本 P.～P.", text: "甲本 P.～P." },
+      { label: "乙本 P.～P.", text: "乙本 P.～P." },
+      { label: "社習 P.～P.", text: "社習 P.～P." },
+      { label: "自習 P.～P.", text: "自習 P.～P." },
+      { label: "數習 P.～P.", text: "數習 P.～P." },
+      { label: "考", text: "考" },
+      { label: "★ 訂正", text: "訂正", alert: true },
+      { label: "★ 簽名", text: "簽名", alert: true },
+      { label: "★ 帶", text: "帶", alert: true },
+      { label: "小日記「」", text: "小日記「」" },
+      { label: "閱讀「」", text: "閱讀「」" }
     ];
-
-    const categoryNames = {
-      homework: "今日作業",
-      items: "準備物品",
-      notice: "重要宣導"
-    };
 
     let selectedDate = toDateKey(new Date());
     let visibleMonth = new Date();
-    let activeCategory = "homework";
     let state = loadState();
 
     function loadState() {
@@ -795,16 +732,21 @@
     }
 
     function normalizeEntry(entry = {}) {
+      const legacyParts = [
+        Array.isArray(entry.homework) ? entry.homework.join("\n") : (entry.homework || ""),
+        Array.isArray(entry.items) ? entry.items.join("\n") : (entry.items || ""),
+        Array.isArray(entry.notice) ? entry.notice.join("\n") : (entry.notice || "")
+      ].map((value) => value.trim()).filter(Boolean);
       return {
-        homework: Array.isArray(entry.homework) ? entry.homework.join("\n") : (entry.homework || ""),
-        items: Array.isArray(entry.items) ? entry.items.join("\n") : (entry.items || ""),
-        notice: Array.isArray(entry.notice) ? entry.notice.join("\n") : (entry.notice || "")
+        content: Array.isArray(entry.content)
+          ? entry.content.join("\n")
+          : (entry.content || legacyParts.join("\n"))
       };
     }
 
     function currentEntry() {
       if (!state.entries[selectedDate]) {
-        state.entries[selectedDate] = { homework: "", items: "", notice: "" };
+        state.entries[selectedDate] = { content: "" };
       }
       state.entries[selectedDate] = normalizeEntry(state.entries[selectedDate]);
       return state.entries[selectedDate];
@@ -819,12 +761,12 @@
 
     function hasContent(key) {
       const entry = normalizeEntry(state.entries[key] || {});
-      return Object.values(entry).some((value) => value.trim());
+      return entry.content.trim().length > 0;
     }
 
     function entryCount(key) {
       const entry = normalizeEntry(state.entries[key] || {});
-      return Object.values(entry).flatMap(lines).length;
+      return lines(entry.content).length;
     }
 
     function editorText(editor) {
@@ -840,18 +782,14 @@
 
     function loadEntryToEditors() {
       const entry = currentEntry();
-      Object.entries(editors).forEach(([category, editor]) => {
-        setEditorText(editor, entry[category] || "");
-      });
+      setEditorText(boardEditor, entry.content || "");
       selectedDateText.textContent = formatRocDate(selectedDate);
       statusText.textContent = `正在編輯 ${shortDate(selectedDate)}`;
     }
 
     function saveEditors() {
       state.entries[selectedDate] = {
-        homework: editorText(editors.homework),
-        items: editorText(editors.items),
-        notice: editorText(editors.notice)
+        content: editorText(boardEditor)
       };
       if (!hasContent(selectedDate)) {
         delete state.entries[selectedDate];
@@ -937,7 +875,7 @@
       delete state.entries[key];
       saveState();
       if (key === selectedDate) {
-        Object.values(editors).forEach((editor) => setEditorText(editor, ""));
+        setEditorText(boardEditor, "");
       }
       statusText.textContent = "已刪除歷史紀錄";
       render();
@@ -989,22 +927,19 @@
         button.type = "button";
         button.textContent = item.label;
         button.addEventListener("click", () => {
-          insertText(item.text, item.category);
+          insertText(item.text);
         });
         quickList.appendChild(button);
       });
     }
 
-    function insertText(text, fallbackCategory) {
-      const category = activeCategory || fallbackCategory;
-      const editor = editors[category] || editors[fallbackCategory] || editors.homework;
-      const current = editorText(editor);
-      setEditorText(editor, `${current ? `${current}\n` : ""}${text}`);
-      activeCategory = category;
-      editor.focus();
-      placeCaretAtEnd(editor);
+    function insertText(text) {
+      const current = editorText(boardEditor);
+      setEditorText(boardEditor, `${current ? `${current}\n` : ""}${text}`);
+      boardEditor.focus();
+      placeCaretAtEnd(boardEditor);
       saveEditors();
-      statusText.textContent = `已加入「${text}」到${categoryNames[category]}`;
+      statusText.textContent = `已加入「${text}」`;
     }
 
     function placeCaretAtEnd(element) {
@@ -1022,14 +957,7 @@
       const text = [
         formatRocDate(selectedDate),
         "",
-        "【今日作業】",
-        entry.homework || "無",
-        "",
-        "【準備物品】",
-        entry.items || "無",
-        "",
-        "【重要宣導】",
-        entry.notice || "無"
+        entry.content || "無"
       ].join("\n");
       try {
         await navigator.clipboard.writeText(text);
@@ -1047,19 +975,11 @@
       renderCalendar();
     }
 
-    Object.entries(editors).forEach(([category, editor]) => {
-      editor.addEventListener("focus", () => {
-        activeCategory = category;
-      });
-      editor.addEventListener("input", () => {
-        activeCategory = category;
-        saveEditors();
-      });
-      editor.addEventListener("paste", (event) => {
-        event.preventDefault();
-        const text = event.clipboardData.getData("text/plain");
-        document.execCommand("insertText", false, text);
-      });
+    boardEditor.addEventListener("input", saveEditors);
+    boardEditor.addEventListener("paste", (event) => {
+      event.preventDefault();
+      const text = event.clipboardData.getData("text/plain");
+      document.execCommand("insertText", false, text);
     });
 
     saveEvent.addEventListener("click", addEvent);
