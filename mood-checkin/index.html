@@ -107,10 +107,12 @@
       font-weight: 700;
     }
 
-    .student-form {
+    .class-setup {
       display: grid;
+      grid-template-columns: minmax(150px, 1fr) auto;
       gap: 12px;
       margin-top: 24px;
+      align-items: end;
     }
 
     label {
@@ -129,6 +131,55 @@
       color: var(--ink);
       background: #fff;
       font-weight: 800;
+    }
+
+    .student-board {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(76px, 1fr));
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .student-cell {
+      min-height: 76px;
+      display: grid;
+      place-items: center;
+      gap: 4px;
+      padding: 10px 8px;
+      border: 2px solid rgba(36, 48, 71, 0.12);
+      border-radius: 8px;
+      color: var(--ink);
+      background: #fff;
+      box-shadow: 0 7px 0 rgba(36, 48, 71, 0.06);
+      cursor: pointer;
+      font-weight: 950;
+    }
+
+    .student-cell:hover,
+    .student-cell.active {
+      border-color: var(--purple);
+      transform: translateY(-1px);
+    }
+
+    .student-cell.checked {
+      background: var(--mood-bg);
+      border-color: var(--mood-color);
+    }
+
+    .student-number {
+      font-size: 18px;
+    }
+
+    .student-mood {
+      min-height: 30px;
+      font-size: 28px;
+      line-height: 1;
+    }
+
+    .student-hint {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 850;
     }
 
     .mood-grid {
@@ -356,24 +407,22 @@
         <h1 id="pageTitle">心情簽到燈號</h1>
         <p class="lead">學生進教室時點一下當下心情，老師可以馬上看到全班狀態，提早發現需要關心的孩子。</p>
 
-        <div class="student-form">
+        <div class="class-setup">
           <label>
-            座號
-            <input id="studentNumber" type="number" min="1" max="99" inputmode="numeric" placeholder="例如：12">
+            班級人數
+            <input id="classSize" type="number" min="1" max="99" inputmode="numeric" placeholder="例如：28">
           </label>
-          <label>
-            姓名或暱稱
-            <input id="studentName" type="text" maxlength="12" placeholder="可留空，會用座號顯示">
-          </label>
+          <button class="primary-button" id="saveClassSize" type="button">建立格子</button>
         </div>
+
+        <div class="student-board" id="studentGrid"></div>
 
         <div class="mood-grid" id="moodGrid"></div>
 
         <div class="button-row">
-          <button class="primary-button" id="submitButton" type="button">完成簽到</button>
           <button class="danger-button" id="resetButton" type="button">清空本次簽到</button>
         </div>
-        <div class="status" id="statusText">請先輸入座號，再選擇心情。</div>
+        <div class="status" id="statusText">請先設定班級人數，再點學生格子與心情。</div>
       </section>
 
       <section class="panel dashboard" aria-labelledby="dashboardTitle">
@@ -404,13 +453,13 @@
   <script>
     const storageKey = "jessie-toolbox-mood-checkin";
     const moodGrid = document.querySelector("#moodGrid");
+    const studentGrid = document.querySelector("#studentGrid");
     const summaryGrid = document.querySelector("#summaryGrid");
     const chartGrid = document.querySelector("#chartGrid");
     const careList = document.querySelector("#careList");
     const recentList = document.querySelector("#recentList");
-    const studentNumber = document.querySelector("#studentNumber");
-    const studentName = document.querySelector("#studentName");
-    const submitButton = document.querySelector("#submitButton");
+    const classSize = document.querySelector("#classSize");
+    const saveClassSize = document.querySelector("#saveClassSize");
     const resetButton = document.querySelector("#resetButton");
     const exportButton = document.querySelector("#exportButton");
     const statusText = document.querySelector("#statusText");
@@ -423,7 +472,8 @@
       { id: "worried", emoji: "😟", name: "焦慮", note: "需要被安心陪伴", color: "#ffad4d", bg: "#fff5e6" }
     ];
 
-    let selectedMood = "";
+    let selectedStudent = 0;
+    let classCount = loadClassCount();
     let records = loadRecords();
 
     function todayKey() {
@@ -439,20 +489,29 @@
       }
     }
 
+    function loadClassCount() {
+      const saved = Number(localStorage.getItem(`${storageKey}-class-size`) || 0);
+      return Number.isInteger(saved) && saved > 0 ? saved : 0;
+    }
+
     function saveRecords() {
       localStorage.setItem(storageKey, JSON.stringify(records));
     }
 
+    function saveClassCount() {
+      localStorage.setItem(`${storageKey}-class-size`, String(classCount));
+    }
+
     function todayRecords() {
       const key = todayKey();
-      return records.filter((record) => record.date === key);
+      return records.filter((record) => record.date === key && (!classCount || record.number <= classCount));
     }
 
     function renderMoodButtons() {
       moodGrid.innerHTML = "";
       moods.forEach((mood) => {
         const button = document.createElement("button");
-        button.className = `mood-button ${selectedMood === mood.id ? "active" : ""}`;
+        button.className = "mood-button";
         button.type = "button";
         button.style.setProperty("--mood-bg", mood.bg);
         button.innerHTML = `
@@ -461,49 +520,91 @@
           <span class="mood-note">${mood.note}</span>
         `;
         button.addEventListener("click", () => {
-          selectedMood = mood.id;
-          statusText.textContent = `已選擇「${mood.name}」。`;
-          renderMoodButtons();
+          signMood(mood.id);
         });
         moodGrid.appendChild(button);
       });
     }
 
-    function upsertRecord() {
-      const number = Number(studentNumber.value);
-      if (!number) {
-        statusText.textContent = "請先輸入座號。";
-        studentNumber.focus();
+    function renderStudents(list) {
+      studentGrid.innerHTML = "";
+      if (!classCount) {
+        studentGrid.innerHTML = '<div class="empty">請先輸入班級人數並按「建立格子」。</div>';
         return;
       }
-      if (!selectedMood) {
-        statusText.textContent = "請選擇一個心情燈號。";
+      for (let number = 1; number <= classCount; number += 1) {
+        const record = list.find((item) => item.number === number);
+        const mood = record ? moods.find((item) => item.id === record.mood) : null;
+        const button = document.createElement("button");
+        button.className = [
+          "student-cell",
+          selectedStudent === number ? "active" : "",
+          mood ? "checked" : ""
+        ].filter(Boolean).join(" ");
+        button.type = "button";
+        if (mood) {
+          button.style.setProperty("--mood-bg", mood.bg);
+          button.style.setProperty("--mood-color", mood.color);
+        }
+        button.innerHTML = `
+          <span class="student-number">${number}號</span>
+          <span class="student-mood">${mood ? mood.emoji : ""}</span>
+          <span class="student-hint">${mood ? mood.name : "未簽到"}</span>
+        `;
+        button.addEventListener("click", () => {
+          selectedStudent = number;
+          statusText.textContent = `已選擇 ${number} 號，請點選心情。`;
+          render();
+        });
+        studentGrid.appendChild(button);
+      }
+    }
+
+    function updateClassSize() {
+      const value = Number(classSize.value);
+      if (!Number.isInteger(value) || value < 1 || value > 99) {
+        statusText.textContent = "請輸入 1 到 99 之間的班級人數。";
+        classSize.focus();
+        return;
+      }
+      classCount = value;
+      if (selectedStudent > classCount) selectedStudent = 0;
+      saveClassCount();
+      statusText.textContent = `已建立 ${classCount} 位學生格子。`;
+      render();
+    }
+
+    function signMood(moodId) {
+      if (!classCount) {
+        statusText.textContent = "請先設定班級人數。";
+        return;
+      }
+      if (!selectedStudent) {
+        statusText.textContent = "請先點選一個學生格子。";
         return;
       }
 
       const key = todayKey();
-      const mood = moods.find((item) => item.id === selectedMood);
-      const name = studentName.value.trim() || `${number}號`;
-      records = records.filter((record) => !(record.date === key && record.number === number));
+      const mood = moods.find((item) => item.id === moodId);
+      const name = `${selectedStudent}號`;
+      records = records.filter((record) => !(record.date === key && record.number === selectedStudent));
       records.push({
         date: key,
-        number,
+        number: selectedStudent,
         name,
-        mood: selectedMood,
+        mood: moodId,
         time: new Date().toISOString()
       });
       records.sort((a, b) => a.number - b.number);
       saveRecords();
       statusText.textContent = `${name} 已簽到：${mood.emoji} ${mood.name}`;
-      studentNumber.value = "";
-      studentName.value = "";
-      selectedMood = "";
       render();
-      studentNumber.focus();
     }
 
     function renderSummary(list) {
-      totalText.textContent = `目前 ${list.length} 位完成簽到`;
+      totalText.textContent = classCount
+        ? `目前 ${list.length} / ${classCount} 位完成簽到`
+        : `目前 ${list.length} 位完成簽到`;
       summaryGrid.innerHTML = "";
       chartGrid.innerHTML = "";
       const max = Math.max(1, ...moods.map((mood) => list.filter((record) => record.mood === mood.id).length));
@@ -560,13 +661,14 @@
       const key = todayKey();
       records = records.filter((record) => record.date !== key);
       saveRecords();
+      selectedStudent = 0;
       statusText.textContent = "已清空本次簽到。";
       render();
     }
 
     async function copySummary() {
       const list = todayRecords();
-      const lines = [`${todayKey()} 心情簽到統計`, `總人數：${list.length}`];
+      const lines = [`${todayKey()} 心情簽到統計`, `已簽到：${list.length}${classCount ? ` / ${classCount}` : ""} 人`];
       moods.forEach((mood) => {
         const names = list.filter((record) => record.mood === mood.id).map((record) => record.name);
         lines.push(`${mood.emoji} ${mood.name}：${names.length}人${names.length ? `（${names.join("、")}）` : ""}`);
@@ -581,19 +683,18 @@
 
     function render() {
       const list = todayRecords();
+      classSize.value = classCount || "";
       renderMoodButtons();
+      renderStudents(list);
       renderSummary(list);
       renderLists(list);
     }
 
-    submitButton.addEventListener("click", upsertRecord);
+    saveClassSize.addEventListener("click", updateClassSize);
     resetButton.addEventListener("click", resetToday);
     exportButton.addEventListener("click", copySummary);
-    studentNumber.addEventListener("keydown", (event) => {
-      if (event.key === "Enter") studentName.focus();
-    });
-    studentName.addEventListener("keydown", (event) => {
-      if (event.key === "Enter") upsertRecord();
+    classSize.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") updateClassSize();
     });
 
     render();
