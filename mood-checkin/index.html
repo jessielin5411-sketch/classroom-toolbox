@@ -47,9 +47,9 @@
     }
 
     .page {
-      width: min(1180px, calc(100% - 32px));
+      width: min(1180px, calc(100% - 24px));
       margin: 0 auto;
-      padding: 22px 0 42px;
+      padding: 14px 0 28px;
     }
 
     .topbar {
@@ -57,7 +57,7 @@
       justify-content: space-between;
       align-items: center;
       gap: 12px;
-      margin-bottom: 22px;
+      margin-bottom: 14px;
     }
 
     .back-link,
@@ -76,9 +76,9 @@
 
     .hero {
       display: grid;
-      grid-template-columns: minmax(0, 0.95fr) minmax(340px, 1.05fr);
-      gap: 18px;
-      align-items: stretch;
+      grid-template-columns: 1fr;
+      gap: 14px;
+      align-items: start;
     }
 
     .panel {
@@ -89,20 +89,20 @@
     }
 
     .checkin {
-      padding: clamp(22px, 4vw, 38px);
+      padding: clamp(18px, 3vw, 28px);
     }
 
     h1 {
       margin: 0;
-      font-size: clamp(36px, 6vw, 62px);
+      font-size: clamp(34px, 4.8vw, 54px);
       line-height: 1;
       letter-spacing: 0;
     }
 
     .lead {
-      margin: 16px 0 0;
+      margin: 10px 0 0;
       color: var(--muted);
-      font-size: 20px;
+      font-size: 18px;
       line-height: 1.6;
       font-weight: 700;
     }
@@ -111,7 +111,7 @@
       display: grid;
       grid-template-columns: minmax(150px, 1fr) auto;
       gap: 12px;
-      margin-top: 24px;
+      margin-top: 16px;
       align-items: end;
     }
 
@@ -135,17 +135,17 @@
 
     .student-board {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(76px, 1fr));
-      gap: 10px;
-      margin-top: 18px;
+      grid-template-columns: repeat(auto-fit, minmax(58px, 1fr));
+      gap: 8px;
+      margin-top: 14px;
     }
 
     .student-cell {
-      min-height: 76px;
+      min-height: 62px;
       display: grid;
       place-items: center;
       gap: 4px;
-      padding: 10px 8px;
+      padding: 8px 6px;
       border: 2px solid rgba(36, 48, 71, 0.12);
       border-radius: 8px;
       color: var(--ink);
@@ -167,12 +167,12 @@
     }
 
     .student-number {
-      font-size: 18px;
+      font-size: 16px;
     }
 
     .student-mood {
-      min-height: 30px;
-      font-size: 28px;
+      min-height: 24px;
+      font-size: 24px;
       line-height: 1;
     }
 
@@ -184,17 +184,17 @@
 
     .mood-grid {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 12px;
-      margin-top: 18px;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 14px;
     }
 
     .mood-button {
-      min-height: 132px;
+      min-height: 102px;
       display: grid;
       place-items: center;
       gap: 8px;
-      padding: 16px 10px;
+      padding: 12px 8px;
       border: 2px solid transparent;
       border-radius: 8px;
       cursor: pointer;
@@ -211,18 +211,18 @@
     }
 
     .emoji {
-      font-size: 44px;
+      font-size: 36px;
       line-height: 1;
     }
 
     .mood-name {
-      font-size: 22px;
+      font-size: 20px;
       font-weight: 950;
     }
 
     .mood-note {
       color: var(--muted);
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 800;
     }
 
@@ -230,7 +230,7 @@
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
-      margin-top: 18px;
+      margin-top: 12px;
     }
 
     .primary-button,
@@ -263,15 +263,15 @@
     .dashboard {
       display: grid;
       grid-template-rows: auto auto 1fr;
-      gap: 16px;
-      padding: clamp(18px, 3vw, 28px);
+      gap: 12px;
+      padding: 18px;
     }
 
     .dashboard-head {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      gap: 12px;
+      gap: 8px;
     }
 
     .dashboard h2 {
@@ -333,12 +333,12 @@
     .lists {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 12px;
+      gap: 10px;
     }
 
     .list-panel {
-      min-height: 180px;
-      padding: 14px;
+      min-height: 120px;
+      padding: 12px;
       border: 1px solid var(--line);
       border-radius: 8px;
       background: rgba(247, 251, 255, 0.78);
@@ -373,7 +373,6 @@
     }
 
     @media (max-width: 920px) {
-      .hero,
       .lists {
         grid-template-columns: 1fr;
       }
@@ -384,9 +383,12 @@
     }
 
     @media (max-width: 560px) {
-      .mood-grid,
       .summary {
         grid-template-columns: 1fr;
+      }
+
+      .mood-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
       .bar-row {
