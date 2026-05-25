@@ -1,0 +1,873 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>考試監考系統</title>
+  <style>
+    :root {
+      --ink: #1f2937;
+      --muted: #64748b;
+      --panel: #ffffff;
+      --line: rgba(30, 41, 59, 0.14);
+      --blue: #2563eb;
+      --green: #16a34a;
+      --amber: #f59e0b;
+      --red: #ef4444;
+      --deep: #070b16;
+      --deep-panel: #101827;
+      --glow: 0 20px 60px rgba(37, 99, 235, 0.18);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", "Noto Sans TC", "Microsoft JhengHei", system-ui, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 12% 10%, rgba(37, 99, 235, 0.14), transparent 30%),
+        radial-gradient(circle at 90% 18%, rgba(245, 158, 11, 0.16), transparent 26%),
+        linear-gradient(180deg, #f8fbff, #eef4ff);
+    }
+
+    button,
+    input,
+    textarea {
+      font: inherit;
+    }
+
+    .setup-page {
+      width: min(1040px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 24px 0 48px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      min-height: 42px;
+      padding: 0 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: var(--blue);
+      background: rgba(255, 255, 255, 0.82);
+      font-weight: 900;
+      text-decoration: none;
+    }
+
+    .panel {
+      padding: clamp(22px, 4vw, 40px);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.94);
+      box-shadow: var(--glow);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(36px, 5vw, 58px);
+      line-height: 1.05;
+      letter-spacing: 0;
+    }
+
+    .lead {
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: 19px;
+      line-height: 1.6;
+      font-weight: 800;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 28px;
+    }
+
+    .span-2 {
+      grid-column: span 2;
+    }
+
+    label {
+      display: grid;
+      gap: 8px;
+      color: #334155;
+      font-weight: 950;
+    }
+
+    .full {
+      grid-column: 1 / -1;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      min-height: 50px;
+      padding: 0 14px;
+      border: 2px solid var(--line);
+      border-radius: 8px;
+      color: var(--ink);
+      background: #fff;
+      font-weight: 850;
+      outline: 0;
+    }
+
+    input:focus,
+    textarea:focus {
+      border-color: rgba(37, 99, 235, 0.58);
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+    }
+
+    input[readonly] {
+      color: #14532d;
+      background: #ecfdf3;
+      border-color: rgba(22, 163, 74, 0.28);
+    }
+
+    textarea {
+      min-height: 78px;
+      padding: 12px 14px;
+      resize: vertical;
+    }
+
+    .field-card {
+      min-height: 100%;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #f8fbff;
+    }
+
+    .schedule-panel {
+      grid-column: 1 / -1;
+      display: grid;
+      gap: 12px;
+      margin-top: 2px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #ffffff;
+    }
+
+    .schedule-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .schedule-head h2 {
+      margin: 0;
+      font-size: 24px;
+    }
+
+    .schedule-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .schedule-row {
+      display: grid;
+      grid-template-columns: 42px minmax(190px, 1fr) 150px 120px auto;
+      gap: 10px;
+      align-items: stretch;
+      padding: 12px;
+      border: 1px solid rgba(30, 41, 59, 0.1);
+      border-radius: 10px;
+      background: #f8fbff;
+    }
+
+    .row-index {
+      display: grid;
+      place-items: center;
+      width: 42px;
+      min-height: 50px;
+      border-radius: 8px;
+      color: #fff;
+      background: var(--blue);
+      font-weight: 1000;
+    }
+
+    .small-button,
+    .delete-button {
+      min-height: 42px;
+      border: 0;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 950;
+    }
+
+    .small-button {
+      padding: 0 14px;
+      color: #fff;
+      background: var(--green);
+    }
+
+    .delete-button {
+      padding: 0 12px;
+      color: #991b1b;
+      background: #fee2e2;
+    }
+
+    .watch-card {
+      grid-column: 1 / -1;
+      padding: 14px 16px;
+      border-radius: 10px;
+      color: #0f172a;
+      background: #e0f2fe;
+      font-weight: 900;
+      line-height: 1.6;
+    }
+
+    .setup-actions {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+      margin-top: 18px;
+    }
+
+    .start-button {
+      width: 100%;
+      min-height: 58px;
+      border: 0;
+      border-radius: 10px;
+      color: #fff;
+      background: linear-gradient(135deg, var(--blue), #7c3aed);
+      box-shadow: 0 12px 0 rgba(37, 99, 235, 0.16);
+      cursor: pointer;
+      font-size: 20px;
+      font-weight: 1000;
+    }
+
+    .status {
+      min-height: 24px;
+      margin-top: 12px;
+      color: var(--red);
+      font-weight: 900;
+    }
+
+    .proctor-screen {
+      display: none;
+      min-height: 100vh;
+      color: #f8fafc;
+      background:
+        radial-gradient(circle at center, rgba(37, 99, 235, 0.2), transparent 45%),
+        linear-gradient(180deg, #101827, #050713);
+    }
+
+    body.proctoring {
+      background: var(--deep);
+      overflow: hidden;
+    }
+
+    body.proctoring .setup-page {
+      display: none;
+    }
+
+    body.proctoring .proctor-screen {
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+    }
+
+    .exam-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 22px 32px;
+      border-bottom: 1px solid rgba(226, 232, 240, 0.15);
+      background: rgba(15, 23, 42, 0.86);
+    }
+
+    .exam-subject {
+      font-size: clamp(34px, 4.2vw, 64px);
+      font-weight: 1000;
+    }
+
+    .exam-meta {
+      color: #cbd5e1;
+      font-size: clamp(22px, 2.2vw, 34px);
+      font-weight: 1000;
+      text-align: right;
+    }
+
+    .timer-stage {
+      position: relative;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .timer {
+      color: #f8fafc;
+      font-size: clamp(96px, 22vw, 300px);
+      line-height: 0.92;
+      font-weight: 1000;
+      letter-spacing: 0;
+      text-shadow: 0 0 52px rgba(96, 165, 250, 0.28);
+    }
+
+    .timer.warning {
+      color: #ff4d5f;
+      animation: urgentPulse 0.85s ease-in-out infinite;
+      text-shadow: 0 0 46px rgba(239, 68, 68, 0.48);
+    }
+
+    @keyframes urgentPulse {
+      50% { transform: scale(1.025); opacity: 0.84; }
+    }
+
+    .finish-message {
+      display: none;
+      color: #ffcf33;
+      font-size: clamp(38px, 6vw, 86px);
+      font-weight: 1000;
+      line-height: 1.2;
+      text-shadow: 0 0 34px rgba(255, 207, 51, 0.3);
+    }
+
+    .timer-stage.finished .timer {
+      display: none;
+    }
+
+    .timer-stage.finished .finish-message {
+      display: block;
+    }
+
+    .end-button {
+      position: fixed;
+      top: 92px;
+      right: 24px;
+      z-index: 4;
+      min-height: 42px;
+      padding: 0 14px;
+      border: 1px solid rgba(226, 232, 240, 0.22);
+      border-radius: 999px;
+      color: #dbeafe;
+      background: rgba(15, 23, 42, 0.62);
+      cursor: pointer;
+      font-weight: 900;
+    }
+
+    .standby {
+      display: none;
+      color: #bfdbfe;
+      font-size: clamp(28px, 4vw, 58px);
+      font-weight: 1000;
+      line-height: 1.35;
+    }
+
+    body.standby-mode {
+      background: var(--deep);
+      overflow: hidden;
+    }
+
+    body.standby-mode .setup-page {
+      display: none;
+    }
+
+    body.standby-mode .proctor-screen {
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+    }
+
+    body.standby-mode .timer,
+    body.standby-mode .finish-message {
+      display: none;
+    }
+
+    body.standby-mode .standby {
+      display: block;
+    }
+
+    .marquee {
+      overflow: hidden;
+      border-top: 1px solid rgba(226, 232, 240, 0.18);
+      background: #020617;
+    }
+
+    .marquee-track {
+      display: inline-block;
+      min-width: 100%;
+      padding: 18px 0;
+      color: #fef08a;
+      font-size: clamp(24px, 3vw, 42px);
+      font-weight: 1000;
+      white-space: nowrap;
+      animation: marqueeMove 36s linear infinite;
+    }
+
+    @keyframes marqueeMove {
+      from { transform: translateX(100%); }
+      to { transform: translateX(-100%); }
+    }
+
+    @media (max-width: 760px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .schedule-row {
+        grid-template-columns: 1fr;
+      }
+
+      .span-2 {
+        grid-column: 1;
+      }
+
+      .setup-actions {
+        grid-template-columns: 1fr;
+      }
+
+      .exam-bar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .exam-meta {
+        text-align: left;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="setup-page">
+    <header class="topbar">
+      <a class="back-link" href="../index.html">← 回首頁</a>
+    </header>
+
+    <section class="panel" aria-labelledby="pageTitle">
+      <h1 id="pageTitle">考試監考系統</h1>
+      <p class="lead">先設定一整天的考程，系統會依照電腦時間自動切換到對應科目的監考畫面。</p>
+
+      <div class="form-grid">
+        <label class="field-card">
+          應考人數
+          <input id="totalInput" type="number" min="1" max="99" inputmode="numeric" value="28">
+        </label>
+        <label class="field-card">
+          缺考座號
+          <input id="absentInput" type="text" placeholder="例如：5, 12">
+        </label>
+        <label class="field-card">
+          實際人數
+          <input id="actualInput" type="text" readonly value="28">
+        </label>
+        <label class="field-card full">
+          注意事項（跑馬燈內容）
+          <textarea id="noticeInput">桌面淨空，考試中請保持安靜，作弊一律零分。寫完請仔細檢查。</textarea>
+        </label>
+        <label class="field-card full">
+          待命中跑馬燈內容
+          <textarea id="standbyNoticeInput">請依照座位安靜等待下一場考試，準備好文具與准考用品，聽候老師指示。</textarea>
+        </label>
+        <section class="schedule-panel" aria-labelledby="scheduleTitle">
+          <div class="schedule-head">
+            <h2 id="scheduleTitle">今日考程表</h2>
+            <button class="small-button" id="addExamButton" type="button">＋ 新增科目</button>
+          </div>
+          <div class="schedule-list" id="scheduleList"></div>
+          <div class="watch-card" id="watchStatus">尚未啟動自動監考。</div>
+        </section>
+      </div>
+
+      <div class="setup-actions">
+        <button class="start-button" id="startButton" type="button">啟動今日自動監考</button>
+        <div class="status" id="setupStatus"></div>
+      </div>
+    </section>
+  </main>
+
+  <section class="proctor-screen" aria-live="polite">
+    <header class="exam-bar">
+      <div class="exam-subject" id="screenSubject"></div>
+      <div class="exam-meta" id="screenMeta"></div>
+    </header>
+
+    <main class="timer-stage" id="timerStage">
+      <div class="timer" id="timerText">40:00</div>
+      <div class="finish-message">考試結束，請停筆！</div>
+      <div class="standby" id="standbyText">自動監考待命中</div>
+    </main>
+
+    <button class="end-button" id="endButton" type="button">結束 / 返回設定</button>
+    <footer class="marquee" aria-label="考試注意事項">
+      <div class="marquee-track" id="marqueeText"></div>
+    </footer>
+  </section>
+
+  <script>
+    const totalInput = document.querySelector("#totalInput");
+    const absentInput = document.querySelector("#absentInput");
+    const actualInput = document.querySelector("#actualInput");
+    const noticeInput = document.querySelector("#noticeInput");
+    const standbyNoticeInput = document.querySelector("#standbyNoticeInput");
+    const addExamButton = document.querySelector("#addExamButton");
+    const scheduleList = document.querySelector("#scheduleList");
+    const watchStatus = document.querySelector("#watchStatus");
+    const startButton = document.querySelector("#startButton");
+    const endButton = document.querySelector("#endButton");
+    const setupStatus = document.querySelector("#setupStatus");
+    const screenSubject = document.querySelector("#screenSubject");
+    const screenMeta = document.querySelector("#screenMeta");
+    const timerStage = document.querySelector("#timerStage");
+    const timerText = document.querySelector("#timerText");
+    const standbyText = document.querySelector("#standbyText");
+    const marqueeText = document.querySelector("#marqueeText");
+
+    const configKey = "jessie-toolbox-exam-proctor";
+    let endTime = 0;
+    let timerId = 0;
+    let watchId = 0;
+    let activeExamId = "";
+    let schedule = defaultSchedule();
+    loadConfig();
+
+    function pad(value) {
+      return String(value).padStart(2, "0");
+    }
+
+    function timeValue(date) {
+      return `${pad(date.getHours())}:${pad(date.getMinutes())}`;
+    }
+
+    function defaultSchedule() {
+      const first = new Date(Date.now() + 2 * 60 * 1000);
+      const second = new Date(first.getTime() + 50 * 60 * 1000);
+      return [
+        { id: "exam-1", subject: "第一節 - 國語", start: timeValue(first), minutes: 40 },
+        { id: "exam-2", subject: "第二節 - 數學", start: timeValue(second), minutes: 40 }
+      ];
+    }
+
+    function loadConfig() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(configKey) || "{}");
+        if (saved.total) totalInput.value = saved.total;
+        if (typeof saved.absent === "string") absentInput.value = saved.absent;
+        if (typeof saved.notice === "string") noticeInput.value = saved.notice;
+        if (typeof saved.standbyNotice === "string") standbyNoticeInput.value = saved.standbyNotice;
+        if (Array.isArray(saved.schedule) && saved.schedule.length) schedule = saved.schedule;
+      } catch {
+        schedule = defaultSchedule();
+      }
+    }
+
+    function saveConfig() {
+      localStorage.setItem(configKey, JSON.stringify({
+        total: totalInput.value,
+        absent: absentInput.value,
+        notice: noticeInput.value,
+        standbyNotice: standbyNoticeInput.value,
+        schedule
+      }));
+    }
+
+    function escapeAttr(value) {
+      return String(value ?? "").replace(/[&<>"']/g, (char) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+      }[char]));
+    }
+
+    function absentNumbers() {
+      return [...new Set(absentInput.value
+        .split(/[,\s，、]+/)
+        .map((value) => Number(value.trim()))
+        .filter((value) => Number.isInteger(value) && value > 0))];
+    }
+
+    function actualCount() {
+      return Math.max(0, Number(totalInput.value || 0) - absentNumbers().length);
+    }
+
+    function updateActual() {
+      actualInput.value = String(actualCount());
+    }
+
+    function minutesFromTime(value) {
+      const [hour, minute] = value.split(":").map(Number);
+      if (!Number.isInteger(hour) || !Number.isInteger(minute)) return NaN;
+      return hour * 60 + minute;
+    }
+
+    function examWindow(exam, base = new Date()) {
+      const startMinutes = minutesFromTime(exam.start);
+      const start = new Date(base);
+      start.setHours(Math.floor(startMinutes / 60), startMinutes % 60, 0, 0);
+      const end = new Date(start.getTime() + Number(exam.minutes) * 60 * 1000);
+      return { start, end };
+    }
+
+    function sortedSchedule() {
+      return schedule
+        .filter((exam) => exam.subject.trim() && exam.start && Number(exam.minutes) > 0)
+        .slice()
+        .sort((a, b) => minutesFromTime(a.start) - minutesFromTime(b.start));
+    }
+
+    function renderSchedule() {
+      scheduleList.innerHTML = "";
+      schedule.forEach((exam, index) => {
+        const row = document.createElement("div");
+        row.className = "schedule-row";
+        row.innerHTML = `
+          <div class="row-index">${index + 1}</div>
+          <label>
+            科目
+            <input class="schedule-subject" type="text" value="${escapeAttr(exam.subject)}">
+          </label>
+          <label>
+            開始時間
+            <input class="schedule-start" type="time" value="${exam.start}">
+          </label>
+          <label>
+            分鐘
+            <input class="schedule-minutes" type="number" min="1" max="240" inputmode="numeric" value="${exam.minutes}">
+          </label>
+          <button class="delete-button" type="button">刪除科目</button>
+        `;
+        row.dataset.index = String(index);
+        scheduleList.appendChild(row);
+      });
+    }
+
+    function handleScheduleInput(event) {
+      const row = event.target.closest(".schedule-row");
+      if (!row) return;
+      const index = Number(row.dataset.index);
+      if (!Number.isInteger(index) || !schedule[index]) return;
+      if (event.target.classList.contains("schedule-subject")) {
+        schedule[index].subject = event.target.value;
+      }
+      if (event.target.classList.contains("schedule-start")) {
+        schedule[index].start = event.target.value;
+      }
+      if (event.target.classList.contains("schedule-minutes")) {
+        schedule[index].minutes = Number(event.target.value);
+      }
+      saveConfig();
+      updateWatchStatus();
+    }
+
+    function handleScheduleClick(event) {
+      const deleteButton = event.target.closest(".delete-button");
+      if (!deleteButton) return;
+      const row = deleteButton.closest(".schedule-row");
+      const index = Number(row?.dataset.index);
+      if (!Number.isInteger(index) || !schedule[index]) return;
+      schedule.splice(index, 1);
+      saveConfig();
+      renderSchedule();
+      updateWatchStatus();
+      setupStatus.textContent = "已刪除一個考試科目。";
+    }
+
+    function addExam() {
+      const last = sortedSchedule().at(-1);
+      const start = last ? new Date(examWindow(last).end.getTime() + 10 * 60 * 1000) : new Date(Date.now() + 5 * 60 * 1000);
+      schedule.push({ id: `exam-${Date.now()}`, subject: "新增科目", start: timeValue(start), minutes: 40 });
+      saveConfig();
+      renderSchedule();
+      updateWatchStatus();
+      setupStatus.textContent = "已新增一個考試科目。";
+    }
+
+    function formatTime(ms) {
+      const totalSeconds = Math.max(0, Math.ceil(ms / 1000));
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = totalSeconds % 60;
+      return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+    }
+
+    function stopTimer() {
+      if (timerId) {
+        clearInterval(timerId);
+        timerId = 0;
+      }
+    }
+
+    function stopWatcher() {
+      if (watchId) {
+        clearInterval(watchId);
+        watchId = 0;
+      }
+    }
+
+    function tick() {
+      const remaining = endTime - Date.now();
+      timerText.textContent = formatTime(remaining);
+      timerText.classList.toggle("warning", remaining > 0 && remaining <= 5 * 60 * 1000);
+      if (remaining <= 0) {
+        stopTimer();
+        timerText.textContent = "00:00";
+        timerStage.classList.add("finished");
+      }
+    }
+
+    function applyScreenInfo(exam) {
+      updateActual();
+      const total = Number(totalInput.value);
+      const absents = absentNumbers();
+      const notice = noticeInput.value.trim() || "請保持安靜，仔細作答。";
+      screenSubject.textContent = exam.subject || "考試";
+      screenMeta.textContent = `應考：${total} 人 / 實際：${actualCount()} 人 / 缺考座號：${absents.length ? absents.join("、") : "無"}`;
+      marqueeText.textContent = `${notice}　　${notice}　　${notice}`;
+    }
+
+    function showStandby(message) {
+      const standbyNotice = standbyNoticeInput.value.trim() || "請安靜等待下一場考試，聽候老師指示。";
+      stopTimer();
+      activeExamId = "";
+      document.body.classList.remove("proctoring");
+      document.body.classList.add("standby-mode");
+      timerStage.classList.remove("finished");
+      timerText.classList.remove("warning");
+      standbyText.textContent = message;
+      marqueeText.textContent = `${standbyNotice}　　${standbyNotice}　　${standbyNotice}`;
+    }
+
+    function showExam(exam, end) {
+      applyScreenInfo(exam);
+      endTime = end.getTime();
+      document.body.classList.remove("standby-mode");
+      document.body.classList.add("proctoring");
+      timerStage.classList.remove("finished");
+      timerText.classList.remove("warning");
+      tick();
+      stopTimer();
+      timerId = setInterval(tick, 250);
+    }
+
+    function updateWatchStatus() {
+      const exams = sortedSchedule();
+      if (!exams.length) {
+        watchStatus.textContent = "請至少新增一個有效科目、開始時間與分鐘數。";
+        return;
+      }
+      const next = findNextExam(new Date(), exams);
+      watchStatus.textContent = next
+        ? `下一場：${next.exam.subject}，${next.exam.start} 開始，${next.exam.minutes} 分鐘。`
+        : "今日考程皆已結束。";
+    }
+
+    function findCurrentExam(now = new Date(), exams = sortedSchedule()) {
+      return exams.find((exam) => {
+        const { start, end } = examWindow(exam, now);
+        return now >= start && now < end;
+      });
+    }
+
+    function findNextExam(now = new Date(), exams = sortedSchedule()) {
+      return exams
+        .map((exam) => ({ exam, window: examWindow(exam, now) }))
+        .find((item) => now < item.window.end);
+    }
+
+    function checkSchedule() {
+      const exams = sortedSchedule();
+      const now = new Date();
+      const current = findCurrentExam(now, exams);
+      if (current) {
+        const { end } = examWindow(current, now);
+        if (activeExamId !== current.id || !document.body.classList.contains("proctoring")) {
+          activeExamId = current.id;
+          showExam(current, end);
+        }
+        watchStatus.textContent = `監考中：${current.subject}，預計 ${timeValue(end)} 結束。`;
+        return;
+      }
+      const next = findNextExam(now, exams);
+      if (document.body.classList.contains("proctoring")) {
+        timerStage.classList.add("finished");
+      }
+      const message = next
+        ? `自動監考待命中\n下一場：${next.exam.subject}\n開始時間：${next.exam.start}`
+        : "今日考程皆已結束";
+      showStandby(message);
+      watchStatus.textContent = next
+        ? `待命中，下一場 ${next.exam.subject} 於 ${next.exam.start} 開始。`
+        : "今日考程皆已結束。";
+    }
+
+    async function startProctoring() {
+      updateActual();
+      const total = Number(totalInput.value);
+      if (!Number.isInteger(total) || total < 1) {
+        setupStatus.textContent = "請輸入有效的應考人數。";
+        totalInput.focus();
+        return;
+      }
+      if (!sortedSchedule().length) {
+        setupStatus.textContent = "請至少設定一個有效考程。";
+        return;
+      }
+      setupStatus.textContent = "";
+      checkSchedule();
+      stopWatcher();
+      watchId = setInterval(checkSchedule, 1000);
+      try {
+        if (!document.fullscreenElement) await document.documentElement.requestFullscreen();
+      } catch {
+        // Fullscreen may be blocked by the browser; projection mode still works in-page.
+      }
+    }
+
+    async function endProctoring() {
+      stopTimer();
+      stopWatcher();
+      activeExamId = "";
+      document.body.classList.remove("proctoring");
+      document.body.classList.remove("standby-mode");
+      timerStage.classList.remove("finished");
+      timerText.classList.remove("warning");
+      updateWatchStatus();
+      try {
+        if (document.fullscreenElement) await document.exitFullscreen();
+      } catch {
+        // Ignore fullscreen exit errors.
+      }
+    }
+
+    totalInput.addEventListener("input", () => {
+      updateActual();
+      saveConfig();
+    });
+    absentInput.addEventListener("input", () => {
+      updateActual();
+      saveConfig();
+    });
+    noticeInput.addEventListener("input", saveConfig);
+    standbyNoticeInput.addEventListener("input", saveConfig);
+    addExamButton.addEventListener("click", addExam);
+    scheduleList.addEventListener("input", handleScheduleInput);
+    scheduleList.addEventListener("click", handleScheduleClick);
+    startButton.addEventListener("click", startProctoring);
+    endButton.addEventListener("click", endProctoring);
+    window.addEventListener("beforeunload", () => {
+      stopTimer();
+      stopWatcher();
+    });
+
+    updateActual();
+    renderSchedule();
+    updateWatchStatus();
+  </script>
+</body>
+</html>
