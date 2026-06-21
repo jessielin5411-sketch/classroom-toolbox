@@ -1,0 +1,820 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>國小教師 AI 提示詞大全</title>
+  <style>
+    :root {
+      --ink: #21304a;
+      --muted: #687991;
+      --paper: #fbfcff;
+      --panel: rgba(255, 255, 255, 0.9);
+      --line: rgba(84, 112, 148, 0.16);
+      --blue: #69b8ff;
+      --green: #83d9a6;
+      --yellow: #ffe38a;
+      --pink: #ffb4cb;
+      --purple: #cbb8ff;
+      --orange: #ffc587;
+      --shadow: 0 18px 42px rgba(73, 92, 122, 0.16);
+      --card-color: #dbeafe;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", "Noto Sans TC", "Microsoft JhengHei", system-ui, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 10% 12%, rgba(255, 227, 138, 0.8), transparent 24%),
+        radial-gradient(circle at 88% 10%, rgba(203, 184, 255, 0.62), transparent 24%),
+        radial-gradient(circle at 80% 88%, rgba(131, 217, 166, 0.34), transparent 28%),
+        linear-gradient(180deg, #f7fbff, #fff8fb);
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    .page {
+      width: min(1180px, calc(100% - 24px));
+      margin: 0 auto;
+      padding: 18px 0 48px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .back-link,
+    .small-action {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 42px;
+      padding: 0 14px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: #4862a8;
+      background: rgba(255, 255, 255, 0.82);
+      font-weight: 950;
+      text-decoration: none;
+      box-shadow: 0 8px 20px rgba(73, 92, 122, 0.08);
+    }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      padding: clamp(22px, 4vw, 42px);
+      border: 1px solid rgba(255, 255, 255, 0.82);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.86);
+      box-shadow: var(--shadow);
+    }
+
+    .hero::after {
+      content: "✦";
+      position: absolute;
+      right: 34px;
+      bottom: 16px;
+      color: rgba(105, 184, 255, 0.28);
+      font-size: 120px;
+      line-height: 1;
+      pointer-events: none;
+    }
+
+    h1 {
+      max-width: 860px;
+      margin: 0;
+      font-size: clamp(34px, 5vw, 60px);
+      line-height: 1.1;
+      letter-spacing: 0;
+    }
+
+    .lead {
+      max-width: 820px;
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: 18px;
+      line-height: 1.65;
+      font-weight: 800;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: minmax(240px, 1fr) auto;
+      gap: 12px;
+      margin-top: 22px;
+      align-items: start;
+    }
+
+    .search-box {
+      min-height: 48px;
+      width: 100%;
+      padding: 0 16px;
+      border: 2px solid var(--line);
+      border-radius: 999px;
+      color: var(--ink);
+      background: #fff;
+      font-weight: 850;
+      outline: 0;
+    }
+
+    .search-box:focus {
+      border-color: rgba(105, 184, 255, 0.8);
+      box-shadow: 0 0 0 4px rgba(105, 184, 255, 0.16);
+    }
+
+    .tag-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      margin-top: 18px;
+    }
+
+    .tag {
+      min-height: 38px;
+      padding: 0 13px;
+      border: 1px solid transparent;
+      border-radius: 999px;
+      color: #324869;
+      background: var(--tag-bg, #edf4ff);
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 950;
+    }
+
+    .tag.active {
+      color: #fff;
+      background: #263b5e;
+      box-shadow: 0 8px 18px rgba(38, 59, 94, 0.2);
+    }
+
+    .meta-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 18px 2px 10px;
+      color: var(--muted);
+      font-weight: 900;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .prompt-card {
+      position: relative;
+      display: grid;
+      gap: 12px;
+      min-height: 310px;
+      padding: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      border-radius: 14px;
+      background:
+        linear-gradient(135deg, color-mix(in srgb, var(--card-color), white 18%), rgba(255, 255, 255, 0.88));
+      box-shadow: var(--shadow);
+    }
+
+    .card-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .category {
+      display: inline-flex;
+      width: fit-content;
+      padding: 5px 10px;
+      border-radius: 999px;
+      color: #243047;
+      background: rgba(255, 255, 255, 0.66);
+      font-size: 13px;
+      font-weight: 950;
+    }
+
+    .copy-button {
+      display: grid;
+      place-items: center;
+      width: 38px;
+      height: 38px;
+      border: 0;
+      border-radius: 50%;
+      color: #314261;
+      background: rgba(255, 255, 255, 0.76);
+      cursor: pointer;
+      font-size: 18px;
+      font-weight: 1000;
+    }
+
+    .prompt-card h2 {
+      margin: 0;
+      font-size: 22px;
+      line-height: 1.25;
+    }
+
+    .prompt-text {
+      margin: 0;
+      padding: 14px;
+      border-radius: 10px;
+      color: #1f2d44;
+      background: rgba(255, 255, 255, 0.72);
+      font-size: 16px;
+      line-height: 1.65;
+      font-weight: 800;
+      white-space: pre-wrap;
+    }
+
+    .expected {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+      margin: 0;
+      padding: 11px 12px;
+      border-radius: 10px;
+      color: #455978;
+      background: rgba(255, 255, 255, 0.58);
+      font-size: 14px;
+      line-height: 1.55;
+      font-weight: 900;
+    }
+
+    .empty {
+      grid-column: 1 / -1;
+      padding: 32px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.8);
+      color: var(--muted);
+      text-align: center;
+      font-weight: 900;
+    }
+
+    .toast {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 10;
+      transform: translateY(18px);
+      opacity: 0;
+      padding: 12px 16px;
+      border-radius: 999px;
+      color: #fff;
+      background: #263b5e;
+      box-shadow: 0 16px 36px rgba(38, 59, 94, 0.24);
+      font-weight: 950;
+      transition: opacity 0.18s ease, transform 0.18s ease;
+      pointer-events: none;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    @media (max-width: 860px) {
+      .controls,
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="topbar">
+      <a class="back-link" href="../index.html">← 回教學微光站</a>
+      <button class="small-action" id="copyAllButton" type="button">複製目前清單</button>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="pageTitle">
+        <h1 id="pageTitle">國小教師 AI 提示詞大全</h1>
+        <p class="lead">把常見的課堂、行政與親師溝通需求整理成即戰力提示詞。先選情境，再點卡片右上角即可複製，貼到 AI 工具後替換中括號內容。</p>
+        <div class="controls">
+          <input class="search-box" id="searchInput" type="search" placeholder="搜尋：評語、校外教學、閱讀理解、班親會...">
+          <button class="small-action" id="resetButton" type="button">顯示全部</button>
+        </div>
+        <div class="tag-bar" id="tagBar"></div>
+      </section>
+
+      <div class="meta-row">
+        <span id="resultCount"></span>
+        <span>點擊卡片右上角圖示即可複製</span>
+      </div>
+
+      <section class="grid" id="promptGrid" aria-live="polite"></section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast">已複製提示詞</div>
+
+  <script>
+    const categories = [
+      { id: "all", label: "全部", color: "#edf4ff" },
+      { id: "teaching", label: "教學與備課", color: "#dceeff" },
+      { id: "assessment", label: "評量與測驗", color: "#fff0b8" },
+      { id: "comments", label: "學生評語", color: "#e5f8df" },
+      { id: "classroom", label: "班級經營", color: "#ffd9d9" },
+      { id: "parents", label: "親師溝通", color: "#ffe1b8" },
+      { id: "admin", label: "行政庶務", color: "#e7dcff" },
+      { id: "guidance", label: "輔導與特教", color: "#d7f7f0" }
+    ];
+
+    const prompts = [
+      {
+        id: 1,
+        category: "teaching",
+        title: "撰寫單元課程計畫",
+        prompt: "請幫我寫一份適合國小 [幾] 年級的 [科目] 課程計畫，單元主題是「[填入主題]」。請以 40 分鐘為一節課，規劃出包含「引起動機、發展活動、綜合活動」的教學流程，並列出對應的學習目標。",
+        expected: "產出一堂課的完整教案草稿。",
+        color: "#bfe2ff"
+      },
+      {
+        id: 2,
+        category: "comments",
+        title: "期末成績單評語生成",
+        prompt: "請根據以下學生的特質（例如：熱心助人、數學邏輯強、但上課容易分心），幫我寫一段約 80-100 字、語氣溫暖且正向鼓勵的期末成績單評語。請用「發現亮點」加上「溫和期許」的結構來撰寫。",
+        expected: "快速生成客製化且不落俗套的學生評語。",
+        color: "#c8f0c2"
+      },
+      {
+        id: 3,
+        category: "parents",
+        title: "班親會家長邀請函",
+        prompt: "下週即將舉辦國小 [幾] 年級的班親會，請幫我草擬一封給家長的邀請函。語氣要誠懇親切，內容需包含：歡迎家長參與、本學期班級經營核心理念、當天預計討論的重點，以及回條格式。",
+        expected: "產出格式完整且親切的正式信函。",
+        color: "#ffc7a4"
+      },
+      {
+        id: 4,
+        category: "classroom",
+        title: "學生衝突處理引導",
+        prompt: "班上有兩位學生因為 [填入衝突事件，例如：下課搶球] 發生爭執。請運用社會情緒學習（SEL）與非暴力溝通的原則，幫我設計一段 3 分鐘的師生對話腳本，引導他們說出自己的感受並找出解決方案。",
+        expected: "提供教師具體的溝通話術與引導步驟。",
+        color: "#ffb8b8"
+      },
+      {
+        id: 5,
+        category: "admin",
+        title: "校外教學行程與檢核表",
+        prompt: "我要帶國小六年級學生去 [填入地點] 進行半天的校外教學。請幫我列出一份包含時間軸的行程規劃表，以及一份給老師的行前安全與物品檢核清單。",
+        expected: "產出具體的行程表與防呆檢核清單。",
+        color: "#d9c7ff"
+      },
+      {
+        id: 6,
+        category: "assessment",
+        title: "閱讀理解測驗出題",
+        prompt: "請根據以下這篇短文：[貼上課文或文章]，出 5 題適合國小 [幾] 年級程度的閱讀理解選擇題。題目需包含擷取訊息、統整解釋與省思評鑑的層次，並附上解答與簡單解析。",
+        expected: "自動化生成符合素養導向的測驗題。",
+        color: "#c2e7ff"
+      },
+      {
+        id: 7,
+        category: "teaching",
+        title: "教學互動網頁製作",
+        prompt: "我想製作一個適合國小 [幾] 年級、主題為「[填入單元主題]」的教學互動網頁。請幫我規劃網頁功能與版面，需包含：學習目標、操作流程、學生互動任務、即時回饋方式，以及適合投影或平板操作的介面建議。若可以，請提供 HTML、CSS、JavaScript 的基本架構。",
+        expected: "產出可交給 AI 或工程工具繼續製作的互動網頁規格與雛形。",
+        color: "#b9e7ff"
+      },
+      {
+        id: 8,
+        category: "teaching",
+        title: "成語漫畫生成",
+        prompt: "請幫我把成語「[填入成語]」設計成適合國小學生理解的四格漫畫腳本。內容需包含：每一格的畫面描述、角色對話、旁白、成語意思，以及最後一格的生活情境應用。請避免過於艱深的文字，語氣要活潑有趣。",
+        expected: "生成可用於學習單、簡報或 AI 繪圖的成語漫畫腳本。",
+        color: "#ffe4a8"
+      },
+      {
+        id: 9,
+        category: "teaching",
+        title: "教學單元簡報內容",
+        prompt: "請幫我設計一份國小 [幾] 年級 [科目] 的教學簡報大綱，單元主題是「[填入主題]」。請規劃 8-10 張投影片，每張需包含：標題、重點內容、教師講解提示、學生互動提問，以及可搭配的圖片或圖示建議。語氣要清楚、適合課堂投影使用。",
+        expected: "產出可直接整理成簡報的逐頁內容架構。",
+        color: "#d7d0ff"
+      },
+      {
+        id: 10,
+        category: "teaching",
+        title: "學習單設計",
+        prompt: "請幫我設計一份適合國小 [幾] 年級 [科目] 的學習單，主題是「[填入單元主題]」。請包含：學習目標、暖身題、核心練習題、延伸挑戰題、反思提問，以及教師可快速檢核的答案或評分重點。版面要適合 A4 一頁或兩頁列印。",
+        expected: "產出可直接整理成紙本或電子學習單的內容草稿。",
+        color: "#d9f7c8"
+      },
+      {
+        id: 11,
+        category: "teaching",
+        title: "差異化教學活動設計",
+        prompt: "請針對國小 [幾] 年級 [科目] 的「[填入單元主題]」，設計一份差異化教學活動。請依照學生程度分成「基礎支持、一般任務、進階挑戰」三層，分別提供任務說明、教師引導語、所需材料、完成標準與可能的協助方式。",
+        expected: "產出同一主題下可照顧不同程度學生的分層活動設計。",
+        color: "#fff0a8"
+      },
+      {
+        id: 12,
+        category: "teaching",
+        title: "學習單題目分層改寫",
+        prompt: "我有一份國小 [幾] 年級 [科目] 學習單，主題是「[填入主題]」。請幫我把同一個學習目標改寫成三種難度的題目：基礎題、標準題、挑戰題。每一層請提供 3 題，並附上教師檢核重點與學生常見錯誤提醒。",
+        expected: "快速生成可用於補救、一般練習與高成就挑戰的分層題目。",
+        color: "#cce9ff"
+      },
+      {
+        id: 13,
+        category: "assessment",
+        title: "素養導向數學題組",
+        prompt: "請以國小 [幾] 年級 [數學單元] 為主題，設計一組生活情境題。題目需包含情境描述、3 題由易到難的問題、評分重點與參考解答，並避免只考計算，需看出學生的理解與推理。",
+        expected: "產出可直接放入學習單或測驗卷的題組。",
+        color: "#ffe9a8"
+      },
+      {
+        id: 14,
+        category: "guidance",
+        title: "學生情緒 SEL 引導對話",
+        prompt: "有一位學生今天看起來情緒低落，原因可能是 [簡述事件]。請幫我設計一段 5 分鐘的教師關懷對話，使用同理、命名情緒、選擇下一步行動的方式，引導學生穩定情緒。",
+        expected: "提供教師可直接使用的溫和對話腳本。",
+        color: "#c9f3ea"
+      },
+      {
+        id: 15,
+        category: "classroom",
+        title: "班規與獎勵機制設計",
+        prompt: "請幫我設計一套適合國小 [幾] 年級的班級規範與正向獎勵制度。請包含 5 條清楚可執行的班規、違規後的修復式處理方式，以及能鼓勵全班合作的集點獎勵機制。",
+        expected: "產出清楚、溫和且可操作的班級經營草案。",
+        color: "#ffd0d0"
+      },
+      {
+        id: 16,
+        category: "parents",
+        title: "聯絡簿事件委婉表達",
+        prompt: "請把以下校園事件改寫成適合寫在聯絡簿給家長看的文字：[貼上事件描述]。請使用台灣國小教師常用語氣，先肯定孩子，再客觀描述事件，最後提出希望家長協助引導的方向。",
+        expected: "生成溫和、專業且具體的親師溝通文字。",
+        color: "#ffd9b5"
+      },
+      {
+        id: 17,
+        category: "assessment",
+        title: "單元測驗快速出題",
+        prompt: "請依據國小 [幾] 年級 [科目] 的「[單元名稱]」，幫我設計一份 20 分鐘的小測驗。題型需包含選擇題、填充題與簡答題，難度分成基礎、熟練、挑戰三層，並附上答案與簡短解析。",
+        expected: "產出可直接修改成紙本測驗或線上表單的題目草稿。",
+        color: "#ffe9a8"
+      },
+      {
+        id: 18,
+        category: "assessment",
+        title: "表現任務評分量表",
+        prompt: "請幫我設計一份國小 [幾] 年級 [科目] 的表現任務評分量表，任務主題是「[任務名稱]」。請用 4 個等第描述學生表現，評分向度需包含內容理解、表達清楚度、合作參與與作品完成度，並提供學生看得懂的語句。",
+        expected: "產出可用於專題、口頭報告或作品評量的 Rubric。",
+        color: "#fff1b8"
+      },
+      {
+        id: 19,
+        category: "comments",
+        title: "日常表現正向紀錄",
+        prompt: "請根據以下學生今天的日常表現：[填入觀察，例如：主動協助同學、上課發言踴躍、打掃認真]，幫我寫一段 50-80 字的正向紀錄。語氣要溫暖具體，可用於聯絡簿、班級平台或老師備忘。",
+        expected: "快速生成具體、不空泛的日常表現紀錄。",
+        color: "#d9f7c8"
+      },
+      {
+        id: 20,
+        category: "comments",
+        title: "需努力行為的溫和評語",
+        prompt: "請把學生的需努力表現：[填入狀況，例如：容易分心、常忘記帶學用品、與同儕互動有摩擦]，改寫成適合老師紀錄或評語使用的文字。請避免負面標籤，改用「可以一起努力的成長目標」來表達，並加入一個具體建議。",
+        expected: "產出兼顧溫柔與專業的日常表現評語。",
+        color: "#e5f8df"
+      },
+      {
+        id: 21,
+        category: "classroom",
+        title: "座位表安排邏輯",
+        prompt: "請幫我規劃國小班級座位表安排邏輯。班上共有 [人數] 人，教室座位為 [列數] 列 x [行數] 行。請考量：近視或需靠前學生、容易聊天組合需分開、需要同儕支持的學生、男女或小組平衡。請輸出安排原則、調整步驟與可檢查的座位表規則。",
+        expected: "提供老師排座位時可依循的清楚邏輯與檢核清單。",
+        color: "#ffd0d0"
+      },
+      {
+        id: 22,
+        category: "parents",
+        title: "給家長的一封信",
+        prompt: "請幫我草擬一封給國小 [幾] 年級家長的信，主題是「[填入主題，例如：新學期班級經營、戶外教學提醒、期末感謝]」。語氣要親切、誠懇、具體，內容需包含：寫信目的、老師的想法、需要家長協助的事項，以及溫暖結尾。",
+        expected: "產出格式完整、可直接微調寄出的家長信。",
+        color: "#ffd9b5"
+      },
+      {
+        id: 23,
+        category: "admin",
+        title: "校外教學企劃書",
+        prompt: "請幫我撰寫一份國小 [幾] 年級校外教學企劃書，地點是「[填入地點]」。內容需包含：活動目標、課程連結、行程時間表、學生分組與師生比、安全風險評估、家長通知重點、預算項目與備案。",
+        expected: "生成可供行政審核或校內討論的校外教學企劃草稿。",
+        color: "#d9c7ff"
+      },
+      {
+        id: 24,
+        category: "admin",
+        title: "研習心得整理",
+        prompt: "請根據以下研習重點：[貼上筆記或條列內容]，幫我整理成一篇約 [字數] 字的國小教師研習心得。請包含：研習主題摘要、對教學現場的啟發、可立即嘗試的做法，以及後續反思。",
+        expected: "快速產出有結構、符合教師語氣的研習心得。",
+        color: "#e7dcff"
+      },
+      {
+        id: 25,
+        category: "admin",
+        title: "會議記錄整理",
+        prompt: "請幫我把以下會議逐字稿或零散筆記整理成正式會議記錄：[貼上內容]。請分成：會議時間、出席人員、討論事項、決議內容、待辦事項、負責人與期限。請保留重點，不要加入原文沒有的決議。",
+        expected: "產出清楚可歸檔的會議記錄。",
+        color: "#d6ccff"
+      },
+      {
+        id: 26,
+        category: "guidance",
+        title: "社交技巧練習活動",
+        prompt: "請設計一個適合國小學生的社交技巧練習活動，目標是「[填入目標，例如：輪流說話、加入遊戲、拒絕同儕要求、道歉與修復關係]」。請包含活動流程、教師示範語、學生角色扮演情境、觀察重點與回饋句型。",
+        expected: "產出可在班級輔導或小團體中使用的社交技巧活動。",
+        color: "#c9f3ea"
+      },
+      {
+        id: 27,
+        category: "guidance",
+        title: "IEP 目標參考撰寫",
+        prompt: "請根據學生目前狀況：[簡述學生能力、需求與困難]，協助我草擬國小階段個別化教育計畫 IEP 的參考目標。請分成長期目標、短期目標、教學策略、評量方式與所需支持。內容僅作為教師討論草稿，請避免醫療診斷語氣。",
+        expected: "提供 IEP 討論前可參考的目標與支持策略草案。",
+        color: "#d7f7f0"
+      },
+      {
+        id: 28,
+        category: "guidance",
+        title: "學生輔導紀錄整理",
+        prompt: "請幫我把以下學生輔導談話重點整理成專業且客觀的輔導紀錄：[貼上談話摘要]。請分成：事件背景、學生表達、教師引導、後續追蹤方向。請使用中性語氣，避免貼標籤或過度推論。",
+        expected: "產出適合校內輔導紀錄使用的客觀文字。",
+        color: "#cbeee8"
+      },
+      {
+        id: 29,
+        category: "teaching",
+        title: "故事化教學腳本設計",
+        prompt: "請幫我把國小 [幾] 年級 [科目] 的「[單元主題]」改寫成一段故事化教學腳本。請設計角色、情境衝突、教師提問、學生互動任務與最後的知識整理，讓學生像進入故事任務一樣理解重點。",
+        expected: "產出可直接用於課堂導入或簡報講解的故事化教學流程。",
+        color: "#b9e7ff"
+      },
+      {
+        id: 30,
+        category: "teaching",
+        title: "課堂分組合作任務",
+        prompt: "請針對國小 [幾] 年級 [科目] 的「[單元主題]」，設計一個 20-30 分鐘的分組合作任務。請包含分組方式、角色分工、任務步驟、討論題目、成果呈現方式，以及教師巡視時可以提問的引導語。",
+        expected: "生成可讓學生合作討論與發表的課堂任務設計。",
+        color: "#d9f7c8"
+      },
+      {
+        id: 31,
+        category: "teaching",
+        title: "跨領域統整活動點子",
+        prompt: "請以國小 [幾] 年級的「[主題]」為核心，設計一個跨領域統整活動，至少結合 [科目一]、[科目二] 與 [科目三]。請列出活動目標、學習任務、成果作品、評量方式與延伸活動。",
+        expected: "產出適合主題課程、彈性學習或專題活動的跨域點子。",
+        color: "#cce9ff"
+      },
+      {
+        id: 32,
+        category: "teaching",
+        title: "戶外走讀教學學習單",
+        prompt: "請幫我設計一份適合國小 [幾] 年級到「[走讀地點]」進行戶外教學的學習單。請包含出發前觀察任務、現地記錄題、拍照或訪談任務、回教室後的整理活動，以及安全提醒。",
+        expected: "產出可用於戶外教學或校園走讀的學習單草稿。",
+        color: "#bfe2ff"
+      },
+      {
+        id: 33,
+        category: "assessment",
+        title: "同儕互評表單設計",
+        prompt: "請幫我設計一份適合國小學生使用的同儕互評表單，活動主題是「[活動或作品名稱]」。請用學生看得懂的語句，包含合作態度、表達清楚、完成任務、尊重他人意見等向度，並設計簡單勾選與一句回饋欄位。",
+        expected: "產出可直接做成紙本或 Google 表單的同儕互評表。",
+        color: "#fff1b8"
+      },
+      {
+        id: 34,
+        category: "assessment",
+        title: "總結性評量專題企劃",
+        prompt: "請為國小 [幾] 年級 [科目] 的「[單元主題]」設計一個總結性評量專題。請包含專題任務說明、學生產出形式、完成步驟、評分規準、時間安排與教師檢核點，讓學生能展現理解而不只是背誦。",
+        expected: "生成可取代傳統紙筆測驗的專題評量企劃。",
+        color: "#ffe9a8"
+      },
+      {
+        id: 35,
+        category: "assessment",
+        title: "趣味化是非短答題",
+        prompt: "請針對國小 [幾] 年級 [科目] 的「[單元主題]」，設計 10 題趣味化的是非題與短答題。題目要貼近學生生活，可以加入小故事或情境，並附上答案、解析與容易誤解的地方。",
+        expected: "產出適合暖身、複習或 Kahoot 題庫的趣味題目。",
+        color: "#fff0a8"
+      },
+      {
+        id: 36,
+        category: "assessment",
+        title: "錯題解析與補救教學",
+        prompt: "以下是學生常錯的考題類型或錯誤答案：[貼上題目與學生錯誤作答]。請分析學生可能的學習迷思，並設計一套補救教學步驟，包含教師說明、示範題、練習題、檢核方式與回家練習建議。",
+        expected: "協助老師快速找出迷思概念並規劃補救教學。",
+        color: "#ffe4a8"
+      },
+      {
+        id: 37,
+        category: "comments",
+        title: "畢業生專屬祝福語",
+        prompt: "請幫我為即將畢業的國小學生 [學生姓名] 寫一段專屬祝福語。學生特質是：[填入特質與回憶]。語氣要溫暖、真誠、有畫面感，內容包含老師看見的成長、值得珍惜的優點，以及對未來國中生活的期許。",
+        expected: "生成可用於畢業紀念冊、卡片或頒獎時朗讀的祝福文字。",
+        color: "#d9f7c8"
+      },
+      {
+        id: 38,
+        category: "classroom",
+        title: "晨光時間活動規劃",
+        prompt: "請幫我規劃一週的國小晨光時間活動，班級是 [幾] 年級，時間約每天 [分鐘數] 分鐘。請安排閱讀、靜心、桌遊、生活教育、分享表達等活動，並列出每日流程、材料與教師提醒。",
+        expected: "產出讓早晨進班更穩定、有秩序的活動安排。",
+        color: "#ffd0d0"
+      },
+      {
+        id: 39,
+        category: "classroom",
+        title: "節慶班級同樂會企劃",
+        prompt: "請幫我設計一場國小班級節慶同樂會，節慶主題是「[填入節慶]」，時間約 [分鐘數] 分鐘。請包含活動流程、分組遊戲、簡易布置、學生主持安排、秩序規則與收尾反思。",
+        expected: "生成兼顧歡樂、秩序與教育意義的班級活動企劃。",
+        color: "#ffc7a4"
+      },
+      {
+        id: 40,
+        category: "classroom",
+        title: "轉學生新學期破冰活動",
+        prompt: "班上即將有轉學生或新學期剛開始，請設計一套適合國小 [幾] 年級的破冰活動。請包含低壓力自我介紹、同儕配對任務、班級歡迎儀式、老師引導語與避免尷尬的注意事項。",
+        expected: "提供幫助孩子快速融入班級的破冰流程。",
+        color: "#ffdddd"
+      },
+      {
+        id: 41,
+        category: "classroom",
+        title: "幹部訓練與職責說明",
+        prompt: "請幫我設計國小班級幹部訓練內容，幹部包含：[填入幹部名稱]。請列出每個職務的工作內容、每日檢核事項、遇到問題時的處理流程，以及老師可以用來鼓勵幹部的話語。",
+        expected: "產出清楚可貼在教室或發給幹部的職責說明。",
+        color: "#ffd9b5"
+      },
+      {
+        id: 42,
+        category: "classroom",
+        title: "班會討論議題與流程",
+        prompt: "請幫我設計一場國小班會，討論主題是「[填入議題，例如：午餐秩序、下課安全、班級公約]」。請規劃主持流程、暖身提問、小組討論題、全班表決方式、決議紀錄格式與後續追蹤。",
+        expected: "生成可引導學生參與自治與表達意見的班會流程。",
+        color: "#ffb8b8"
+      },
+      {
+        id: 43,
+        category: "parents",
+        title: "寒暑假生活須知提醒",
+        prompt: "請幫我寫一份給國小家長的寒暑假生活須知提醒。內容需包含作息、閱讀、作業安排、3C 使用、安全提醒、親子活動建議與開學準備。語氣要親切、具體，讓家長覺得容易配合。",
+        expected: "產出可放入聯絡簿、班級群組或假期通知單的提醒文字。",
+        color: "#ffd9b5"
+      },
+      {
+        id: 44,
+        category: "parents",
+        title: "學生突發狀況通知",
+        prompt: "請幫我把以下學生突發狀況整理成適合通知家長的文字：[貼上事件，例如：身體不適、跌倒擦傷、情緒低落、與同學有小摩擦]。請先表達關心，再客觀描述處理情形，最後說明希望家長留意或配合的事項。",
+        expected: "生成穩定、清楚且不讓家長過度焦慮的通知內容。",
+        color: "#ffc7a4"
+      },
+      {
+        id: 45,
+        category: "admin",
+        title: "感謝狀感謝函撰寫",
+        prompt: "請幫我撰寫一份給 [對象，例如：志工家長、講師、協助單位] 的感謝狀或感謝函。活動名稱是「[填入活動]」。請用正式但溫暖的語氣，包含感謝原因、具體貢獻、對學生或學校的幫助，以及誠摯結尾。",
+        expected: "產出可直接套用於校內行政或活動致謝的文字。",
+        color: "#e7dcff"
+      },
+      {
+        id: 46,
+        category: "admin",
+        title: "教師專業發展自評表",
+        prompt: "請幫我設計一份國小教師專業發展自評表，主題是「[填入主題，例如：班級經營、差異化教學、數位教學]」。請包含自評向度、具體指標、1-5 分量表描述、證據蒐集方式與後續精進目標。",
+        expected: "生成可用於教學反思、公開授課或專業成長紀錄的自評表。",
+        color: "#d6ccff"
+      },
+      {
+        id: 47,
+        category: "admin",
+        title: "校內宣導活動企劃草案",
+        prompt: "請幫我規劃一份國小校內宣導活動企劃，主題是「[填入主題，例如：防災教育、交通安全、反霸凌、健康促進]」。請包含活動目標、宣導對象、活動流程、場地與器材、工作分配、宣導標語與成效檢核方式。",
+        expected: "產出可供行政會議討論或活動籌備使用的企劃草案。",
+        color: "#d9c7ff"
+      }
+    ];
+
+    const tagBar = document.querySelector("#tagBar");
+    const promptGrid = document.querySelector("#promptGrid");
+    const searchInput = document.querySelector("#searchInput");
+    const resetButton = document.querySelector("#resetButton");
+    const copyAllButton = document.querySelector("#copyAllButton");
+    const resultCount = document.querySelector("#resultCount");
+    const toast = document.querySelector("#toast");
+
+    let activeCategory = "all";
+
+    function categoryInfo(id) {
+      return categories.find((item) => item.id === id) || categories[0];
+    }
+
+    function filteredPrompts() {
+      const keyword = searchInput.value.trim().toLowerCase();
+      return prompts.filter((item) => {
+        const matchCategory = activeCategory === "all" || item.category === activeCategory;
+        const text = `${item.title} ${item.prompt} ${item.expected} ${categoryInfo(item.category).label}`.toLowerCase();
+        return matchCategory && (!keyword || text.includes(keyword));
+      });
+    }
+
+    function renderTags() {
+      tagBar.innerHTML = "";
+      categories.forEach((category) => {
+        const button = document.createElement("button");
+        button.className = `tag ${activeCategory === category.id ? "active" : ""}`;
+        button.type = "button";
+        button.textContent = category.label;
+        button.style.setProperty("--tag-bg", category.color);
+        button.addEventListener("click", () => {
+          activeCategory = category.id;
+          render();
+        });
+        tagBar.appendChild(button);
+      });
+    }
+
+    function renderCards() {
+      const list = filteredPrompts();
+      resultCount.textContent = `目前顯示 ${list.length} 張提示詞卡`;
+      promptGrid.innerHTML = "";
+      if (!list.length) {
+        promptGrid.innerHTML = '<div class="empty">找不到符合條件的提示詞，換個分類或關鍵字試試。</div>';
+        return;
+      }
+      list.forEach((item) => {
+        const category = categoryInfo(item.category);
+        const card = document.createElement("article");
+        card.className = "prompt-card";
+        card.style.setProperty("--card-color", item.color);
+        card.innerHTML = `
+          <div class="card-head">
+            <span class="category">${category.label}</span>
+            <button class="copy-button" type="button" aria-label="複製 ${item.title}">⧉</button>
+          </div>
+          <h2>#${item.id} ${item.title}</h2>
+          <p class="prompt-text">${item.prompt}</p>
+          <p class="expected"><span>💡</span><span>預期結果：${item.expected}</span></p>
+        `;
+        card.querySelector(".copy-button").addEventListener("click", () => copyText(item.prompt));
+        promptGrid.appendChild(card);
+      });
+    }
+
+    async function copyText(text) {
+      try {
+        await navigator.clipboard.writeText(text);
+        showToast("已複製提示詞");
+      } catch {
+        showToast("瀏覽器不允許複製，請手動選取文字");
+      }
+    }
+
+    async function copyCurrentList() {
+      const text = filteredPrompts()
+        .map((item) => `【${categoryInfo(item.category).label}】${item.title}\n${item.prompt}\n預期結果：${item.expected}`)
+        .join("\n\n---\n\n");
+      if (!text) return;
+      await copyText(text);
+    }
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add("show");
+      window.clearTimeout(showToast.timer);
+      showToast.timer = window.setTimeout(() => toast.classList.remove("show"), 1600);
+    }
+
+    function render() {
+      renderTags();
+      renderCards();
+    }
+
+    searchInput.addEventListener("input", renderCards);
+    resetButton.addEventListener("click", () => {
+      activeCategory = "all";
+      searchInput.value = "";
+      render();
+    });
+    copyAllButton.addEventListener("click", copyCurrentList);
+
+    render();
+  </script>
+</body>
+</html>
