@@ -179,7 +179,7 @@
 
     .schedule-row {
       display: grid;
-      grid-template-columns: 42px minmax(190px, 1fr) 150px 120px auto;
+      grid-template-columns: 42px minmax(180px, 1fr) 140px 100px minmax(220px, 0.9fr) auto;
       gap: 10px;
       align-items: stretch;
       padding: 12px;
@@ -218,6 +218,46 @@
       padding: 0 12px;
       color: #991b1b;
       background: #fee2e2;
+    }
+
+    .audio-picker {
+      min-width: 0;
+    }
+
+    .audio-file-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .audio-picker input[type="file"] {
+      width: 100%;
+      min-height: 42px;
+      padding: 8px;
+      font-size: 13px;
+    }
+
+    .audio-name {
+      display: block;
+      margin-top: 6px;
+      overflow: hidden;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .clear-audio-button {
+      min-height: 42px;
+      padding: 0 10px;
+      border: 0;
+      border-radius: 8px;
+      color: #1e3a8a;
+      background: #dbeafe;
+      cursor: pointer;
+      font-weight: 950;
+      white-space: nowrap;
     }
 
     .watch-card {
@@ -301,6 +341,48 @@
       font-size: clamp(22px, 2.2vw, 34px);
       font-weight: 1000;
       text-align: right;
+    }
+
+    .screen-audio {
+      display: none;
+      grid-column: 1 / -1;
+      align-items: center;
+      gap: 12px;
+      width: min(760px, 100%);
+      margin-top: 12px;
+      padding: 12px 14px;
+      border: 1px solid rgba(147, 197, 253, 0.28);
+      border-radius: 12px;
+      color: #e0f2fe;
+      background: rgba(15, 23, 42, 0.72);
+      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.26);
+    }
+
+    .screen-audio.show {
+      display: grid;
+      grid-template-columns: auto 1fr;
+    }
+
+    .screen-audio-title {
+      font-size: 16px;
+      font-weight: 1000;
+      white-space: nowrap;
+    }
+
+    .screen-audio audio {
+      width: 100%;
+      min-width: 220px;
+      accent-color: #60a5fa;
+    }
+
+    .screen-audio-name {
+      grid-column: 2;
+      overflow: hidden;
+      color: #bfdbfe;
+      font-size: 14px;
+      font-weight: 850;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .timer-stage {
@@ -393,6 +475,17 @@
       display: block;
     }
 
+    body.prepare-mode .standby {
+      color: #fb923c;
+      font-size: clamp(38px, 5.8vw, 86px);
+      text-shadow: 0 0 36px rgba(251, 146, 60, 0.42);
+      animation: preparePulse 1.15s ease-in-out infinite;
+    }
+
+    @keyframes preparePulse {
+      50% { transform: scale(1.018); opacity: 0.88; }
+    }
+
     .marquee {
       overflow: hidden;
       border-top: 1px solid rgba(226, 232, 240, 0.18);
@@ -407,7 +500,7 @@
       font-size: clamp(24px, 3vw, 42px);
       font-weight: 1000;
       white-space: nowrap;
-      animation: marqueeMove 36s linear infinite;
+      animation: marqueeMove 72s linear infinite;
     }
 
     @keyframes marqueeMove {
@@ -439,6 +532,14 @@
 
       .exam-meta {
         text-align: left;
+      }
+
+      .screen-audio.show {
+        grid-template-columns: 1fr;
+      }
+
+      .screen-audio-name {
+        grid-column: 1;
       }
     }
   </style>
@@ -501,6 +602,11 @@
       <div class="timer" id="timerText">40:00</div>
       <div class="finish-message">考試結束，請停筆！</div>
       <div class="standby" id="standbyText">自動監考待命中</div>
+      <div class="screen-audio" id="screenAudioPanel">
+        <div class="screen-audio-title">本節音檔</div>
+        <audio id="examAudio" controls preload="metadata"></audio>
+        <div class="screen-audio-name" id="screenAudioName"></div>
+      </div>
     </main>
 
     <button class="end-button" id="endButton" type="button">結束 / 返回設定</button>
@@ -527,12 +633,18 @@
     const timerText = document.querySelector("#timerText");
     const standbyText = document.querySelector("#standbyText");
     const marqueeText = document.querySelector("#marqueeText");
+    const screenAudioPanel = document.querySelector("#screenAudioPanel");
+    const examAudio = document.querySelector("#examAudio");
+    const screenAudioName = document.querySelector("#screenAudioName");
 
     const configKey = "jessie-toolbox-exam-proctor";
     let endTime = 0;
     let timerId = 0;
     let watchId = 0;
     let activeExamId = "";
+    let activeMetaBase = "";
+    const audioFiles = new Map();
+    const audioUrls = new Map();
     let schedule = defaultSchedule();
     loadConfig();
 
@@ -548,9 +660,19 @@
       const first = new Date(Date.now() + 2 * 60 * 1000);
       const second = new Date(first.getTime() + 50 * 60 * 1000);
       return [
-        { id: "exam-1", subject: "第一節 - 國語", start: timeValue(first), minutes: 40 },
-        { id: "exam-2", subject: "第二節 - 數學", start: timeValue(second), minutes: 40 }
+        { id: "exam-1", subject: "第一節 - 國語", start: timeValue(first), minutes: 40, audioName: "" },
+        { id: "exam-2", subject: "第二節 - 數學", start: timeValue(second), minutes: 40, audioName: "" }
       ];
+    }
+
+    function normalizeExam(exam) {
+      return {
+        id: exam.id || `exam-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+        subject: exam.subject || "考試科目",
+        start: exam.start || "08:40",
+        minutes: Number(exam.minutes) || 40,
+        audioName: exam.audioName || ""
+      };
     }
 
     function loadConfig() {
@@ -560,7 +682,7 @@
         if (typeof saved.absent === "string") absentInput.value = saved.absent;
         if (typeof saved.notice === "string") noticeInput.value = saved.notice;
         if (typeof saved.standbyNotice === "string") standbyNoticeInput.value = saved.standbyNotice;
-        if (Array.isArray(saved.schedule) && saved.schedule.length) schedule = saved.schedule;
+        if (Array.isArray(saved.schedule) && saved.schedule.length) schedule = saved.schedule.map(normalizeExam);
       } catch {
         schedule = defaultSchedule();
       }
@@ -572,7 +694,7 @@
         absent: absentInput.value,
         notice: noticeInput.value,
         standbyNotice: standbyNoticeInput.value,
-        schedule
+        schedule: schedule.map(({ id, subject, start, minutes, audioName }) => ({ id, subject, start, minutes, audioName }))
       }));
     }
 
@@ -627,6 +749,9 @@
       schedule.forEach((exam, index) => {
         const row = document.createElement("div");
         row.className = "schedule-row";
+        const audioText = exam.audioName
+          ? `已選擇：${escapeAttr(exam.audioName)}${audioFiles.has(exam.id) ? "" : "（重新開頁後需重選）"}`
+          : "未設定音檔";
         row.innerHTML = `
           <div class="row-index">${index + 1}</div>
           <label>
@@ -640,6 +765,14 @@
           <label>
             分鐘
             <input class="schedule-minutes" type="number" min="1" max="240" inputmode="numeric" value="${exam.minutes}">
+          </label>
+          <label class="audio-picker">
+            音檔
+            <div class="audio-file-row">
+              <input class="schedule-audio" type="file" accept="audio/*">
+              <button class="clear-audio-button" type="button">清除</button>
+            </div>
+            <span class="audio-name">${audioText}</span>
           </label>
           <button class="delete-button" type="button">刪除科目</button>
         `;
@@ -666,12 +799,49 @@
       updateWatchStatus();
     }
 
+    function clearExamAudio(exam) {
+      if (!exam) return;
+      const url = audioUrls.get(exam.id);
+      if (url) URL.revokeObjectURL(url);
+      audioUrls.delete(exam.id);
+      audioFiles.delete(exam.id);
+      exam.audioName = "";
+    }
+
+    function handleScheduleFileChange(event) {
+      if (!event.target.classList.contains("schedule-audio")) return;
+      const row = event.target.closest(".schedule-row");
+      const index = Number(row?.dataset.index);
+      const exam = schedule[index];
+      const file = event.target.files?.[0];
+      if (!Number.isInteger(index) || !exam || !file) return;
+      clearExamAudio(exam);
+      exam.audioName = file.name;
+      audioFiles.set(exam.id, file);
+      audioUrls.set(exam.id, URL.createObjectURL(file));
+      saveConfig();
+      renderSchedule();
+      setupStatus.textContent = `已加入「${file.name}」音檔。`;
+    }
+
     function handleScheduleClick(event) {
+      const clearAudioButton = event.target.closest(".clear-audio-button");
+      if (clearAudioButton) {
+        const row = clearAudioButton.closest(".schedule-row");
+        const index = Number(row?.dataset.index);
+        if (!Number.isInteger(index) || !schedule[index]) return;
+        clearExamAudio(schedule[index]);
+        saveConfig();
+        renderSchedule();
+        setupStatus.textContent = "已清除該科目音檔。";
+        return;
+      }
       const deleteButton = event.target.closest(".delete-button");
       if (!deleteButton) return;
       const row = deleteButton.closest(".schedule-row");
       const index = Number(row?.dataset.index);
       if (!Number.isInteger(index) || !schedule[index]) return;
+      clearExamAudio(schedule[index]);
       schedule.splice(index, 1);
       saveConfig();
       renderSchedule();
@@ -682,7 +852,7 @@
     function addExam() {
       const last = sortedSchedule().at(-1);
       const start = last ? new Date(examWindow(last).end.getTime() + 10 * 60 * 1000) : new Date(Date.now() + 5 * 60 * 1000);
-      schedule.push({ id: `exam-${Date.now()}`, subject: "新增科目", start: timeValue(start), minutes: 40 });
+      schedule.push({ id: `exam-${Date.now()}`, subject: "新增科目", start: timeValue(start), minutes: 40, audioName: "" });
       saveConfig();
       renderSchedule();
       updateWatchStatus();
@@ -694,6 +864,16 @@
       const minutes = Math.floor(totalSeconds / 60);
       const seconds = totalSeconds % 60;
       return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+    }
+
+    function currentClockText() {
+      const now = new Date();
+      return `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+    }
+
+    function updateScreenMetaClock() {
+      if (!activeMetaBase || !document.body.classList.contains("proctoring")) return;
+      screenMeta.textContent = `${activeMetaBase} / 現在時間：${currentClockText()}`;
     }
 
     function stopTimer() {
@@ -714,6 +894,7 @@
       const remaining = endTime - Date.now();
       timerText.textContent = formatTime(remaining);
       timerText.classList.toggle("warning", remaining > 0 && remaining <= 5 * 60 * 1000);
+      updateScreenMetaClock();
       if (remaining <= 0) {
         stopTimer();
         timerText.textContent = "00:00";
@@ -727,18 +908,48 @@
       const absents = absentNumbers();
       const notice = noticeInput.value.trim() || "請保持安靜，仔細作答。";
       screenSubject.textContent = exam.subject || "考試";
-      screenMeta.textContent = `應考：${total} 人 / 實際：${actualCount()} 人 / 缺考座號：${absents.length ? absents.join("、") : "無"}`;
+      activeMetaBase = `應考：${total} 人 / 實際：${actualCount()} 人 / 缺考座號：${absents.length ? absents.join("、") : "無"}`;
+      updateScreenMetaClock();
       marqueeText.textContent = `${notice}　　${notice}　　${notice}`;
+      setupExamAudio(exam);
     }
 
-    function showStandby(message) {
-      const standbyNotice = standbyNoticeInput.value.trim() || "請安靜等待下一場考試，聽候老師指示。";
+    function setupExamAudio(exam) {
+      examAudio.pause();
+      examAudio.removeAttribute("src");
+      examAudio.load();
+      const url = audioUrls.get(exam.id);
+      if (url) {
+        examAudio.src = url;
+        screenAudioName.textContent = exam.audioName || "已選擇音檔";
+        screenAudioPanel.classList.add("show");
+        return;
+      }
+      if (exam.audioName) {
+        screenAudioName.textContent = `音檔「${exam.audioName}」需要在本次開頁重新選擇後才能播放。`;
+        screenAudioPanel.classList.add("show");
+        return;
+      }
+      screenAudioName.textContent = "";
+      screenAudioPanel.classList.remove("show");
+    }
+
+    function showStandby(message, options = {}) {
+      const standbyNotice = options.notice || standbyNoticeInput.value.trim() || "請安靜等待下一場考試，聽候老師指示。";
       stopTimer();
+      examAudio.pause();
+      screenAudioPanel.classList.remove("show");
       activeExamId = "";
+      activeMetaBase = "";
       document.body.classList.remove("proctoring");
       document.body.classList.add("standby-mode");
+      document.body.classList.toggle("prepare-mode", Boolean(options.prepare));
       timerStage.classList.remove("finished");
       timerText.classList.remove("warning");
+      screenSubject.textContent = options.exam?.subject || "自動監考待命";
+      screenMeta.textContent = options.prepare
+        ? `考前準備 / ${options.exam?.start || ""} 開始`
+        : "";
       standbyText.textContent = message;
       marqueeText.textContent = `${standbyNotice}　　${standbyNotice}　　${standbyNotice}`;
     }
@@ -747,6 +958,7 @@
       applyScreenInfo(exam);
       endTime = end.getTime();
       document.body.classList.remove("standby-mode");
+      document.body.classList.remove("prepare-mode");
       document.body.classList.add("proctoring");
       timerStage.classList.remove("finished");
       timerText.classList.remove("warning");
@@ -797,10 +1009,20 @@
       if (document.body.classList.contains("proctoring")) {
         timerStage.classList.add("finished");
       }
+      if (next && next.window.start > now && next.window.start.getTime() - now.getTime() <= 60 * 1000) {
+        const seconds = Math.max(1, Math.ceil((next.window.start.getTime() - now.getTime()) / 1000));
+        const prepNotice = `下一場考試即將開始，請快速就位、桌面淨空、準備文具，保持安靜。`;
+        showStandby(
+          `考試即將開始\n請快速做好準備\n${seconds} 秒後開始`,
+          { exam: next.exam, notice: prepNotice, prepare: true }
+        );
+        watchStatus.textContent = `考前準備：${next.exam.subject} 將於 ${next.exam.start} 開始。`;
+        return;
+      }
       const message = next
         ? `自動監考待命中\n下一場：${next.exam.subject}\n開始時間：${next.exam.start}`
         : "今日考程皆已結束";
-      showStandby(message);
+      showStandby(message, { exam: next?.exam });
       watchStatus.textContent = next
         ? `待命中，下一場 ${next.exam.subject} 於 ${next.exam.start} 開始。`
         : "今日考程皆已結束。";
@@ -833,8 +1055,10 @@
       stopTimer();
       stopWatcher();
       activeExamId = "";
+      activeMetaBase = "";
       document.body.classList.remove("proctoring");
       document.body.classList.remove("standby-mode");
+      document.body.classList.remove("prepare-mode");
       timerStage.classList.remove("finished");
       timerText.classList.remove("warning");
       updateWatchStatus();
@@ -857,6 +1081,7 @@
     standbyNoticeInput.addEventListener("input", saveConfig);
     addExamButton.addEventListener("click", addExam);
     scheduleList.addEventListener("input", handleScheduleInput);
+    scheduleList.addEventListener("change", handleScheduleFileChange);
     scheduleList.addEventListener("click", handleScheduleClick);
     startButton.addEventListener("click", startProctoring);
     endButton.addEventListener("click", endProctoring);
