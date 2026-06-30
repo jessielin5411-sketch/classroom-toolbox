@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>教師文案小幫手｜教學微光站</title>
+  <style>
+    :root {
+      --ink: #1f2a44;
+      --muted: #64748b;
+      --line: #dbe6f5;
+      --paper: #fffdf7;
+      --blue: #4f8cff;
+      --green: #22b98f;
+      --orange: #ffad4d;
+      --rose: #ff7b9c;
+      --purple: #8b5cf6;
+      --shadow: 0 18px 38px rgba(31, 42, 68, 0.14);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 8% 8%, rgba(255, 210, 74, 0.22), transparent 28%),
+        radial-gradient(circle at 92% 12%, rgba(79, 140, 255, 0.18), transparent 30%),
+        linear-gradient(135deg, #fff7ed 0%, #f1f8ff 48%, #f8f0ff 100%);
+      font-family: "Noto Sans TC", "Microsoft JhengHei", system-ui, sans-serif;
+    }
+
+    button, input, textarea { font: inherit; }
+
+    .page {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 22px 0 44px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .back-link {
+      color: #31527a;
+      text-decoration: none;
+      font-weight: 900;
+    }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      padding: clamp(24px, 4vw, 42px);
+      border: 1px solid rgba(255, 255, 255, 0.75);
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.78);
+      box-shadow: var(--shadow);
+    }
+
+    .hero::after {
+      content: "✦";
+      position: absolute;
+      right: 32px;
+      top: 22px;
+      color: rgba(139, 92, 246, 0.26);
+      font-size: 72px;
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: clamp(34px, 6vw, 68px);
+      line-height: 1.05;
+      letter-spacing: 0;
+    }
+
+    .lead {
+      max-width: 780px;
+      margin: 0;
+      color: #506783;
+      font-size: clamp(17px, 2vw, 22px);
+      font-weight: 800;
+      line-height: 1.7;
+    }
+
+    .assistant-shell {
+      display: grid;
+      gap: 18px;
+      margin-top: 20px;
+    }
+
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .tab {
+      min-height: 46px;
+      padding: 0 18px;
+      border: 2px solid transparent;
+      border-radius: 999px;
+      color: #31527a;
+      background: rgba(255, 255, 255, 0.82);
+      box-shadow: 0 8px 18px rgba(31, 42, 68, 0.08);
+      cursor: pointer;
+      font-weight: 1000;
+    }
+
+    .tab.active {
+      color: #fff;
+      background: linear-gradient(135deg, var(--blue), var(--purple));
+    }
+
+    .panel {
+      display: none;
+      padding: clamp(18px, 3vw, 28px);
+      border: 1px solid rgba(255, 255, 255, 0.78);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.86);
+      box-shadow: var(--shadow);
+    }
+
+    .panel.active { display: grid; gap: 18px; }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(320px, 0.8fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .form-stack, .result-stack {
+      display: grid;
+      gap: 16px;
+    }
+
+    label, .section-label {
+      display: grid;
+      gap: 8px;
+      color: #253957;
+      font-weight: 1000;
+    }
+
+    input[type="text"], textarea {
+      width: 100%;
+      border: 2px solid var(--line);
+      border-radius: 14px;
+      background: #fff;
+      color: var(--ink);
+      font-size: 17px;
+      font-weight: 800;
+      outline: none;
+    }
+
+    input[type="text"] {
+      min-height: 52px;
+      padding: 0 16px;
+    }
+
+    textarea {
+      min-height: 138px;
+      padding: 14px 16px;
+      line-height: 1.75;
+      resize: vertical;
+    }
+
+    .result-text {
+      min-height: 340px;
+      background: #fffefb;
+    }
+
+    .check-grid, .choice-row, .event-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 42px;
+      padding: 0 14px;
+      border: 2px solid #dbeafe;
+      border-radius: 999px;
+      background: #fff;
+      cursor: pointer;
+      font-weight: 950;
+    }
+
+    .chip:has(input:checked) {
+      border-color: var(--blue);
+      color: #1d4ed8;
+      background: #eff6ff;
+    }
+
+    .event-card {
+      flex: 1 1 240px;
+      padding: 14px;
+      border: 2px solid #dbe6f5;
+      border-radius: 16px;
+      background: #fff;
+    }
+
+    .event-card.active {
+      border-color: var(--purple);
+      background: #f6f1ff;
+    }
+
+    .event-card strong {
+      display: block;
+      margin-bottom: 10px;
+      cursor: pointer;
+      font-size: 18px;
+    }
+
+    .event-detail-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .event-detail-list label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      background: #f8fafc;
+      color: #52657f;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 900;
+    }
+
+    .event-detail-list label:has(input:checked) {
+      color: #1d4ed8;
+      background: #dbeafe;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .button {
+      min-height: 46px;
+      padding: 0 16px;
+      border: 0;
+      border-radius: 12px;
+      color: var(--ink);
+      background: #e2e8f0;
+      cursor: pointer;
+      font-weight: 1000;
+    }
+
+    .button.primary { color: #fff; background: var(--blue); }
+    .button.good { color: #fff; background: var(--green); }
+    .button.warm { color: #fff; background: var(--orange); }
+    .button.danger { color: #fff; background: var(--rose); }
+
+    .status {
+      color: #506783;
+      font-weight: 900;
+    }
+
+    .note {
+      padding: 14px 16px;
+      border-radius: 14px;
+      color: #31527a;
+      background: #eff6ff;
+      font-weight: 850;
+      line-height: 1.7;
+    }
+
+    @media (max-width: 880px) {
+      .grid-2 { grid-template-columns: 1fr; }
+      .result-text { min-height: 240px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="topbar">
+      <a class="back-link" href="../index.html">← 回教學微光站</a>
+    </header>
+
+    <section class="hero">
+      <h1>教師文案小幫手</h1>
+      <p class="lead">免登入使用。將評語、親師溝通與輔導提醒拆成獨立工具，老師輸入關鍵字或勾選特徵後，就能產出溫暖、專業、符合台灣國小語境的文字。</p>
+    </section>
+
+    <main class="assistant-shell">
+      <div class="tabs" role="tablist" aria-label="文案功能">
+        <button class="tab active" type="button" data-page="semester">期末/學期評語</button>
+        <button class="tab" type="button" data-page="guidance">親師溝通 / 輔導語</button>
+        <button class="tab" type="button" data-page="praise">正向鼓勵信</button>
+      </div>
+
+      <section class="panel active" id="semesterPage">
+        <div class="grid-2">
+          <div class="form-stack">
+            <label>學生或對象
+              <input id="semesterName" type="text" placeholder="例如：小明、12號小安">
+            </label>
+            <div class="section-label">學習態度
+              <div class="check-grid" id="learningTraits"></div>
+            </div>
+            <div class="section-label">人際常規
+              <div class="check-grid" id="socialTraits"></div>
+            </div>
+            <div class="section-label">行政配合
+              <div class="check-grid" id="adminTraits"></div>
+            </div>
+            <label>其他補充
+              <textarea id="semesterExtra" placeholder="例如：大隊接力摔倒後仍爬起來跑完；這學期閱讀進步，遇到困難會詢問。"></textarea>
+            </label>
+            <div class="section-label">語氣
+              <div class="choice-row" id="toneChoices"></div>
+            </div>
+            <div class="section-label">長度
+              <div class="choice-row" id="lengthChoices"></div>
+            </div>
+          </div>
+          <div class="result-stack">
+            <button class="button primary" id="generateSemester" type="button">生成評語</button>
+            <textarea class="result-text" id="semesterResult" readonly placeholder="AI 生成結果區"></textarea>
+            <div class="actions">
+              <button class="button good" id="copySemester" type="button">一鍵複製</button>
+              <button class="button" id="regenSemester" type="button">重新生成</button>
+              <button class="button danger" id="clearSemester" type="button">清除所有選項</button>
+              <span class="status" id="semesterStatus"></span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" id="guidancePage">
+        <div class="grid-2">
+          <div class="form-stack">
+            <div class="section-label">選擇溝通/輔導情境
+              <div class="event-buttons" id="parentScenarioChoices"></div>
+            </div>
+            <label>事件關鍵字輸入
+              <textarea id="parentEvent" placeholder="想說什麼就直接打，不用管錯字和語氣。例如：小明今天忘記帶作業，已在校提醒，希望家長回家協助檢查聯絡簿。"></textarea>
+            </label>
+            <div class="section-label">期望家長或學生配合事項
+              <div class="choice-row" id="parentActionChoices"></div>
+            </div>
+            <div class="section-label">發送管道
+              <div class="choice-row" id="parentChannelChoices"></div>
+            </div>
+            <div class="section-label">語氣風格
+              <div class="choice-row" id="parentToneChoices"></div>
+            </div>
+          </div>
+          <div class="result-stack">
+            <button class="button primary" id="generateParent" type="button">生成輔導/親師文字</button>
+            <textarea class="result-text" id="parentResult" readonly placeholder="AI 優化文本框"></textarea>
+            <div class="actions">
+              <button class="button good" id="copyParent" type="button">一鍵複製</button>
+              <button class="button" id="rewriteParent" type="button">換一種說法</button>
+              <button class="button warm" id="warmParent" type="button">加點溫暖</button>
+              <button class="button" id="shortenParent" type="button">更精簡點</button>
+              <button class="button danger" id="clearParent" type="button">清除所有選項</button>
+              <span class="status" id="parentStatus"></span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" id="praisePage">
+        <div class="grid-2">
+          <div class="form-stack">
+            <label>學生或對象
+              <input id="praiseName" type="text" placeholder="例如：小安、全班孩子">
+            </label>
+            <div class="section-label">想放大的優點
+              <div class="check-grid" id="praiseTraits"></div>
+            </div>
+            <label>具體事件或想說的話
+              <textarea id="praiseExtra" placeholder="例如：今天主動協助新同學、科學園遊會當關主很負責、願意鼓起勇氣上台發表。"></textarea>
+            </label>
+            <div class="note">這一頁適合製作誇誇卡、鼓勵小卡或畢業祝福，文字會直接寫給孩子。</div>
+          </div>
+          <div class="result-stack">
+            <button class="button primary" id="generatePraise" type="button">生成鼓勵信</button>
+            <textarea class="result-text" id="praiseResult" readonly placeholder="鼓勵信生成結果"></textarea>
+            <div class="actions">
+              <button class="button good" id="copyPraise" type="button">一鍵複製</button>
+              <button class="button" id="regenPraise" type="button">重新生成</button>
+              <button class="button danger" id="clearPraise" type="button">清除所有選項</button>
+              <span class="status" id="praiseStatus"></span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const tabs = [...document.querySelectorAll(".tab")];
+    const panels = {
+      semester: document.querySelector("#semesterPage"),
+      guidance: document.querySelector("#guidancePage"),
+      praise: document.querySelector("#praisePage")
+    };
+
+    const learningTraitOptions = ["認真專注", "發言踴躍", "舉一反三", "粗心大意", "容易分心", "缺乏自信", "愛說話"];
+    const socialTraitOptions = ["熱心助人", "具領導力", "相處融洽", "溫和有禮", "誠實守分", "開朗活潑", "偶與同儕摩擦", "消極被動", "缺乏自信"];
+    const adminTraitOptions = ["打掃認真", "作業準時", "常忘記帶學用品", "責任心強"];
+    const toneOptions = ["客觀嚴謹", "溫暖鼓勵", "引導反思"];
+    const lengthOptions = ["50字以內", "100-150字", "200字以上"];
+    const praiseOptions = ["熱心助人", "願意嘗試", "負責任", "勇敢面對挑戰", "待人溫和", "進步明顯", "樂於分享", "有創意", "能自我修正", "關心同學"];
+    const parentScenarioOptions = [
+      { id: "conflict", title: "常規衝突/突發事件", mark: "紅", details: ["同學爭執", "肢體推擠", "搶/拿同一物品", "言語衝突", "破壞公物", "已道歉", "委屈落淚"] },
+      { id: "reminder", title: "學習/常規提醒", mark: "黃", details: ["忘記作業/學用品", "上課容易分心", "午休難安定"] },
+      { id: "praise", title: "正向表現誇獎", mark: "綠", details: ["主動幫忙", "進步明顯", "展現領導力", "誠實歸還"] },
+      { id: "care", title: "特殊狀態關懷", mark: "藍", details: ["身體不舒服", "心情低落", "精神不濟"] }
+    ];
+    const parentActionOptions = ["親自了解事件原委", "在家多給予正向鼓勵", "協助檢查書包聯絡簿", "引導孩子用言語表達情緒", "讓孩子提早入睡"];
+    const parentChannelOptions = ["聯絡簿格式", "通訊軟體 (LINE)"];
+    const parentToneOptions = ["溫柔堅定", "客觀陳述", "同理關懷"];
+    const traitReframes = {
+      "容易分心": "練習在活動開始前先整理注意力，讓學習狀態更加穩定",
+      "粗心大意": "養成完成後再檢查一次的習慣，讓作答與做事更謹慎",
+      "缺乏自信": "看見自己已經完成的努力，並願意多嘗試一步",
+      "常忘記帶學用品": "建立每日檢查聯絡簿與學用品的習慣",
+      "偶與同儕摩擦": "練習傾聽同儕想法並用合適方式表達需求",
+      "消極被動": "嘗試主動舉手、提出想法或完成一個小任務",
+      "愛說話": "學習在合適的時間展現發表欲",
+      "發言踴躍": "主動發表想法，也練習聆聽同儕回應"
+    };
+    const traitPraiseMap = {
+      "認真專注": "在校表現認真專注",
+      "發言踴躍": "課堂發言踴躍，樂於分享想法",
+      "舉一反三": "能舉一反三，展現良好的理解能力",
+      "熱心助人": "總是熱心助人，深得同儕喜愛",
+      "具領導力": "具領導力，能在活動中帶動同儕",
+      "相處融洽": "與同儕相處融洽",
+      "溫和有禮": "待人溫和有禮",
+      "誠實守分": "誠實守分，值得信任",
+      "開朗活潑": "個性開朗活潑",
+      "打掃認真": "打掃工作認真負責",
+      "作業準時": "作業能準時完成",
+      "責任心強": "責任心強，交付任務能盡力完成"
+    };
+    const bannedTermMap = {
+      "不帶作業": "若能加強個人物品的管理能力",
+      "愛講話": "若能學習在合適的時間展現發表欲",
+      "粗心": "若能在作答時多一份細心",
+      "給力": "有支持與鼓勵",
+      "學霸": "學習表現穩定",
+      "素質": "表現",
+      "優化": "調整",
+      "做作業": "完成作業"
+    };
+    const semesterToneProfiles = {
+      "客觀嚴謹": {
+        praise: ["{name}本學期{praise}，整體表現穩定，值得肯定。", "綜觀本學期表現，{name}{praise}，在學習與生活常規上皆有可見的努力。"],
+        event: ["此外，{event}，可看出其面對任務時具備負責態度。", "在{event}的過程中，也能觀察到孩子願意完成任務並配合團體節奏。"],
+        suggestion: ["後續若能{growth}，整體學習表現將更趨穩定。", "建議未來持續朝「{growth}」的方向練習，以提升自我管理與學習成效。"],
+        closing: ["期待下學期能延續優點並逐步提升自我管理能力。", "未來若能持續穩定發揮，整體表現定能更上一層樓。"]
+      },
+      "溫暖鼓勵": {
+        praise: ["{name}是個{praise}的孩子，本學期在班級中留下許多令人欣賞的亮點。", "這學期常能看見{name}{praise}，每一份努力都讓老師感到欣慰。"],
+        event: ["尤其在{event}時，更能看見孩子勇敢、堅持與負責的一面。", "從{event}這件事可以看出，孩子願意嘗試，也願意把事情做好。"],
+        suggestion: ["若能{growth}，相信未來會看見更有自信、更穩定的自己。", "接下來只要持續練習{growth}，一定能把原有的優點發揮得更好。"],
+        closing: ["期許下學期能展翅高飛，看見更耀眼的自己！", "老師相信你會帶著這份努力繼續前進，加油！"]
+      },
+      "引導反思": {
+        praise: ["{name}本學期能在多次學習經驗中展現{praise}，這些都是值得珍惜的成長基礎。", "回顧這一學期，{name}{praise}，也逐漸累積面對挑戰的能力。"],
+        event: ["從{event}這件事中，也能看見孩子在真實情境裡學習承擔與調整。", "{event}讓孩子經歷了一次寶貴的學習，也提醒我們看見成長正在發生。"],
+        suggestion: ["未來若能常常提醒自己{growth}，就能把每一次提醒轉化為下一次的進步。", "接下來可以從小目標開始練習{growth}，讓好習慣在一次次反思中慢慢穩定。"],
+        closing: ["期待孩子能在肯定自己的同時，把每一次提醒都化為成長的力量。", "若能持續練習與反思，未來定能百尺竿頭，更進一步。"]
+      }
+    };
+
+    let semesterVariant = 0;
+    let parentVariant = 0;
+    let parentWarmth = 0;
+    let parentCompact = false;
+    let selectedParentScenario = "conflict";
+    let praiseVariant = 0;
+
+    function makeChips(container, items, name, type = "checkbox") {
+      container.innerHTML = "";
+      items.forEach((item, index) => {
+        const label = document.createElement("label");
+        label.className = "chip";
+        label.innerHTML = `<input type="${type}" name="${name}" value="${item}" ${index === 0 && type === "radio" ? "checked" : ""}><span>${item}</span>`;
+        container.appendChild(label);
+      });
+    }
+
+    function checkedValues(name) {
+      return [...document.querySelectorAll(`input[name="${name}"]:checked`)].map((item) => item.value);
+    }
+
+    function selectedValue(name, fallback) {
+      return document.querySelector(`input[name="${name}"]:checked`)?.value || fallback;
+    }
+
+    function splitIdeas(text) {
+      return text.split(/\n|，|。|；|、/).map((item) => item.trim()).filter(Boolean);
+    }
+
+    function applyTemplate(template, values) {
+      return Object.entries(values).reduce((result, [key, value]) => result.replaceAll(`{${key}}`, value), template);
+    }
+
+    function polishLocalTerms(text) {
+      return Object.entries(bannedTermMap).reduce((result, [bad, good]) => result.replaceAll(bad, good), text);
+    }
+
+    function praiseClause(items) {
+      const clauses = items.map((item) => traitPraiseMap[item] || item);
+      if (!clauses.length) return "平時願意配合班級活動，能在提醒下完成學習任務";
+      if (clauses.length === 1) return clauses[0];
+      if (clauses.length === 2) return `${clauses[0]}，且${clauses[1]}`;
+      return `${clauses.slice(0, -1).join("，")}，且${clauses.at(-1)}`;
+    }
+
+    function growthSentence(items) {
+      return items.map((item) => traitReframes[item]).filter(Boolean).join("；");
+    }
+
+    function eventSentence(extra, tone) {
+      if (!extra.length) return "";
+      const profile = semesterToneProfiles[tone] || semesterToneProfiles["溫暖鼓勵"];
+      return applyTemplate(profile.event[(semesterVariant + 1) % profile.event.length], { event: polishLocalTerms(extra.join("，")) });
+    }
+
+    function buildSemesterDraft() {
+      const name = document.querySelector("#semesterName").value.trim() || "孩子";
+      const tone = selectedValue("semesterTone", "溫暖鼓勵");
+      const lengthChoice = selectedValue("semesterLength", "100-150字");
+      const traits = [...checkedValues("learningTrait"), ...checkedValues("socialTrait"), ...checkedValues("adminTrait")];
+      const positives = traits.filter((item) => !traitReframes[item]);
+      const growth = traits.filter((item) => traitReframes[item]);
+      const profile = semesterToneProfiles[tone] || semesterToneProfiles["溫暖鼓勵"];
+      const praise = applyTemplate(profile.praise[semesterVariant % profile.praise.length], { name, praise: praiseClause(positives) });
+      const event = eventSentence(splitIdeas(document.querySelector("#semesterExtra").value), tone);
+      const growthText = growthSentence(growth);
+      const suggestion = growthText
+        ? applyTemplate(profile.suggestion[(semesterVariant + 1) % profile.suggestion.length], { growth: growthText })
+        : "若能持續保持這份積極態度，並勇於迎接不同任務，未來一定會有更亮眼的表現。";
+      const closing = profile.closing[semesterVariant % profile.closing.length];
+      const medium = `${praise}${event}${suggestion}${closing}`;
+      const short = `${praise}${growthText ? suggestion : ""}${closing}`;
+      const long = `${praise}${event}面對需要再練習的部分，老師看見的是成長的機會。${suggestion}相信以${name}原有的優點與努力，只要持續累積好習慣，定能在下學期展現更成熟、更穩定的自己。${closing}`;
+      const text = lengthChoice === "50字以內" ? short : lengthChoice === "200字以上" ? long : medium;
+      return polishLocalTerms(text);
+    }
+
+    function polishParentTerms(text) {
+      const replacements = [
+        ["打架", "肢體動作較大"],
+        ["推了", "一時心急有推擠動作"],
+        ["搶", "在物品使用或順序上有些摩擦"],
+        ["口出惡言", "言語表達較激動"],
+        ["破壞公物", "使用班級物品時需要再練習珍惜與規範"],
+        ["故意", "當下還需要練習更合適的處理方式"],
+        ["惡意", "情緒表達上需要再引導"],
+        ["不睡覺", "午休時較難安定休息"],
+        ["忘記帶", "還在練習把學用品準備齊全"]
+      ];
+      return replacements.reduce((result, [bad, good]) => result.replaceAll(bad, good), text.trim());
+    }
+
+    function detectRecipient(rawEvent) {
+      const text = rawEvent.trim();
+      const match = text.match(/([\u4e00-\u9fa5]{2,3})(?:今天|身體不舒服|心情低落|精神不濟|有些)?/);
+      return match?.[1] || "貴子弟";
+    }
+
+    function inferScenario(details, rawEvent) {
+      const text = `${rawEvent} ${details.join(" ")}`;
+      const has = (words) => words.some((word) => text.includes(word));
+      if (has(["身體不舒服", "心情低落", "精神不濟", "頭痛", "肚子痛"])) return "care";
+      if (has(["主動幫忙", "進步明顯", "展現領導力", "誠實歸還", "撿到", "幫忙", "進步"])) return "praise";
+      if (has(["忘記作業", "忘記帶", "學用品", "上課容易分心", "分心", "午休難安定", "午休", "聯絡簿"])) return "reminder";
+      if (has(["爭執", "推擠", "搶", "哭", "道歉", "言語衝突", "破壞公物"])) return "conflict";
+      return selectedParentScenario;
+    }
+
+    function actionSentence(actions) {
+      const map = {
+        "親自了解事件原委": "回家後先聽聽孩子的說法，陪孩子整理今天發生的經過",
+        "在家多給予正向鼓勵": "多肯定孩子願意說出感受、修正行為或努力完成任務的地方",
+        "協助檢查書包聯絡簿": "協助固定檢查書包與聯絡簿，讓學用品與作業準備更穩定",
+        "引導孩子用言語表達情緒": "引導孩子練習用言語說出感受與需求",
+        "讓孩子提早入睡": "協助孩子提早休息，讓隔天精神與情緒更穩定"
+      };
+      const selected = actions.map((item) => map[item]).filter(Boolean);
+      if (!selected.length) return "回家後給孩子一點時間說說今天的感受，也溫柔提醒孩子下次可以怎麼做";
+      return selected.join("；");
+    }
+
+    function buildParentMessage() {
+      const raw = document.querySelector("#parentEvent").value.trim();
+      const details = checkedValues("parentDetail");
+      const channel = selectedValue("parentChannel", "聯絡簿格式");
+      const tone = selectedValue("parentTone", "溫柔堅定");
+      const actions = checkedValues("parentAction");
+      const compact = parentCompact || channel === "聯絡簿格式";
+      const scenario = inferScenario(details, raw);
+      const recipient = detectRecipient(raw);
+      const greeting = channel === "通訊軟體 (LINE)" ? `${recipient}家長您好 😊：` : `${recipient}家長您好：`;
+      const event = [polishParentTerms(raw), details.join("、")].filter(Boolean).join("；") || "今日在校情形";
+      const openers = {
+        conflict: "今天想跟您同步孩子在學校的一點小狀況。",
+        reminder: "想和您一起陪孩子把近期的小提醒慢慢穩定下來。",
+        praise: "今天想和您分享孩子一個很值得肯定的好表現。",
+        care: "今天留意到孩子狀態和平常有些不同，想先跟您關心一下。"
+      };
+      const objective = {
+        conflict: `今天${event}，同儕互動上有些摩擦，老師已在校關心並引導。`,
+        reminder: `今天在${event}這部分，孩子需要再練習更穩定的自我管理與班級常規。`,
+        praise: `今天${event}，孩子能主動付出、負責完成任務或展現誠實態度，老師也已給予肯定。`,
+        care: `今天觀察到${event}，老師在校已先關心，也想請您晚上多陪孩子聊聊與休息。`
+      };
+      const positive = {
+        conflict: `${recipient}平時有值得肯定的一面，今天遇到狀況時也很需要大人一起陪著整理情緒與方法。`,
+        reminder: `${recipient}其實有能力把事情做好，這次的小提醒也正好可以成為練習自我管理的機會。`,
+        praise: `${recipient}今天的表現很值得肯定，也讓老師看見孩子願意努力與成長的一面。`,
+        care: `${recipient}平時有自己的節奏與亮點，今天狀態較需要被理解與照顧。`
+      };
+      const bridgeByTone = {
+        "溫柔堅定": "學校這邊會持續用溫和但清楚的方式提醒與引導孩子",
+        "客觀陳述": "學校端會持續觀察孩子後續情形，並適時給予具體提醒",
+        "同理關懷": "學校這邊會先接住孩子的情緒，再陪他慢慢練習更合適的做法"
+      };
+      const endingPool = channel === "通訊軟體 (LINE)"
+        ? ["辛苦您了，謝謝您的配合 🙏", "我們一起陪孩子慢慢練習，謝謝您 😊", "謝謝您回家後再陪孩子聊聊，也給他一個清楚的提醒 🙏"]
+        : ["謝謝您的配合。", "感謝您一起協助孩子練習。", "辛苦您了，也謝謝您回家後再陪孩子整理心情。"];
+      const warmEnding = channel === "通訊軟體 (LINE)" ? "辛苦您了，謝謝您願意一起陪孩子慢慢練習 😊🙏" : "謝謝您一起用溫柔而穩定的方式陪孩子練習。";
+      const ending = parentWarmth ? warmEnding : endingPool[parentVariant % endingPool.length];
+      const action = actionSentence(actions);
+      if (compact) return `${greeting}${objective[scenario]}也麻煩您${action}。${ending}`;
+      return `${greeting}${openers[scenario]}${objective[scenario]}\n\n${positive[scenario]}${bridgeByTone[tone]}，也麻煩您${action}。\n\n${ending}`;
+    }
+
+    function buildPraise() {
+      const name = document.querySelector("#praiseName").value.trim() || "孩子";
+      const traits = checkedValues("praiseTrait");
+      const extra = splitIdeas(document.querySelector("#praiseExtra").value).join("，");
+      const traitText = traits.length ? traits.join("、") : "願意努力、慢慢進步";
+      const starts = [
+        `${name}，老師想讓你知道，你身上有許多值得被看見的光。`,
+        `${name}，最近的你讓老師看見了很棒的成長。`,
+        `${name}，謝謝你把努力一點一滴放進每天的學習裡。`
+      ];
+      const event = extra ? `尤其是${extra}，更讓老師看見你的${traitText}。` : `你展現出的${traitText}，讓班級多了很溫暖的力量。`;
+      const endings = [
+        "請繼續相信自己，你比想像中更有力量。",
+        "願你帶著這份勇氣繼續前進，慢慢成為更喜歡自己的樣子。",
+        "老師會一直期待看見你下一次更勇敢、更閃亮的表現。"
+      ];
+      return `${starts[praiseVariant % starts.length]}${event}${endings[praiseVariant % endings.length]}`;
+    }
+
+    async function copyText(text, status) {
+      if (!text.trim()) {
+        status.textContent = "目前沒有可複製的內容。";
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(text);
+        status.textContent = "已複製。";
+      } catch {
+        status.textContent = "瀏覽器不允許自動複製，請手動選取文字。";
+      }
+    }
+
+    function clearPanel(panel) {
+      panel.querySelectorAll('input[type="text"], textarea').forEach((item) => item.value = "");
+      panel.querySelectorAll('input[type="checkbox"]').forEach((item) => item.checked = false);
+      panel.querySelectorAll('input[type="radio"]').forEach((item, index, list) => {
+        const sameName = [...list].filter((radio) => radio.name === item.name);
+        item.checked = sameName[0] === item;
+      });
+    }
+
+    function renderParentScenarios() {
+      const host = document.querySelector("#parentScenarioChoices");
+      host.innerHTML = "";
+      parentScenarioOptions.forEach((item) => {
+        const card = document.createElement("div");
+        card.className = "event-card";
+        card.dataset.scenario = item.id;
+        card.innerHTML = `<strong>${item.mark}｜${item.title}</strong><div class="event-detail-list">${item.details.map((detail) => `<label><input type="checkbox" name="parentDetail" value="${detail}">${detail}</label>`).join("")}</div>`;
+        card.querySelector("strong").addEventListener("click", () => {
+          selectedParentScenario = item.id;
+          updateParentScenario();
+        });
+        host.appendChild(card);
+      });
+      updateParentScenario();
+    }
+
+    function updateParentScenario() {
+      document.querySelectorAll(".event-card").forEach((card) => {
+        card.classList.toggle("active", card.dataset.scenario === selectedParentScenario);
+      });
+    }
+
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", () => {
+        tabs.forEach((item) => item.classList.toggle("active", item === tab));
+        Object.entries(panels).forEach(([key, panel]) => panel.classList.toggle("active", key === tab.dataset.page));
+      });
+    });
+
+    makeChips(document.querySelector("#learningTraits"), learningTraitOptions, "learningTrait");
+    makeChips(document.querySelector("#socialTraits"), socialTraitOptions, "socialTrait");
+    makeChips(document.querySelector("#adminTraits"), adminTraitOptions, "adminTrait");
+    makeChips(document.querySelector("#toneChoices"), toneOptions, "semesterTone", "radio");
+    makeChips(document.querySelector("#lengthChoices"), lengthOptions, "semesterLength", "radio");
+    makeChips(document.querySelector("#parentActionChoices"), parentActionOptions, "parentAction");
+    makeChips(document.querySelector("#parentChannelChoices"), parentChannelOptions, "parentChannel", "radio");
+    makeChips(document.querySelector("#parentToneChoices"), parentToneOptions, "parentTone", "radio");
+    makeChips(document.querySelector("#praiseTraits"), praiseOptions, "praiseTrait");
+    renderParentScenarios();
+
+    document.querySelector("#generateSemester").addEventListener("click", () => {
+      document.querySelector("#semesterResult").value = buildSemesterDraft();
+      document.querySelector("#semesterStatus").textContent = "已生成評語。";
+    });
+    document.querySelector("#regenSemester").addEventListener("click", () => {
+      semesterVariant += 1;
+      document.querySelector("#semesterResult").value = buildSemesterDraft();
+      document.querySelector("#semesterStatus").textContent = "已換一種寫法。";
+    });
+    document.querySelector("#copySemester").addEventListener("click", () => copyText(document.querySelector("#semesterResult").value, document.querySelector("#semesterStatus")));
+    document.querySelector("#clearSemester").addEventListener("click", () => {
+      clearPanel(document.querySelector("#semesterPage"));
+      document.querySelector("#semesterStatus").textContent = "已清除。";
+    });
+
+    document.querySelector("#generateParent").addEventListener("click", () => {
+      parentCompact = false;
+      document.querySelector("#parentResult").value = buildParentMessage();
+      document.querySelector("#parentStatus").textContent = "已生成輔導/親師文字。";
+    });
+    document.querySelector("#rewriteParent").addEventListener("click", () => {
+      parentVariant += 1;
+      document.querySelector("#parentResult").value = buildParentMessage();
+      document.querySelector("#parentStatus").textContent = "已換一種說法。";
+    });
+    document.querySelector("#warmParent").addEventListener("click", () => {
+      parentWarmth += 1;
+      document.querySelector("#parentResult").value = buildParentMessage();
+      document.querySelector("#parentStatus").textContent = "已加點溫暖。";
+    });
+    document.querySelector("#shortenParent").addEventListener("click", () => {
+      parentCompact = true;
+      document.querySelector("#parentResult").value = buildParentMessage();
+      document.querySelector("#parentStatus").textContent = "已改為精簡版本。";
+    });
+    document.querySelector("#copyParent").addEventListener("click", () => copyText(document.querySelector("#parentResult").value, document.querySelector("#parentStatus")));
+    document.querySelector("#clearParent").addEventListener("click", () => {
+      clearPanel(document.querySelector("#guidancePage"));
+      parentCompact = false;
+      parentWarmth = 0;
+      selectedParentScenario = "conflict";
+      updateParentScenario();
+      document.querySelector("#parentStatus").textContent = "已清除。";
+    });
+
+    document.querySelector("#generatePraise").addEventListener("click", () => {
+      document.querySelector("#praiseResult").value = buildPraise();
+      document.querySelector("#praiseStatus").textContent = "已生成鼓勵信。";
+    });
+    document.querySelector("#regenPraise").addEventListener("click", () => {
+      praiseVariant += 1;
+      document.querySelector("#praiseResult").value = buildPraise();
+      document.querySelector("#praiseStatus").textContent = "已重新生成。";
+    });
+    document.querySelector("#copyPraise").addEventListener("click", () => copyText(document.querySelector("#praiseResult").value, document.querySelector("#praiseStatus")));
+    document.querySelector("#clearPraise").addEventListener("click", () => {
+      clearPanel(document.querySelector("#praisePage"));
+      document.querySelector("#praiseStatus").textContent = "已清除。";
+    });
+  </script>
+</body>
+</html>
