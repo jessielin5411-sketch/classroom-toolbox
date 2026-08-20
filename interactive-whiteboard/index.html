@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>教學互動白板｜教學微光站</title>
+  <style>
+    :root {
+      --ink: #23324d;
+      --muted: #66758e;
+      --line: #dce7f6;
+      --paper: #fffdf8;
+      --blue: #4f8cff;
+      --green: #22b98f;
+      --yellow: #ffd24a;
+      --rose: #ff8fc7;
+      --purple: #8b5cf6;
+      --orange: #ffad4d;
+      --shadow: 0 18px 38px rgba(35, 50, 77, 0.14);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      overflow: hidden;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 6% 8%, rgba(255, 210, 74, 0.24), transparent 28%),
+        radial-gradient(circle at 94% 8%, rgba(79, 140, 255, 0.20), transparent 30%),
+        linear-gradient(135deg, #fff7ed 0%, #eef8ff 48%, #fbf3ff 100%);
+      font-family: "Noto Sans TC", "Microsoft JhengHei", system-ui, sans-serif;
+    }
+
+    button, input, select, textarea {
+      font: inherit;
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: 270px minmax(0, 1fr) 250px;
+      grid-template-rows: 62px minmax(0, 1fr);
+      height: 100vh;
+    }
+
+    .topbar {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.74);
+      background: rgba(255, 255, 255, 0.78);
+      backdrop-filter: blur(14px);
+      box-shadow: 0 8px 22px rgba(35, 50, 77, 0.08);
+      z-index: 5;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+      color: var(--ink);
+      text-decoration: none;
+      font-weight: 1000;
+    }
+
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      color: #fff;
+      background: linear-gradient(135deg, var(--blue), var(--purple));
+      box-shadow: 0 10px 20px rgba(79, 140, 255, 0.24);
+      font-size: 22px;
+    }
+
+    .brand-title {
+      display: grid;
+      line-height: 1.15;
+    }
+
+    .brand-title strong {
+      font-size: 19px;
+    }
+
+    .brand-title span {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 850;
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .sidebar,
+    .toolbox {
+      overflow: auto;
+      padding: 14px;
+    }
+
+    .panel {
+      display: grid;
+      gap: 12px;
+      margin-bottom: 14px;
+      padding: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.72);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.82);
+      box-shadow: var(--shadow);
+    }
+
+    .panel h2 {
+      margin: 0;
+      font-size: 18px;
+      letter-spacing: 0;
+    }
+
+    .mode-tabs,
+    .button-row,
+    .color-grid,
+    .board-list,
+    .stamp-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .mode-button,
+    .tool-button,
+    .small-button,
+    .board-button,
+    .stamp-button {
+      min-height: 40px;
+      border: 0;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 1000;
+    }
+
+    .mode-button,
+    .tool-button,
+    .board-button {
+      padding: 0 12px;
+      color: #31527a;
+      background: #eef5ff;
+    }
+
+    .mode-button.active,
+    .tool-button.active,
+    .board-button.active {
+      color: #fff;
+      background: linear-gradient(135deg, var(--blue), var(--purple));
+    }
+
+    .small-button {
+      padding: 0 12px;
+      color: var(--ink);
+      background: #e7edf7;
+    }
+
+    .small-button.primary {
+      color: #fff;
+      background: var(--blue);
+    }
+
+    .small-button.good {
+      color: #fff;
+      background: var(--green);
+    }
+
+    .small-button.warn {
+      color: #fff;
+      background: var(--orange);
+    }
+
+    .small-button.danger {
+      color: #fff;
+      background: #ef4444;
+    }
+
+    label {
+      display: grid;
+      gap: 6px;
+      color: #354764;
+      font-weight: 950;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      border: 2px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+      color: var(--ink);
+      outline: none;
+      font-weight: 850;
+    }
+
+    input, select {
+      min-height: 42px;
+      padding: 0 12px;
+    }
+
+    textarea {
+      min-height: 74px;
+      padding: 10px 12px;
+      resize: vertical;
+      line-height: 1.5;
+    }
+
+    .color-button {
+      width: 38px;
+      height: 38px;
+      border: 3px solid #fff;
+      border-radius: 999px;
+      box-shadow: 0 0 0 1px rgba(35, 50, 77, 0.15);
+      cursor: pointer;
+    }
+
+    .color-button.active {
+      box-shadow: 0 0 0 4px rgba(79, 140, 255, 0.34);
+    }
+
+    .range-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: center;
+    }
+
+    input[type="range"] {
+      min-height: auto;
+      padding: 0;
+      accent-color: var(--blue);
+    }
+
+    .stage {
+      position: relative;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      gap: 12px;
+      min-width: 0;
+      padding: 14px 4px 14px;
+    }
+
+    .board-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 0 8px;
+    }
+
+    .board-title {
+      display: grid;
+      line-height: 1.2;
+    }
+
+    .board-title strong {
+      font-size: clamp(20px, 3vw, 34px);
+    }
+
+    .board-title span {
+      color: #52657f;
+      font-weight: 900;
+    }
+
+    .board-wrap {
+      position: relative;
+      min-height: 0;
+      overflow: hidden;
+      border: 10px solid #f7c874;
+      border-radius: 28px;
+      background:
+        linear-gradient(90deg, rgba(79, 140, 255, 0.07) 1px, transparent 1px),
+        linear-gradient(rgba(79, 140, 255, 0.07) 1px, transparent 1px),
+        #fffdf8;
+      background-size: 36px 36px;
+      box-shadow:
+        inset 0 0 0 3px rgba(255, 255, 255, 0.68),
+        0 24px 42px rgba(35, 50, 77, 0.18);
+      touch-action: none;
+    }
+
+    canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      cursor: crosshair;
+    }
+
+    .notes-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .sticky-note {
+      position: absolute;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      width: 190px;
+      min-height: 120px;
+      border: 2px solid rgba(35, 50, 77, 0.12);
+      border-radius: 14px;
+      background: var(--note-color, #fff0a8);
+      box-shadow: 0 14px 24px rgba(35, 50, 77, 0.18);
+      transform: rotate(var(--tilt, -1deg));
+      pointer-events: auto;
+      touch-action: none;
+    }
+
+    .sticky-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 8px 10px 4px;
+      color: rgba(35, 50, 77, 0.82);
+      font-size: 13px;
+      font-weight: 1000;
+      cursor: grab;
+    }
+
+    .sticky-head button {
+      display: grid;
+      place-items: center;
+      width: 26px;
+      height: 26px;
+      border: 0;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.72);
+      cursor: pointer;
+      font-weight: 1000;
+    }
+
+    .sticky-note textarea {
+      min-height: 78px;
+      border: 0;
+      border-radius: 0 0 12px 12px;
+      background: transparent;
+      color: #24324a;
+      font-size: 18px;
+      font-weight: 900;
+      resize: none;
+    }
+
+    .stamp-button {
+      width: 44px;
+      height: 44px;
+      background: #fff;
+      font-size: 24px;
+    }
+
+    .hint {
+      padding: 10px 12px;
+      border-radius: 12px;
+      color: #31527a;
+      background: #eff6ff;
+      font-size: 13px;
+      font-weight: 850;
+      line-height: 1.55;
+    }
+
+    @media (max-width: 980px) {
+      body { overflow: auto; }
+      .app {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto 72vh auto;
+        height: auto;
+        min-height: 100vh;
+      }
+
+      .topbar,
+      .sidebar,
+      .stage,
+      .toolbox {
+        grid-column: 1;
+      }
+
+      .sidebar,
+      .toolbox {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        overflow: visible;
+      }
+
+      .panel { margin-bottom: 0; }
+    }
+
+    @media (max-width: 640px) {
+      .sidebar,
+      .toolbox {
+        grid-template-columns: 1fr;
+      }
+
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <a class="brand" href="../index.html" aria-label="回教學微光站">
+        <span class="brand-mark">✎</span>
+        <span class="brand-title">
+          <strong>教學互動白板</strong>
+          <span>個人書寫、分組共作、便條張貼</span>
+        </span>
+      </a>
+      <div class="top-actions">
+        <button class="small-button good" id="saveButton" type="button">儲存白板</button>
+        <button class="small-button primary" id="exportButton" type="button">匯出圖片</button>
+        <button class="small-button" id="fullscreenButton" type="button">大螢幕</button>
+      </div>
+    </header>
+
+    <aside class="sidebar" aria-label="白板管理">
+      <section class="panel">
+        <h2>白板模式</h2>
+        <div class="mode-tabs">
+          <button class="mode-button active" type="button" data-mode="personal">個人</button>
+          <button class="mode-button" type="button" data-mode="group">分組</button>
+        </div>
+        <label>
+          班級人數
+          <input id="studentCount" type="number" min="1" max="60" value="24">
+        </label>
+        <label>
+          小組數量
+          <input id="groupCount" type="number" min="1" max="12" value="6">
+        </label>
+      </section>
+
+      <section class="panel">
+        <h2 id="boardListTitle">個人白板</h2>
+        <div class="board-list" id="boardList"></div>
+      </section>
+
+      <section class="panel">
+        <h2>快速張貼</h2>
+        <textarea id="quickNoteText" placeholder="例如：我的想法是..."></textarea>
+        <div class="button-row">
+          <button class="small-button good" id="addNoteButton" type="button">新增便條</button>
+          <button class="small-button" id="randomNoteButton" type="button">隨機位置</button>
+        </div>
+      </section>
+    </aside>
+
+    <main class="stage">
+      <div class="board-header">
+        <div class="board-title">
+          <strong id="activeBoardTitle">個人 1 號白板</strong>
+          <span id="statusText">可以用滑鼠、觸控筆或手指直接書寫。</span>
+        </div>
+        <div class="button-row">
+          <button class="small-button" id="undoButton" type="button">復原</button>
+          <button class="small-button warn" id="clearInkButton" type="button">清除筆跡</button>
+          <button class="small-button danger" id="clearAllButton" type="button">清空白板</button>
+        </div>
+      </div>
+
+      <section class="board-wrap" id="boardWrap" aria-label="互動白板">
+        <canvas id="whiteboard"></canvas>
+        <div class="notes-layer" id="notesLayer"></div>
+      </section>
+    </main>
+
+    <aside class="toolbox" aria-label="白板工具">
+      <section class="panel">
+        <h2>工具</h2>
+        <div class="button-row">
+          <button class="tool-button active" type="button" data-tool="pen">畫筆</button>
+          <button class="tool-button" type="button" data-tool="eraser">橡皮擦</button>
+          <button class="tool-button" type="button" data-tool="note">便條</button>
+          <button class="tool-button" type="button" data-tool="stamp">印章</button>
+        </div>
+        <div class="hint">多人同時在同一台投影白板上觸控書寫時，畫筆支援多點輸入；若要跨不同裝置即時共編，之後可再加雲端同步。</div>
+      </section>
+
+      <section class="panel">
+        <h2>顏色</h2>
+        <div class="color-grid" id="colorGrid"></div>
+        <label>
+          筆跡粗細
+          <div class="range-row">
+            <input id="sizeRange" type="range" min="2" max="34" value="8">
+            <strong id="sizeText">8</strong>
+          </div>
+        </label>
+      </section>
+
+      <section class="panel">
+        <h2>便條顏色</h2>
+        <div class="color-grid" id="noteColorGrid"></div>
+      </section>
+
+      <section class="panel">
+        <h2>印章</h2>
+        <div class="stamp-grid" id="stampGrid"></div>
+      </section>
+    </aside>
+  </div>
+
+  <script>
+    const canvas = document.querySelector("#whiteboard");
+    const ctx = canvas.getContext("2d");
+    const boardWrap = document.querySelector("#boardWrap");
+    const notesLayer = document.querySelector("#notesLayer");
+    const boardList = document.querySelector("#boardList");
+    const boardListTitle = document.querySelector("#boardListTitle");
+    const activeBoardTitle = document.querySelector("#activeBoardTitle");
+    const statusText = document.querySelector("#statusText");
+    const studentCountInput = document.querySelector("#studentCount");
+    const groupCountInput = document.querySelector("#groupCount");
+    const quickNoteText = document.querySelector("#quickNoteText");
+    const sizeRange = document.querySelector("#sizeRange");
+    const sizeText = document.querySelector("#sizeText");
+
+    const storeKey = "jessie-interactive-whiteboard-v1";
+    const colors = ["#1f2937", "#ef4444", "#f97316", "#eab308", "#22c55e", "#06b6d4", "#3b82f6", "#8b5cf6", "#ec4899"];
+    const noteColors = ["#fff0a8", "#d9f7c8", "#cce9ff", "#ffd9e6", "#eadcff", "#ffe1b5"];
+    const stamps = ["⭐", "💡", "✅", "❓", "👏", "❤️", "🌱", "🎯"];
+    const boards = new Map();
+    const activePointers = new Map();
+    const undoStack = [];
+
+    let mode = "personal";
+    let activeBoardId = "personal-1";
+    let tool = "pen";
+    let color = colors[0];
+    let noteColor = noteColors[0];
+    let stamp = stamps[0];
+    let brushSize = Number(sizeRange.value);
+    let randomNote = false;
+    let lastSaved = 0;
+
+    function defaultState() {
+      return {
+        studentCount: 24,
+        groupCount: 6,
+        mode: "personal",
+        activeBoardId: "personal-1",
+        boards: {}
+      };
+    }
+
+    function boardTitle(id) {
+      if (id.startsWith("group-")) return `第 ${id.split("-")[1]} 組白板`;
+      return `個人 ${id.split("-")[1]} 號白板`;
+    }
+
+    function ensureBoard(id) {
+      if (!boards.has(id)) boards.set(id, { image: "", notes: [] });
+      return boards.get(id);
+    }
+
+    function loadState() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(storeKey) || "null") || defaultState();
+        studentCountInput.value = saved.studentCount || 24;
+        groupCountInput.value = saved.groupCount || 6;
+        mode = saved.mode || "personal";
+        activeBoardId = saved.activeBoardId || "personal-1";
+        Object.entries(saved.boards || {}).forEach(([id, board]) => boards.set(id, board));
+      } catch {
+        Object.assign(defaultState());
+      }
+      ensureValidActiveBoard();
+    }
+
+    function saveState(showStatus = true) {
+      const data = {
+        studentCount: Number(studentCountInput.value) || 24,
+        groupCount: Number(groupCountInput.value) || 6,
+        mode,
+        activeBoardId,
+        boards: Object.fromEntries(boards)
+      };
+      localStorage.setItem(storeKey, JSON.stringify(data));
+      lastSaved = Date.now();
+      if (showStatus) statusText.textContent = "已儲存目前白板。";
+    }
+
+    function ensureValidActiveBoard() {
+      const prefix = mode === "group" ? "group" : "personal";
+      const max = mode === "group" ? Number(groupCountInput.value) || 1 : Number(studentCountInput.value) || 1;
+      if (!activeBoardId.startsWith(prefix) || Number(activeBoardId.split("-")[1]) > max) activeBoardId = `${prefix}-1`;
+      ensureBoard(activeBoardId);
+    }
+
+    function updateModeButtons() {
+      document.querySelectorAll(".mode-button").forEach((button) => {
+        button.classList.toggle("active", button.dataset.mode === mode);
+      });
+    }
+
+    function resizeCanvas() {
+      const current = canvas.width ? canvas.toDataURL("image/png") : "";
+      const rect = boardWrap.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = Math.max(1, Math.floor(rect.width * dpr));
+      canvas.height = Math.max(1, Math.floor(rect.height * dpr));
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.fillStyle = "#fffdf8";
+      ctx.fillRect(0, 0, rect.width, rect.height);
+      const image = ensureBoard(activeBoardId).image || current;
+      if (image) drawImageToCanvas(image);
+    }
+
+    function drawImageToCanvas(src) {
+      const image = new Image();
+      image.onload = () => {
+        const rect = boardWrap.getBoundingClientRect();
+        ctx.clearRect(0, 0, rect.width, rect.height);
+        ctx.fillStyle = "#fffdf8";
+        ctx.fillRect(0, 0, rect.width, rect.height);
+        ctx.drawImage(image, 0, 0, rect.width, rect.height);
+      };
+      image.src = src;
+    }
+
+    function persistCurrentBoard() {
+      const board = ensureBoard(activeBoardId);
+      board.image = canvas.toDataURL("image/png");
+      board.notes = [...notesLayer.querySelectorAll(".sticky-note")].map((note) => ({
+        id: note.dataset.id,
+        x: Number(note.style.left.replace("px", "")) || 0,
+        y: Number(note.style.top.replace("px", "")) || 0,
+        text: note.querySelector("textarea").value,
+        color: note.style.getPropertyValue("--note-color") || noteColor,
+        tilt: note.style.getPropertyValue("--tilt") || "-1deg"
+      }));
+    }
+
+    function switchBoard(id) {
+      persistCurrentBoard();
+      activeBoardId = id;
+      ensureBoard(activeBoardId);
+      undoStack.length = 0;
+      renderBoardList();
+      loadBoardToStage();
+      saveState(false);
+    }
+
+    function loadBoardToStage() {
+      const board = ensureBoard(activeBoardId);
+      activeBoardTitle.textContent = boardTitle(activeBoardId);
+      statusText.textContent = mode === "group"
+        ? "小組可輪流上台整理想法，也可以用便條收集討論結果。"
+        : "學生可以直接在自己的白板書寫、畫圖或張貼想法。";
+      resizeCanvas();
+      setTimeout(() => {
+        if (board.image) drawImageToCanvas(board.image);
+      }, 40);
+      notesLayer.innerHTML = "";
+      board.notes.forEach((note) => createNote(note));
+    }
+
+    function renderBoardList() {
+      boardList.innerHTML = "";
+      const count = mode === "group" ? Number(groupCountInput.value) || 1 : Number(studentCountInput.value) || 1;
+      const prefix = mode === "group" ? "group" : "personal";
+      boardListTitle.textContent = mode === "group" ? "分組白板" : "個人白板";
+      for (let i = 1; i <= count; i += 1) {
+        const id = `${prefix}-${i}`;
+        ensureBoard(id);
+        const button = document.createElement("button");
+        button.className = `board-button ${id === activeBoardId ? "active" : ""}`;
+        button.type = "button";
+        button.textContent = mode === "group" ? `第 ${i} 組` : `${i} 號`;
+        button.addEventListener("click", () => switchBoard(id));
+        boardList.appendChild(button);
+      }
+    }
+
+    function setTool(nextTool) {
+      tool = nextTool;
+      document.querySelectorAll(".tool-button").forEach((button) => {
+        button.classList.toggle("active", button.dataset.tool === tool);
+      });
+      statusText.textContent = {
+        pen: "畫筆模式：可以直接書寫或畫圖。",
+        eraser: "橡皮擦模式：拖曳即可擦除筆跡。",
+        note: "便條模式：點白板任一處即可張貼便條。",
+        stamp: "印章模式：點白板任一處即可貼上鼓勵印章。"
+      }[tool];
+    }
+
+    function pointFromEvent(event) {
+      const rect = canvas.getBoundingClientRect();
+      return { x: event.clientX - rect.left, y: event.clientY - rect.top };
+    }
+
+    function pushUndo() {
+      undoStack.push(canvas.toDataURL("image/png"));
+      if (undoStack.length > 18) undoStack.shift();
+    }
+
+    function startDrawing(event) {
+      if (event.target.closest(".sticky-note")) return;
+      const point = pointFromEvent(event);
+      if (tool === "note") {
+        addNoteAt(point.x, point.y);
+        return;
+      }
+      if (tool === "stamp") {
+        addStamp(point.x, point.y);
+        return;
+      }
+      pushUndo();
+      activePointers.set(event.pointerId, point);
+      canvas.setPointerCapture(event.pointerId);
+      ctx.beginPath();
+      ctx.moveTo(point.x, point.y);
+    }
+
+    function draw(event) {
+      if (!activePointers.has(event.pointerId)) return;
+      event.preventDefault();
+      const last = activePointers.get(event.pointerId);
+      const point = pointFromEvent(event);
+      ctx.globalCompositeOperation = tool === "eraser" ? "destination-out" : "source-over";
+      ctx.strokeStyle = color;
+      ctx.lineWidth = tool === "eraser" ? brushSize * 2.2 : brushSize;
+      ctx.beginPath();
+      ctx.moveTo(last.x, last.y);
+      ctx.lineTo(point.x, point.y);
+      ctx.stroke();
+      activePointers.set(event.pointerId, point);
+    }
+
+    function stopDrawing(event) {
+      if (!activePointers.has(event.pointerId)) return;
+      activePointers.delete(event.pointerId);
+      ctx.globalCompositeOperation = "source-over";
+      persistCurrentBoard();
+      saveState(false);
+    }
+
+    function addNoteAt(x, y, text = quickNoteText.value.trim() || "我的想法是...") {
+      const jitter = randomNote ? Math.random() * 140 - 70 : 0;
+      createNote({
+        id: `note-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+        x: Math.max(8, x + jitter),
+        y: Math.max(8, y + jitter),
+        text,
+        color: noteColor,
+        tilt: `${Math.round(Math.random() * 4 - 2)}deg`
+      });
+      quickNoteText.value = "";
+      persistCurrentBoard();
+      saveState(false);
+      statusText.textContent = "已新增便條，可拖曳移動或直接修改文字。";
+    }
+
+    function createNote(note) {
+      const el = document.createElement("article");
+      el.className = "sticky-note";
+      el.dataset.id = note.id;
+      el.style.left = `${note.x}px`;
+      el.style.top = `${note.y}px`;
+      el.style.setProperty("--note-color", note.color || noteColor);
+      el.style.setProperty("--tilt", note.tilt || "-1deg");
+      el.innerHTML = `
+        <div class="sticky-head"><span>便條</span><button type="button" aria-label="刪除便條">×</button></div>
+        <textarea>${escapeHtml(note.text || "")}</textarea>
+      `;
+      const head = el.querySelector(".sticky-head");
+      const removeButton = el.querySelector("button");
+      const textarea = el.querySelector("textarea");
+      let dragging = null;
+      head.addEventListener("pointerdown", (event) => {
+        dragging = { x: event.clientX, y: event.clientY, left: Number(el.style.left.replace("px", "")) || 0, top: Number(el.style.top.replace("px", "")) || 0 };
+        head.setPointerCapture(event.pointerId);
+      });
+      head.addEventListener("pointermove", (event) => {
+        if (!dragging) return;
+        const rect = boardWrap.getBoundingClientRect();
+        const nextLeft = Math.min(rect.width - 80, Math.max(0, dragging.left + event.clientX - dragging.x));
+        const nextTop = Math.min(rect.height - 60, Math.max(0, dragging.top + event.clientY - dragging.y));
+        el.style.left = `${nextLeft}px`;
+        el.style.top = `${nextTop}px`;
+      });
+      head.addEventListener("pointerup", () => {
+        dragging = null;
+        persistCurrentBoard();
+        saveState(false);
+      });
+      removeButton.addEventListener("click", () => {
+        el.remove();
+        persistCurrentBoard();
+        saveState(false);
+      });
+      textarea.addEventListener("input", () => {
+        persistCurrentBoard();
+        if (Date.now() - lastSaved > 600) saveState(false);
+      });
+      notesLayer.appendChild(el);
+      textarea.focus();
+    }
+
+    function addStamp(x, y) {
+      pushUndo();
+      ctx.font = `${Math.max(30, brushSize * 4)}px "Segoe UI Emoji", "Apple Color Emoji", sans-serif`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(stamp, x, y);
+      persistCurrentBoard();
+      saveState(false);
+    }
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"']/g, (char) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+      }[char]));
+    }
+
+    function renderColors() {
+      const host = document.querySelector("#colorGrid");
+      host.innerHTML = "";
+      colors.forEach((item) => {
+        const button = document.createElement("button");
+        button.className = `color-button ${item === color ? "active" : ""}`;
+        button.type = "button";
+        button.style.background = item;
+        button.addEventListener("click", () => {
+          color = item;
+          renderColors();
+        });
+        host.appendChild(button);
+      });
+    }
+
+    function renderNoteColors() {
+      const host = document.querySelector("#noteColorGrid");
+      host.innerHTML = "";
+      noteColors.forEach((item) => {
+        const button = document.createElement("button");
+        button.className = `color-button ${item === noteColor ? "active" : ""}`;
+        button.type = "button";
+        button.style.background = item;
+        button.addEventListener("click", () => {
+          noteColor = item;
+          renderNoteColors();
+        });
+        host.appendChild(button);
+      });
+    }
+
+    function renderStamps() {
+      const host = document.querySelector("#stampGrid");
+      host.innerHTML = "";
+      stamps.forEach((item) => {
+        const button = document.createElement("button");
+        button.className = `stamp-button ${item === stamp ? "active" : ""}`;
+        button.type = "button";
+        button.textContent = item;
+        button.addEventListener("click", () => {
+          stamp = item;
+          renderStamps();
+        });
+        host.appendChild(button);
+      });
+    }
+
+    async function exportBoard() {
+      persistCurrentBoard();
+      const rect = boardWrap.getBoundingClientRect();
+      const exportCanvas = document.createElement("canvas");
+      exportCanvas.width = Math.floor(rect.width * 2);
+      exportCanvas.height = Math.floor(rect.height * 2);
+      const ex = exportCanvas.getContext("2d");
+      ex.scale(2, 2);
+      ex.fillStyle = "#fffdf8";
+      ex.fillRect(0, 0, rect.width, rect.height);
+      ex.drawImage(canvas, 0, 0, rect.width, rect.height);
+      [...notesLayer.querySelectorAll(".sticky-note")].forEach((note) => {
+        const left = Number(note.style.left.replace("px", "")) || 0;
+        const top = Number(note.style.top.replace("px", "")) || 0;
+        ex.fillStyle = note.style.getPropertyValue("--note-color") || "#fff0a8";
+        roundRect(ex, left, top, 190, 120, 14);
+        ex.fill();
+        ex.fillStyle = "#23324d";
+        ex.font = "bold 18px Microsoft JhengHei, sans-serif";
+        wrapText(ex, note.querySelector("textarea").value, left + 14, top + 32, 164, 28);
+      });
+      const link = document.createElement("a");
+      link.download = `${boardTitle(activeBoardId)}.png`;
+      link.href = exportCanvas.toDataURL("image/png");
+      link.click();
+      statusText.textContent = "已匯出目前白板圖片。";
+    }
+
+    function roundRect(context, x, y, width, height, radius) {
+      context.beginPath();
+      context.moveTo(x + radius, y);
+      context.arcTo(x + width, y, x + width, y + height, radius);
+      context.arcTo(x + width, y + height, x, y + height, radius);
+      context.arcTo(x, y + height, x, y, radius);
+      context.arcTo(x, y, x + width, y, radius);
+      context.closePath();
+    }
+
+    function wrapText(context, text, x, y, maxWidth, lineHeight) {
+      const chars = [...text];
+      let line = "";
+      let row = 0;
+      chars.forEach((char) => {
+        const test = line + char;
+        if (context.measureText(test).width > maxWidth && line) {
+          context.fillText(line, x, y + row * lineHeight);
+          line = char;
+          row += 1;
+        } else {
+          line = test;
+        }
+      });
+      if (line) context.fillText(line, x, y + row * lineHeight);
+    }
+
+    document.querySelectorAll(".mode-button").forEach((button) => {
+      button.addEventListener("click", () => {
+        persistCurrentBoard();
+        mode = button.dataset.mode;
+        updateModeButtons();
+        ensureValidActiveBoard();
+        renderBoardList();
+        loadBoardToStage();
+        saveState(false);
+      });
+    });
+
+    document.querySelectorAll(".tool-button").forEach((button) => {
+      button.addEventListener("click", () => setTool(button.dataset.tool));
+    });
+
+    studentCountInput.addEventListener("input", () => {
+      persistCurrentBoard();
+      ensureValidActiveBoard();
+      renderBoardList();
+      loadBoardToStage();
+      saveState(false);
+    });
+    groupCountInput.addEventListener("input", () => {
+      persistCurrentBoard();
+      ensureValidActiveBoard();
+      renderBoardList();
+      loadBoardToStage();
+      saveState(false);
+    });
+    sizeRange.addEventListener("input", () => {
+      brushSize = Number(sizeRange.value);
+      sizeText.textContent = String(brushSize);
+    });
+    document.querySelector("#addNoteButton").addEventListener("click", () => addNoteAt(80 + Math.random() * 140, 70 + Math.random() * 120));
+    document.querySelector("#randomNoteButton").addEventListener("click", () => {
+      randomNote = !randomNote;
+      document.querySelector("#randomNoteButton").classList.toggle("primary", randomNote);
+      statusText.textContent = randomNote ? "隨機位置已開啟。" : "隨機位置已關閉。";
+    });
+    document.querySelector("#undoButton").addEventListener("click", () => {
+      const previous = undoStack.pop();
+      if (!previous) {
+        statusText.textContent = "目前沒有可復原的筆跡。";
+        return;
+      }
+      drawImageToCanvas(previous);
+      setTimeout(() => {
+        persistCurrentBoard();
+        saveState(false);
+      }, 80);
+    });
+    document.querySelector("#clearInkButton").addEventListener("click", () => {
+      pushUndo();
+      const rect = boardWrap.getBoundingClientRect();
+      ctx.clearRect(0, 0, rect.width, rect.height);
+      ctx.fillStyle = "#fffdf8";
+      ctx.fillRect(0, 0, rect.width, rect.height);
+      persistCurrentBoard();
+      saveState(false);
+      statusText.textContent = "已清除筆跡，便條保留。";
+    });
+    document.querySelector("#clearAllButton").addEventListener("click", () => {
+      pushUndo();
+      const rect = boardWrap.getBoundingClientRect();
+      ctx.clearRect(0, 0, rect.width, rect.height);
+      ctx.fillStyle = "#fffdf8";
+      ctx.fillRect(0, 0, rect.width, rect.height);
+      notesLayer.innerHTML = "";
+      persistCurrentBoard();
+      saveState(false);
+      statusText.textContent = "已清空目前白板。";
+    });
+    document.querySelector("#saveButton").addEventListener("click", () => {
+      persistCurrentBoard();
+      saveState();
+    });
+    document.querySelector("#exportButton").addEventListener("click", exportBoard);
+    document.querySelector("#fullscreenButton").addEventListener("click", async () => {
+      try {
+        if (document.fullscreenElement) await document.exitFullscreen();
+        else await document.documentElement.requestFullscreen();
+      } catch {
+        statusText.textContent = "瀏覽器暫時不允許全螢幕。";
+      }
+    });
+    canvas.addEventListener("pointerdown", startDrawing);
+    canvas.addEventListener("pointermove", draw);
+    canvas.addEventListener("pointerup", stopDrawing);
+    canvas.addEventListener("pointercancel", stopDrawing);
+    window.addEventListener("resize", () => {
+      persistCurrentBoard();
+      resizeCanvas();
+    });
+
+    loadState();
+    updateModeButtons();
+    renderColors();
+    renderNoteColors();
+    renderStamps();
+    renderBoardList();
+    loadBoardToStage();
+  </script>
+</body>
+</html>
