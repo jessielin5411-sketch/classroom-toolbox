@@ -486,9 +486,11 @@
       </div>
 
       <form class="login" id="loginForm">
+        <label class="label" for="email">教師信箱</label>
+        <input id="email" type="email" autocomplete="username" placeholder="請輸入 Firebase 老師帳號">
         <label class="label" for="password">教師密碼</label>
         <input id="password" type="password" autocomplete="current-password" placeholder="請輸入密碼">
-        <button class="button primary" type="submit">登入後台</button>
+        <button class="button primary" type="submit">登入 Firebase 後台</button>
         <div class="status" id="loginStatus">後台目前已鎖定。</div>
       </form>
     </section>
@@ -658,8 +660,27 @@
     </main>
   </div>
 
-  <script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+    import { addDoc, collection, getFirestore, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCWd6ouQ9MkPZgoTvOAC7h3JW02e4NONy8",
+      authDomain: "fir-bac91.firebaseapp.com",
+      projectId: "fir-bac91",
+      storageBucket: "fir-bac91.firebasestorage.app",
+      messagingSenderId: "835752740864",
+      appId: "1:835752740864:web:770e85e39018e3a1ba70e5",
+      measurementId: "G-B84M7QF72D"
+    };
+
+    const firebaseApp = initializeApp(firebaseConfig);
+    const auth = getAuth(firebaseApp);
+    const db = getFirestore(firebaseApp);
+
     const loginForm = document.querySelector("#loginForm");
+    const email = document.querySelector("#email");
     const password = document.querySelector("#password");
     const loginStatus = document.querySelector("#loginStatus");
     const dashboard = document.querySelector("#dashboard");
@@ -710,7 +731,6 @@
     const parentDraftText = document.querySelector("#parentDraftText");
     const parentDraftStatus = document.querySelector("#parentDraftStatus");
 
-    const teacherPassword = "0800";
     const teacherAccessKey = "jessie-toolbox-teacher-unlocked";
     const petKey = "jessie-toolbox-pet-scoreboard";
     const teamKey = "jessie-toolbox-team-scoreboard";
@@ -1472,13 +1492,28 @@
       }
     }
 
-    function unlock() {
+    async function recordAdminEvent(action) {
+      try {
+        await addDoc(collection(db, "adminActivity"), {
+          action,
+          email: auth.currentUser?.email || "",
+          source: "teacher-admin",
+          createdAt: serverTimestamp()
+        });
+      } catch (error) {
+        loginStatus.textContent = `已登入，但 Firestore 紀錄失敗：${error.message}`;
+      }
+    }
+
+    function unlock(user) {
       unlocked = true;
       sessionStorage.setItem(teacherAccessKey, "true");
       dashboard.classList.add("unlocked");
-      loginStatus.textContent = "後台已解鎖。";
+      loginStatus.textContent = `已登入：${user.email}`;
+      email.value = user.email || email.value;
       password.value = "";
       render();
+      recordAdminEvent("login");
     }
 
     function lockDashboard() {
@@ -1489,12 +1524,13 @@
       password.focus();
     }
 
-    loginForm.addEventListener("submit", (event) => {
+    loginForm.addEventListener("submit", async (event) => {
       event.preventDefault();
-      if (password.value === teacherPassword) {
-        unlock();
-      } else {
-        loginStatus.textContent = "密碼錯誤，後台仍維持鎖定。";
+      loginStatus.textContent = "正在登入 Firebase...";
+      try {
+        await signInWithEmailAndPassword(auth, email.value.trim(), password.value);
+      } catch (error) {
+        loginStatus.textContent = `登入失敗：${error.message}`;
       }
     });
 
@@ -1512,7 +1548,18 @@
     formatSelect.addEventListener("change", () => {
       if (!exportPanel.hidden) generateExport.click();
     });
-    lock.addEventListener("click", lockDashboard);
+    lock.addEventListener("click", async () => {
+      await recordAdminEvent("logout");
+      await signOut(auth);
+    });
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        unlock(user);
+      } else {
+        lockDashboard();
+      }
+    });
 
     copyExport.addEventListener("click", async () => {
       exportText.select();
