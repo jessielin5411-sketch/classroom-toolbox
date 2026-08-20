@@ -371,6 +371,37 @@
       line-height: 1.55;
     }
 
+    .sync-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 34px;
+      padding: 0 10px;
+      border-radius: 999px;
+      color: #31527a;
+      background: #eff6ff;
+      font-size: 13px;
+      font-weight: 950;
+    }
+
+    .sync-status::before {
+      content: "";
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: #94a3b8;
+    }
+
+    .sync-status.online::before {
+      background: #22c55e;
+      box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.16);
+    }
+
+    .sync-status.error::before {
+      background: #ef4444;
+      box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.16);
+    }
+
     @media (max-width: 980px) {
       body { overflow: auto; }
       .app {
@@ -446,6 +477,22 @@
       </section>
 
       <section class="panel">
+        <h2>學生共用房間</h2>
+        <label>
+          房間碼
+          <input id="roomCodeInput" type="text" maxlength="18" placeholder="例如：CLASS501">
+        </label>
+        <div class="button-row">
+          <button class="small-button good" id="createRoomButton" type="button">產生房間碼</button>
+          <button class="small-button primary" id="joinRoomButton" type="button">開始共用</button>
+          <button class="small-button" id="copyRoomLinkButton" type="button">複製學生連結</button>
+          <button class="small-button" id="leaveRoomButton" type="button">離開</button>
+        </div>
+        <div class="sync-status" id="syncStatus">尚未連線</div>
+        <div class="hint">學生開啟同一個白板網址，輸入同一房間碼，就能一起操作目前的個人或分組白板。</div>
+      </section>
+
+      <section class="panel">
         <h2 id="boardListTitle">個人白板</h2>
         <div class="board-list" id="boardList"></div>
       </section>
@@ -488,7 +535,7 @@
           <button class="tool-button" type="button" data-tool="note">便條</button>
           <button class="tool-button" type="button" data-tool="stamp">印章</button>
         </div>
-        <div class="hint">多人同時在同一台投影白板上觸控書寫時，畫筆支援多點輸入；若要跨不同裝置即時共編，之後可再加雲端同步。</div>
+        <div class="hint">可在同一台投影白板上多點書寫，也可用左側房間碼讓不同學生裝置一起進入同一個白板。</div>
       </section>
 
       <section class="panel">
@@ -515,6 +562,9 @@
     </aside>
   </div>
 
+  <script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore-compat.js"></script>
   <script>
     const canvas = document.querySelector("#whiteboard");
     const ctx = canvas.getContext("2d");
@@ -529,14 +579,31 @@
     const quickNoteText = document.querySelector("#quickNoteText");
     const sizeRange = document.querySelector("#sizeRange");
     const sizeText = document.querySelector("#sizeText");
+    const roomCodeInput = document.querySelector("#roomCodeInput");
+    const createRoomButton = document.querySelector("#createRoomButton");
+    const joinRoomButton = document.querySelector("#joinRoomButton");
+    const copyRoomLinkButton = document.querySelector("#copyRoomLinkButton");
+    const leaveRoomButton = document.querySelector("#leaveRoomButton");
+    const syncStatus = document.querySelector("#syncStatus");
 
     const storeKey = "jessie-interactive-whiteboard-v1";
+    const firebaseConfig = {
+      apiKey: "AIzaSyCWd6ouQ9MkPZgoTvOAC7h3JW02e4NONy8",
+      authDomain: "fir-bac91.firebaseapp.com",
+      projectId: "fir-bac91",
+      storageBucket: "fir-bac91.firebasestorage.app",
+      messagingSenderId: "835752740864",
+      appId: "1:835752740864:web:770e85e39018e3a1ba70e5",
+      measurementId: "G-B84M7QF72D"
+    };
     const colors = ["#1f2937", "#ef4444", "#f97316", "#eab308", "#22c55e", "#06b6d4", "#3b82f6", "#8b5cf6", "#ec4899"];
     const noteColors = ["#fff0a8", "#d9f7c8", "#cce9ff", "#ffd9e6", "#eadcff", "#ffe1b5"];
     const stamps = ["⭐", "💡", "✅", "❓", "👏", "❤️", "🌱", "🎯"];
     const boards = new Map();
     const activePointers = new Map();
     const undoStack = [];
+    const seenRemoteActions = new Set();
+    const noteUpdateTimers = new Map();
 
     let mode = "personal";
     let activeBoardId = "personal-1";
@@ -547,6 +614,12 @@
     let brushSize = Number(sizeRange.value);
     let randomNote = false;
     let lastSaved = 0;
+    let firebaseReady = false;
+    let db = null;
+    let auth = null;
+    let roomCode = "";
+    let boardUnsubscribe = null;
+    let applyingRemote = false;
 
     function defaultState() {
       return {
@@ -556,6 +629,144 @@
         activeBoardId: "personal-1",
         boards: {}
       };
+    }
+
+    function setSyncStatus(message, state = "") {
+      syncStatus.textContent = message;
+      syncStatus.classList.toggle("online", state === "online");
+      syncStatus.classList.toggle("error", state === "error");
+    }
+
+    function normalizeRoomCode(value) {
+      return String(value || "")
+        .trim()
+        .toUpperCase()
+        .replace(/[^A-Z0-9-]/g, "")
+        .slice(0, 18);
+    }
+
+    function makeRoomCode() {
+      const part = Math.random().toString(36).slice(2, 6).toUpperCase();
+      return `BOARD-${part}`;
+    }
+
+    function roomShareUrl() {
+      const url = new URL(window.location.href);
+      url.searchParams.set("room", normalizeRoomCode(roomCodeInput.value || roomCode));
+      return url.toString();
+    }
+
+    async function copyRoomLink() {
+      const code = normalizeRoomCode(roomCodeInput.value || roomCode);
+      if (!code) {
+        setSyncStatus("請先產生或輸入房間碼。", "error");
+        return;
+      }
+      roomCodeInput.value = code;
+      try {
+        await navigator.clipboard.writeText(roomShareUrl());
+        setSyncStatus("已複製學生連結。", roomCode ? "online" : "");
+      } catch {
+        setSyncStatus("無法自動複製，請手動複製網址。", "error");
+      }
+    }
+
+    function initFirebase() {
+      if (firebaseReady) return true;
+      if (!window.firebase) {
+        setSyncStatus("Firebase 載入失敗，請確認網路。", "error");
+        return false;
+      }
+      try {
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        auth = firebase.auth();
+        db = firebase.firestore();
+        firebaseReady = true;
+        return true;
+      } catch (error) {
+        setSyncStatus(`同步初始化失敗：${error.message}`, "error");
+        return false;
+      }
+    }
+
+    async function joinRoom() {
+      const nextRoom = normalizeRoomCode(roomCodeInput.value);
+      if (!nextRoom) {
+        roomCodeInput.focus();
+        setSyncStatus("請先輸入房間碼。", "error");
+        return;
+      }
+      if (!initFirebase()) return;
+      setSyncStatus("正在連線房間...");
+      try {
+        if (!auth.currentUser) await auth.signInAnonymously();
+        roomCode = nextRoom;
+        roomCodeInput.value = roomCode;
+        localStorage.setItem(`${storeKey}-room`, roomCode);
+        await db.collection("whiteboardRooms").doc(roomCode).set({
+          updatedAt: Date.now(),
+          studentCount: Number(studentCountInput.value) || 24,
+          groupCount: Number(groupCountInput.value) || 6
+        }, { merge: true });
+        listenToActiveBoard();
+        setSyncStatus(`已連線：${roomCode}`, "online");
+      } catch (error) {
+        roomCode = "";
+        setSyncStatus(`連線失敗：${error.message}`, "error");
+      }
+    }
+
+    function leaveRoom() {
+      if (boardUnsubscribe) boardUnsubscribe();
+      boardUnsubscribe = null;
+      roomCode = "";
+      seenRemoteActions.clear();
+      localStorage.removeItem(`${storeKey}-room`);
+      setSyncStatus("已離開共用房間");
+    }
+
+    function actionCollection() {
+      if (!roomCode || !db) return null;
+      return db
+        .collection("whiteboardRooms")
+        .doc(roomCode)
+        .collection("boards")
+        .doc(activeBoardId)
+        .collection("actions");
+    }
+
+    async function syncAction(action) {
+      if (!roomCode || !db || applyingRemote) return;
+      const actionId = `act-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+      seenRemoteActions.add(actionId);
+      try {
+        await actionCollection().doc(actionId).set({
+          ...action,
+          id: actionId,
+          t: Date.now(),
+          boardId: activeBoardId,
+          author: auth.currentUser?.uid || ""
+        });
+      } catch (error) {
+        setSyncStatus(`同步失敗：${error.message}`, "error");
+      }
+    }
+
+    function listenToActiveBoard() {
+      if (boardUnsubscribe) boardUnsubscribe();
+      if (!roomCode || !db) return;
+      setSyncStatus(`同步中：${roomCode}`, "online");
+      boardUnsubscribe = actionCollection()
+        .orderBy("t")
+        .limit(650)
+        .onSnapshot((snapshot) => {
+          const actions = [];
+          snapshot.forEach((doc) => actions.push({ id: doc.id, ...doc.data() }));
+          replayActions(actions);
+          setSyncStatus(`已同步：${roomCode}｜${boardTitle(activeBoardId)}`, "online");
+        }, (error) => {
+          setSyncStatus(`同步讀取失敗：${error.message}`, "error");
+        });
     }
 
     function boardTitle(id) {
@@ -635,6 +846,85 @@
       image.src = src;
     }
 
+    function resetCanvas() {
+      const rect = boardWrap.getBoundingClientRect();
+      ctx.globalCompositeOperation = "source-over";
+      ctx.clearRect(0, 0, rect.width, rect.height);
+      ctx.fillStyle = "#fffdf8";
+      ctx.fillRect(0, 0, rect.width, rect.height);
+    }
+
+    function drawStroke(points, strokeColor, strokeSize, strokeTool) {
+      if (!points || points.length < 2) return;
+      ctx.globalCompositeOperation = strokeTool === "eraser" ? "destination-out" : "source-over";
+      ctx.strokeStyle = strokeColor || color;
+      ctx.lineWidth = strokeTool === "eraser" ? (strokeSize || brushSize) * 2.2 : (strokeSize || brushSize);
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.beginPath();
+      ctx.moveTo(points[0].x, points[0].y);
+      points.slice(1).forEach((point) => ctx.lineTo(point.x, point.y));
+      ctx.stroke();
+      ctx.globalCompositeOperation = "source-over";
+    }
+
+    function drawStamp(mark, x, y, size) {
+      ctx.font = `${Math.max(30, (size || brushSize) * 4)}px "Segoe UI Emoji", "Apple Color Emoji", sans-serif`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(mark || stamp, x, y);
+    }
+
+    function replayActions(actions) {
+      applyingRemote = true;
+      resetCanvas();
+      notesLayer.innerHTML = "";
+      actions.forEach((action) => applyAction(action));
+      applyingRemote = false;
+      persistCurrentBoard();
+      saveState(false);
+    }
+
+    function applyAction(action) {
+      if (action.type === "stroke") {
+        drawStroke(action.points, action.color, action.size, action.tool);
+        return;
+      }
+      if (action.type === "stamp") {
+        drawStamp(action.stamp, action.x, action.y, action.size);
+        return;
+      }
+      if (action.type === "note-add") {
+        createNote(action.note, { focus: false });
+        return;
+      }
+      if (action.type === "note-update") {
+        const note = notesLayer.querySelector(`[data-id="${action.note.id}"]`);
+        if (!note) {
+          createNote(action.note, { focus: false });
+          return;
+        }
+        note.style.left = `${action.note.x}px`;
+        note.style.top = `${action.note.y}px`;
+        note.style.setProperty("--note-color", action.note.color || noteColor);
+        note.style.setProperty("--tilt", action.note.tilt || "-1deg");
+        note.querySelector("textarea").value = action.note.text || "";
+        return;
+      }
+      if (action.type === "note-delete") {
+        notesLayer.querySelector(`[data-id="${action.noteId}"]`)?.remove();
+        return;
+      }
+      if (action.type === "clear-ink") {
+        resetCanvas();
+        return;
+      }
+      if (action.type === "clear-all") {
+        resetCanvas();
+        notesLayer.innerHTML = "";
+      }
+    }
+
     function persistCurrentBoard() {
       const board = ensureBoard(activeBoardId);
       board.image = canvas.toDataURL("image/png");
@@ -656,6 +946,7 @@
       renderBoardList();
       loadBoardToStage();
       saveState(false);
+      listenToActiveBoard();
     }
 
     function loadBoardToStage() {
@@ -724,7 +1015,13 @@
         return;
       }
       pushUndo();
-      activePointers.set(event.pointerId, point);
+      activePointers.set(event.pointerId, {
+        last: point,
+        points: [point],
+        color,
+        size: brushSize,
+        tool
+      });
       canvas.setPointerCapture(event.pointerId);
       ctx.beginPath();
       ctx.moveTo(point.x, point.y);
@@ -733,43 +1030,77 @@
     function draw(event) {
       if (!activePointers.has(event.pointerId)) return;
       event.preventDefault();
-      const last = activePointers.get(event.pointerId);
+      const drawing = activePointers.get(event.pointerId);
+      const last = drawing.last;
       const point = pointFromEvent(event);
-      ctx.globalCompositeOperation = tool === "eraser" ? "destination-out" : "source-over";
-      ctx.strokeStyle = color;
-      ctx.lineWidth = tool === "eraser" ? brushSize * 2.2 : brushSize;
+      ctx.globalCompositeOperation = drawing.tool === "eraser" ? "destination-out" : "source-over";
+      ctx.strokeStyle = drawing.color;
+      ctx.lineWidth = drawing.tool === "eraser" ? drawing.size * 2.2 : drawing.size;
       ctx.beginPath();
       ctx.moveTo(last.x, last.y);
       ctx.lineTo(point.x, point.y);
       ctx.stroke();
-      activePointers.set(event.pointerId, point);
+      drawing.last = point;
+      drawing.points.push(point);
+      activePointers.set(event.pointerId, drawing);
     }
 
     function stopDrawing(event) {
       if (!activePointers.has(event.pointerId)) return;
+      const drawing = activePointers.get(event.pointerId);
       activePointers.delete(event.pointerId);
       ctx.globalCompositeOperation = "source-over";
       persistCurrentBoard();
       saveState(false);
+      syncAction({
+        type: "stroke",
+        tool: drawing.tool,
+        color: drawing.color,
+        size: drawing.size,
+        points: drawing.points
+      });
     }
 
     function addNoteAt(x, y, text = quickNoteText.value.trim() || "我的想法是...") {
       const jitter = randomNote ? Math.random() * 140 - 70 : 0;
-      createNote({
+      const note = {
         id: `note-${Date.now()}-${Math.random().toString(16).slice(2)}`,
         x: Math.max(8, x + jitter),
         y: Math.max(8, y + jitter),
         text,
         color: noteColor,
         tilt: `${Math.round(Math.random() * 4 - 2)}deg`
-      });
+      };
+      createNote(note);
       quickNoteText.value = "";
       persistCurrentBoard();
       saveState(false);
+      syncAction({ type: "note-add", note });
       statusText.textContent = "已新增便條，可拖曳移動或直接修改文字。";
     }
 
-    function createNote(note) {
+    function noteDataFromElement(el) {
+      return {
+        id: el.dataset.id,
+        x: Number(el.style.left.replace("px", "")) || 0,
+        y: Number(el.style.top.replace("px", "")) || 0,
+        text: el.querySelector("textarea").value,
+        color: el.style.getPropertyValue("--note-color") || noteColor,
+        tilt: el.style.getPropertyValue("--tilt") || "-1deg"
+      };
+    }
+
+    function syncNoteUpdate(el) {
+      if (applyingRemote) return;
+      window.clearTimeout(noteUpdateTimers.get(el.dataset.id));
+      noteUpdateTimers.set(el.dataset.id, window.setTimeout(() => {
+        syncAction({ type: "note-update", note: noteDataFromElement(el) });
+      }, 180));
+    }
+
+    function createNote(note, options = {}) {
+      const existing = notesLayer.querySelector(`[data-id="${note.id}"]`);
+      if (existing) existing.remove();
       const el = document.createElement("article");
       el.className = "sticky-note";
       el.dataset.id = note.id;
@@ -801,28 +1132,30 @@
         dragging = null;
         persistCurrentBoard();
         saveState(false);
+        syncAction({ type: "note-update", note: noteDataFromElement(el) });
       });
       removeButton.addEventListener("click", () => {
+        const noteId = el.dataset.id;
         el.remove();
         persistCurrentBoard();
         saveState(false);
+        syncAction({ type: "note-delete", noteId });
       });
       textarea.addEventListener("input", () => {
         persistCurrentBoard();
         if (Date.now() - lastSaved > 600) saveState(false);
+        syncNoteUpdate(el);
       });
       notesLayer.appendChild(el);
-      textarea.focus();
+      if (options.focus !== false) textarea.focus();
     }
 
     function addStamp(x, y) {
       pushUndo();
-      ctx.font = `${Math.max(30, brushSize * 4)}px "Segoe UI Emoji", "Apple Color Emoji", sans-serif`;
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText(stamp, x, y);
+      drawStamp(stamp, x, y, brushSize);
       persistCurrentBoard();
       saveState(false);
+      syncAction({ type: "stamp", stamp, x, y, size: brushSize });
     }
 
     function escapeHtml(value) {
@@ -947,6 +1280,7 @@
         renderBoardList();
         loadBoardToStage();
         saveState(false);
+        listenToActiveBoard();
       });
     });
 
@@ -960,6 +1294,7 @@
       renderBoardList();
       loadBoardToStage();
       saveState(false);
+      listenToActiveBoard();
     });
     groupCountInput.addEventListener("input", () => {
       persistCurrentBoard();
@@ -967,6 +1302,7 @@
       renderBoardList();
       loadBoardToStage();
       saveState(false);
+      listenToActiveBoard();
     });
     sizeRange.addEventListener("input", () => {
       brushSize = Number(sizeRange.value);
@@ -992,23 +1328,19 @@
     });
     document.querySelector("#clearInkButton").addEventListener("click", () => {
       pushUndo();
-      const rect = boardWrap.getBoundingClientRect();
-      ctx.clearRect(0, 0, rect.width, rect.height);
-      ctx.fillStyle = "#fffdf8";
-      ctx.fillRect(0, 0, rect.width, rect.height);
+      resetCanvas();
       persistCurrentBoard();
       saveState(false);
+      syncAction({ type: "clear-ink" });
       statusText.textContent = "已清除筆跡，便條保留。";
     });
     document.querySelector("#clearAllButton").addEventListener("click", () => {
       pushUndo();
-      const rect = boardWrap.getBoundingClientRect();
-      ctx.clearRect(0, 0, rect.width, rect.height);
-      ctx.fillStyle = "#fffdf8";
-      ctx.fillRect(0, 0, rect.width, rect.height);
+      resetCanvas();
       notesLayer.innerHTML = "";
       persistCurrentBoard();
       saveState(false);
+      syncAction({ type: "clear-all" });
       statusText.textContent = "已清空目前白板。";
     });
     document.querySelector("#saveButton").addEventListener("click", () => {
@@ -1024,6 +1356,16 @@
         statusText.textContent = "瀏覽器暫時不允許全螢幕。";
       }
     });
+    createRoomButton.addEventListener("click", () => {
+      roomCodeInput.value = makeRoomCode();
+      statusText.textContent = "已產生房間碼，按「開始共用」即可讓學生加入。";
+    });
+    joinRoomButton.addEventListener("click", joinRoom);
+    copyRoomLinkButton.addEventListener("click", copyRoomLink);
+    leaveRoomButton.addEventListener("click", leaveRoom);
+    roomCodeInput.addEventListener("input", () => {
+      roomCodeInput.value = normalizeRoomCode(roomCodeInput.value);
+    });
     canvas.addEventListener("pointerdown", startDrawing);
     canvas.addEventListener("pointermove", draw);
     canvas.addEventListener("pointerup", stopDrawing);
@@ -1034,12 +1376,15 @@
     });
 
     loadState();
+    const urlRoom = normalizeRoomCode(new URLSearchParams(window.location.search).get("room"));
+    roomCodeInput.value = urlRoom || localStorage.getItem(`${storeKey}-room`) || "";
     updateModeButtons();
     renderColors();
     renderNoteColors();
     renderStamps();
     renderBoardList();
     loadBoardToStage();
+    if (urlRoom) joinRoom();
   </script>
 </body>
 </html>
