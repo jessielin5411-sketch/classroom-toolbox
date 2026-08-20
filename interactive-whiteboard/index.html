@@ -402,6 +402,21 @@
       box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.16);
     }
 
+    .firebase-help {
+      display: none;
+      padding: 10px 12px;
+      border-radius: 12px;
+      color: #7c2d12;
+      background: #ffedd5;
+      font-size: 13px;
+      font-weight: 850;
+      line-height: 1.55;
+    }
+
+    .firebase-help.show {
+      display: block;
+    }
+
     @media (max-width: 980px) {
       body { overflow: auto; }
       .app {
@@ -489,6 +504,7 @@
           <button class="small-button" id="leaveRoomButton" type="button">離開</button>
         </div>
         <div class="sync-status" id="syncStatus">尚未連線</div>
+        <div class="firebase-help" id="firebaseHelp">Firebase 尚未允許學生共用。請到 Firebase Console 開啟 Authentication 的匿名登入，並確認 Firestore 規則允許 whiteboardRooms 讀寫。</div>
         <div class="hint">學生開啟同一個白板網址，輸入同一房間碼，就能一起操作目前的個人或分組白板。</div>
       </section>
 
@@ -585,6 +601,7 @@
     const copyRoomLinkButton = document.querySelector("#copyRoomLinkButton");
     const leaveRoomButton = document.querySelector("#leaveRoomButton");
     const syncStatus = document.querySelector("#syncStatus");
+    const firebaseHelp = document.querySelector("#firebaseHelp");
 
     const storeKey = "jessie-interactive-whiteboard-v1";
     const firebaseConfig = {
@@ -620,6 +637,7 @@
     let roomCode = "";
     let boardUnsubscribe = null;
     let applyingRemote = false;
+    const clientId = `client-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 
     function defaultState() {
       return {
@@ -635,6 +653,12 @@
       syncStatus.textContent = message;
       syncStatus.classList.toggle("online", state === "online");
       syncStatus.classList.toggle("error", state === "error");
+      if (state !== "error") firebaseHelp.classList.remove("show");
+    }
+
+    function showFirebaseHelp(message) {
+      setSyncStatus(message, "error");
+      firebaseHelp.classList.add("show");
     }
 
     function normalizeRoomCode(value) {
@@ -689,6 +713,20 @@
       }
     }
 
+    async function tryAnonymousSignIn() {
+      if (!auth || auth.currentUser) return true;
+      try {
+        await auth.signInAnonymously();
+        return true;
+      } catch (error) {
+        if (error.code === "auth/admin-restricted-operation" || error.code === "auth/operation-not-allowed") {
+          setSyncStatus("匿名登入未開啟，改以 Firestore 規則嘗試連線...");
+          return false;
+        }
+        throw error;
+      }
+    }
+
     async function joinRoom() {
       const nextRoom = normalizeRoomCode(roomCodeInput.value);
       if (!nextRoom) {
@@ -699,7 +737,7 @@
       if (!initFirebase()) return;
       setSyncStatus("正在連線房間...");
       try {
-        if (!auth.currentUser) await auth.signInAnonymously();
+        await tryAnonymousSignIn();
         roomCode = nextRoom;
         roomCodeInput.value = roomCode;
         localStorage.setItem(`${storeKey}-room`, roomCode);
@@ -712,7 +750,10 @@
         setSyncStatus(`已連線：${roomCode}`, "online");
       } catch (error) {
         roomCode = "";
-        setSyncStatus(`連線失敗：${error.message}`, "error");
+        const authHint = error.code?.startsWith("auth/")
+          ? "請到 Firebase Console > Authentication > Sign-in method 開啟 Anonymous 匿名登入。"
+          : "請到 Firebase Console 確認 Firestore 規則允許 whiteboardRooms 讀寫，或開啟匿名登入後用 auth != null 規則。";
+        showFirebaseHelp(`連線失敗：${error.message} ${authHint}`);
       }
     }
 
@@ -745,10 +786,10 @@
           id: actionId,
           t: Date.now(),
           boardId: activeBoardId,
-          author: auth.currentUser?.uid || ""
+          author: auth?.currentUser?.uid || clientId
         });
       } catch (error) {
-        setSyncStatus(`同步失敗：${error.message}`, "error");
+        showFirebaseHelp(`同步失敗：${error.message} 請確認 Firebase 匿名登入或 Firestore 規則。`);
       }
     }
 
@@ -765,7 +806,7 @@
           replayActions(actions);
           setSyncStatus(`已同步：${roomCode}｜${boardTitle(activeBoardId)}`, "online");
         }, (error) => {
-          setSyncStatus(`同步讀取失敗：${error.message}`, "error");
+          showFirebaseHelp(`同步讀取失敗：${error.message} 請確認 Firebase 匿名登入或 Firestore 規則。`);
         });
     }
 
