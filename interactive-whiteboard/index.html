@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>教學互動白板｜教學微光站</title>
-  <script src="https://cdn.tailwindcss.com"></script>
   <script>
+    window.tailwind = window.tailwind || {};
     tailwind.config = {
       theme: {
         extend: {
@@ -24,10 +24,12 @@
       }
     };
   </script>
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
     html, body, #root { min-height: 100%; }
     body {
       margin: 0;
+      overflow-x: hidden;
       color: #24324a;
       background:
         radial-gradient(circle at 8% 10%, rgba(255, 210, 74, 0.36), transparent 26%),
@@ -44,6 +46,72 @@
         #fffef8;
       background-size: 34px 34px;
       touch-action: none;
+    }
+    .whiteboard-grid {
+      display: grid;
+      gap: 12px;
+      width: min(100%, 1600px);
+      margin: 0 auto;
+      padding: 12px;
+      grid-template-columns: minmax(0, 1fr);
+      align-items: start;
+    }
+    .control-rail,
+    .tool-rail {
+      display: grid;
+      gap: 12px;
+      min-width: 0;
+    }
+    .stage-shell {
+      order: 1;
+      min-width: 0;
+    }
+    .control-rail {
+      order: 2;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .tool-rail {
+      order: 3;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .tablet-board {
+      width: 100%;
+      height: clamp(420px, calc(100vh - 190px), 720px);
+      min-height: 0;
+    }
+    @media (max-width: 820px) {
+      .control-rail,
+      .tool-rail {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .tablet-board {
+        height: min(72vh, 560px);
+      }
+    }
+    @media (min-width: 1180px) {
+      .whiteboard-grid {
+        grid-template-columns: 260px minmax(0, 1fr);
+      }
+      .control-rail {
+        order: 1;
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .stage-shell {
+        order: 2;
+      }
+      .tool-rail {
+        grid-column: 1 / -1;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+    @media (min-width: 1440px) {
+      .whiteboard-grid {
+        grid-template-columns: 270px minmax(0, 1fr) 270px;
+      }
+      .tool-rail {
+        grid-column: auto;
+        grid-template-columns: minmax(0, 1fr);
+      }
     }
     canvas { touch-action: none; }
     .hide-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -589,7 +657,7 @@
       };
 
       return (
-        <main className="grid min-h-[68vh] min-w-0 grid-rows-[auto_minmax(0,1fr)] gap-3">
+        <main className="stage-shell grid min-w-0 grid-rows-[auto_minmax(0,1fr)] gap-3">
           <div className="flex flex-wrap items-end justify-between gap-3 px-1">
             <div>
               <h1 className="text-3xl font-black text-ink md:text-4xl">{boardName(activeBoard)}</h1>
@@ -600,7 +668,7 @@
             </div>
           </div>
 
-          <section ref={wrapRef} className="board-paper relative min-h-[560px] overflow-hidden rounded-[2rem] border-[10px] border-amber-300 shadow-soft">
+          <section ref={wrapRef} className="board-paper tablet-board relative overflow-hidden rounded-[2rem] border-[8px] border-amber-300 shadow-soft">
             <canvas
               ref={canvasRef}
               className="absolute inset-0 h-full w-full cursor-crosshair"
@@ -950,8 +1018,8 @@
       return (
         <div className="min-h-screen">
           <TopBar exportImage={exportImage} requestFullscreen={requestFullscreen} />
-          <div className="grid gap-4 p-4 xl:grid-cols-[310px_minmax(0,1fr)_300px]">
-            <aside className="grid content-start gap-4">
+          <div className="whiteboard-grid">
+            <aside className="control-rail">
               <ConnectionPanel
                 role={role}
                 setRole={setRole}
@@ -998,7 +1066,7 @@
               onNoteDelete={deleteNote}
             />
 
-            <aside className="grid content-start gap-4">
+            <aside className="tool-rail">
               <ToolPanel
                 role={role}
                 tool={tool}
