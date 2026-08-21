@@ -62,6 +62,32 @@
       gap: 12px;
       min-width: 0;
     }
+    .compact-button {
+      min-height: 38px;
+      padding: 7px 10px;
+      font-size: 0.9rem;
+      line-height: 1.15;
+      white-space: normal;
+      word-break: keep-all;
+    }
+    .compact-input {
+      min-width: 0;
+      height: 42px;
+      border-radius: 14px;
+      padding: 0 10px;
+      font-size: 1rem;
+    }
+    .compact-grid {
+      gap: 6px;
+    }
+    .control-rail .rounded-3xl,
+    .tool-rail .rounded-3xl {
+      border-radius: 20px;
+    }
+    .control-rail > section,
+    .tool-rail > section {
+      padding: 12px;
+    }
     .stage-shell {
       order: 1;
       min-width: 0;
@@ -90,7 +116,7 @@
     }
     @media (min-width: 1180px) {
       .whiteboard-grid {
-        grid-template-columns: 260px minmax(0, 1fr);
+        grid-template-columns: 230px minmax(0, 1fr);
       }
       .control-rail {
         order: 1;
@@ -106,11 +132,14 @@
     }
     @media (min-width: 1440px) {
       .whiteboard-grid {
-        grid-template-columns: 270px minmax(0, 1fr) 270px;
+        grid-template-columns: 240px minmax(0, 1fr) 255px;
       }
       .tool-rail {
         grid-column: auto;
         grid-template-columns: minmax(0, 1fr);
+      }
+      .tablet-board {
+        height: clamp(520px, calc(100vh - 180px), 760px);
       }
     }
     canvas { touch-action: none; }
@@ -313,37 +342,37 @@
       return (
         <Panel title="共用教室">
           <div className="grid gap-3">
-            <div className="grid grid-cols-2 gap-2 rounded-2xl bg-blue-50 p-1">
-              <Button active={role === "teacher"} onClick={() => setRole("teacher")}>老師端</Button>
-              <Button active={role === "student"} onClick={() => setRole("student")}>學生端</Button>
+            <div className="compact-grid grid grid-cols-2 rounded-2xl bg-blue-50 p-1">
+              <Button className="compact-button" active={role === "teacher"} onClick={() => setRole("teacher")}>老師端</Button>
+              <Button className="compact-button" active={role === "student"} onClick={() => setRole("student")}>學生端</Button>
             </div>
 
             {role === "teacher" && (
-              <div className="grid grid-cols-2 gap-2">
+              <div className="compact-grid grid grid-cols-2">
                 <label className="grid gap-1 text-sm font-black text-slate-600">
                   班級人數
-                  <input className="h-12 rounded-2xl border-2 border-blue-100 px-3 text-lg font-black outline-none focus:border-candy" type="number" min="1" max="60" value={studentCount} onChange={(e) => setStudentCount(clamp(Number(e.target.value) || 1, 1, 60))} />
+                  <input className="compact-input border-2 border-blue-100 font-black outline-none focus:border-candy" type="number" min="1" max="60" value={studentCount} onChange={(e) => setStudentCount(clamp(Number(e.target.value) || 1, 1, 60))} />
                 </label>
                 <label className="grid gap-1 text-sm font-black text-slate-600">
                   小組數量
-                  <input className="h-12 rounded-2xl border-2 border-blue-100 px-3 text-lg font-black outline-none focus:border-candy" type="number" min="1" max="12" value={groupCount} onChange={(e) => setGroupCount(clamp(Number(e.target.value) || 1, 1, 12))} />
+                  <input className="compact-input border-2 border-blue-100 font-black outline-none focus:border-candy" type="number" min="1" max="12" value={groupCount} onChange={(e) => setGroupCount(clamp(Number(e.target.value) || 1, 1, 12))} />
                 </label>
               </div>
             )}
 
             <label className="grid gap-1 text-sm font-black text-slate-600">
               房間碼
-              <input className="h-13 rounded-2xl border-2 border-blue-100 px-3 text-xl font-black outline-none focus:border-candy" value={roomCode} onChange={(e) => setRoomCode(normalizeRoomCode(e.target.value))} placeholder="BOARD-ABCD" />
+              <input className="compact-input border-2 border-blue-100 text-lg font-black outline-none focus:border-candy" value={roomCode} onChange={(e) => setRoomCode(normalizeRoomCode(e.target.value))} placeholder="BOARD-ABCD" />
             </label>
 
             {role === "student" && (
               <div className="grid gap-2">
                 <div className="text-sm font-black text-slate-600">選擇你的座號</div>
-                <div className="grid max-h-44 grid-cols-6 gap-2 overflow-auto rounded-2xl bg-white/80 p-2 hide-scrollbar">
+                <div className="compact-grid grid max-h-40 grid-cols-5 overflow-auto rounded-2xl bg-white/80 p-2 hide-scrollbar">
                   {seats.map((n) => (
                     <button
                       key={n}
-                      className={cx("h-11 rounded-2xl text-lg font-black shadow-sm", seat === n ? "bg-candy text-white" : "bg-blue-50 text-ink")}
+                      className={cx("h-9 rounded-xl text-sm font-black shadow-sm", seat === n ? "bg-candy text-white" : "bg-blue-50 text-ink")}
                       onClick={() => setSeat(n)}
                     >
                       {n}
@@ -353,15 +382,15 @@
               </div>
             )}
 
-            <div className="grid grid-cols-2 gap-2">
+            <div className="compact-grid grid grid-cols-2">
               {role === "teacher" ? (
-                <Button className="bg-mint text-white hover:bg-mint" onClick={createRoom}>開教室</Button>
+                <Button className="compact-button bg-mint text-white hover:bg-mint" onClick={createRoom}>開教室</Button>
               ) : (
-                <Button className="bg-mint text-white hover:bg-mint" onClick={joinRoom}>加入教室</Button>
+                <Button className="compact-button bg-mint text-white hover:bg-mint" onClick={joinRoom}>加入教室</Button>
               )}
-              <Button onClick={copyLink}>複製學生連結</Button>
-              <Button onClick={leaveRoom}>離開</Button>
-              {role === "teacher" && <Button onClick={() => setRoomCode(makeRoomCode())}>產生房號</Button>}
+              <Button className="compact-button" onClick={copyLink}>複製連結</Button>
+              <Button className="compact-button" onClick={leaveRoom}>離開</Button>
+              {role === "teacher" && <Button className="compact-button" onClick={() => setRoomCode(makeRoomCode())}>產生房號</Button>}
             </div>
 
             <div className={cx(
@@ -391,15 +420,15 @@
 
       return (
         <Panel title="白板範圍">
-          <div className="mb-3 grid grid-cols-2 gap-2 rounded-2xl bg-blue-50 p-1">
-            <Button active={mode === "personal"} onClick={() => setMode("personal")}>個人</Button>
-            <Button active={mode === "group"} onClick={() => setMode("group")}>分組</Button>
+          <div className="compact-grid mb-3 grid grid-cols-2 rounded-2xl bg-blue-50 p-1">
+            <Button className="compact-button" active={mode === "personal"} onClick={() => setMode("personal")}>個人</Button>
+            <Button className="compact-button" active={mode === "group"} onClick={() => setMode("group")}>分組</Button>
           </div>
-          <div className="grid max-h-52 grid-cols-2 gap-2 overflow-auto hide-scrollbar">
+          <div className="compact-grid grid max-h-52 grid-cols-2 overflow-auto hide-scrollbar">
             {availableBoards.map((id) => (
               <button
                 key={id}
-                className={cx("min-h-12 rounded-2xl px-3 text-left text-sm font-black shadow-sm", activeBoard === id ? "bg-gradient-to-r from-candy to-violet-500 text-white" : "bg-white text-ink")}
+                className={cx("min-h-10 rounded-xl px-2 py-1 text-left text-xs font-black leading-snug shadow-sm", activeBoard === id ? "bg-gradient-to-r from-candy to-violet-500 text-white" : "bg-white text-ink")}
                 onClick={() => setActiveBoard(id)}
               >
                 {boardName(id)}
