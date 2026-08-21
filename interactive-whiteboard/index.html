@@ -4,606 +4,66 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>教學互動白板｜教學微光站</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ink: "#24324a",
+            candy: "#4f8cff",
+            mint: "#25c19a",
+            sunshine: "#ffd24a",
+            peach: "#ffad7a",
+            berry: "#ff78b7"
+          },
+          boxShadow: {
+            soft: "0 18px 44px rgba(36, 50, 74, 0.16)"
+          }
+        }
+      }
+    };
+  </script>
   <style>
-    :root {
-      --ink: #23324d;
-      --muted: #66758e;
-      --line: #dce7f6;
-      --paper: #fffdf8;
-      --blue: #4f8cff;
-      --green: #22b98f;
-      --yellow: #ffd24a;
-      --rose: #ff8fc7;
-      --purple: #8b5cf6;
-      --orange: #ffad4d;
-      --shadow: 0 18px 38px rgba(35, 50, 77, 0.14);
-    }
-
-    * { box-sizing: border-box; }
-
+    html, body, #root { min-height: 100%; }
     body {
       margin: 0;
-      min-height: 100vh;
-      overflow: hidden;
-      color: var(--ink);
+      color: #24324a;
       background:
-        radial-gradient(circle at 6% 8%, rgba(255, 210, 74, 0.24), transparent 28%),
-        radial-gradient(circle at 94% 8%, rgba(79, 140, 255, 0.20), transparent 30%),
-        linear-gradient(135deg, #fff7ed 0%, #eef8ff 48%, #fbf3ff 100%);
+        radial-gradient(circle at 8% 10%, rgba(255, 210, 74, 0.36), transparent 26%),
+        radial-gradient(circle at 92% 12%, rgba(79, 140, 255, 0.22), transparent 28%),
+        radial-gradient(circle at 85% 84%, rgba(255, 120, 183, 0.22), transparent 30%),
+        linear-gradient(135deg, #fffaf1 0%, #eef9ff 46%, #f8f1ff 100%);
       font-family: "Noto Sans TC", "Microsoft JhengHei", system-ui, sans-serif;
     }
-
-    button, input, select, textarea {
-      font: inherit;
-    }
-
-    .app {
-      display: grid;
-      grid-template-columns: 270px minmax(0, 1fr) 250px;
-      grid-template-rows: 62px minmax(0, 1fr);
-      height: 100vh;
-    }
-
-    .topbar {
-      grid-column: 1 / -1;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 10px 16px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.74);
-      background: rgba(255, 255, 255, 0.78);
-      backdrop-filter: blur(14px);
-      box-shadow: 0 8px 22px rgba(35, 50, 77, 0.08);
-      z-index: 5;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      min-width: 0;
-      color: var(--ink);
-      text-decoration: none;
-      font-weight: 1000;
-    }
-
-    .brand-mark {
-      display: grid;
-      place-items: center;
-      width: 42px;
-      height: 42px;
-      border-radius: 14px;
-      color: #fff;
-      background: linear-gradient(135deg, var(--blue), var(--purple));
-      box-shadow: 0 10px 20px rgba(79, 140, 255, 0.24);
-      font-size: 22px;
-    }
-
-    .brand-title {
-      display: grid;
-      line-height: 1.15;
-    }
-
-    .brand-title strong {
-      font-size: 19px;
-    }
-
-    .brand-title span {
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 850;
-    }
-
-    .top-actions {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
-
-    .sidebar,
-    .toolbox {
-      overflow: auto;
-      padding: 14px;
-    }
-
-    .panel {
-      display: grid;
-      gap: 12px;
-      margin-bottom: 14px;
-      padding: 14px;
-      border: 1px solid rgba(255, 255, 255, 0.72);
-      border-radius: 18px;
-      background: rgba(255, 255, 255, 0.82);
-      box-shadow: var(--shadow);
-    }
-
-    .panel h2 {
-      margin: 0;
-      font-size: 18px;
-      letter-spacing: 0;
-    }
-
-    .mode-tabs,
-    .button-row,
-    .color-grid,
-    .board-list,
-    .stamp-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .mode-button,
-    .tool-button,
-    .small-button,
-    .board-button,
-    .stamp-button {
-      min-height: 40px;
-      border: 0;
-      border-radius: 12px;
-      cursor: pointer;
-      font-weight: 1000;
-    }
-
-    .mode-button,
-    .tool-button,
-    .board-button {
-      padding: 0 12px;
-      color: #31527a;
-      background: #eef5ff;
-    }
-
-    .mode-button.active,
-    .tool-button.active,
-    .board-button.active {
-      color: #fff;
-      background: linear-gradient(135deg, var(--blue), var(--purple));
-    }
-
-    .small-button {
-      padding: 0 12px;
-      color: var(--ink);
-      background: #e7edf7;
-    }
-
-    .small-button.primary {
-      color: #fff;
-      background: var(--blue);
-    }
-
-    .small-button.good {
-      color: #fff;
-      background: var(--green);
-    }
-
-    .small-button.warn {
-      color: #fff;
-      background: var(--orange);
-    }
-
-    .small-button.danger {
-      color: #fff;
-      background: #ef4444;
-    }
-
-    label {
-      display: grid;
-      gap: 6px;
-      color: #354764;
-      font-weight: 950;
-    }
-
-    input, select, textarea {
-      width: 100%;
-      border: 2px solid var(--line);
-      border-radius: 12px;
-      background: #fff;
-      color: var(--ink);
-      outline: none;
-      font-weight: 850;
-    }
-
-    input, select {
-      min-height: 42px;
-      padding: 0 12px;
-    }
-
-    textarea {
-      min-height: 74px;
-      padding: 10px 12px;
-      resize: vertical;
-      line-height: 1.5;
-    }
-
-    .color-button {
-      width: 38px;
-      height: 38px;
-      border: 3px solid #fff;
-      border-radius: 999px;
-      box-shadow: 0 0 0 1px rgba(35, 50, 77, 0.15);
-      cursor: pointer;
-    }
-
-    .color-button.active {
-      box-shadow: 0 0 0 4px rgba(79, 140, 255, 0.34);
-    }
-
-    .range-row {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 10px;
-      align-items: center;
-    }
-
-    input[type="range"] {
-      min-height: auto;
-      padding: 0;
-      accent-color: var(--blue);
-    }
-
-    .stage {
-      position: relative;
-      display: grid;
-      grid-template-rows: auto minmax(0, 1fr);
-      gap: 12px;
-      min-width: 0;
-      padding: 14px 4px 14px;
-    }
-
-    .board-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 0 8px;
-    }
-
-    .board-title {
-      display: grid;
-      line-height: 1.2;
-    }
-
-    .board-title strong {
-      font-size: clamp(20px, 3vw, 34px);
-    }
-
-    .board-title span {
-      color: #52657f;
-      font-weight: 900;
-    }
-
-    .board-wrap {
-      position: relative;
-      min-height: 0;
-      overflow: hidden;
-      border: 10px solid #f7c874;
-      border-radius: 28px;
+    button, input, textarea, select { font: inherit; }
+    .board-paper {
       background:
-        linear-gradient(90deg, rgba(79, 140, 255, 0.07) 1px, transparent 1px),
-        linear-gradient(rgba(79, 140, 255, 0.07) 1px, transparent 1px),
-        #fffdf8;
-      background-size: 36px 36px;
-      box-shadow:
-        inset 0 0 0 3px rgba(255, 255, 255, 0.68),
-        0 24px 42px rgba(35, 50, 77, 0.18);
+        linear-gradient(90deg, rgba(79, 140, 255, 0.08) 1px, transparent 1px),
+        linear-gradient(rgba(79, 140, 255, 0.08) 1px, transparent 1px),
+        #fffef8;
+      background-size: 34px 34px;
       touch-action: none;
     }
-
-    canvas {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      cursor: crosshair;
-    }
-
-    .notes-layer {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-    }
-
-    .sticky-note {
-      position: absolute;
-      display: grid;
-      grid-template-rows: auto 1fr;
-      width: 190px;
-      min-height: 120px;
-      border: 2px solid rgba(35, 50, 77, 0.12);
-      border-radius: 14px;
-      background: var(--note-color, #fff0a8);
-      box-shadow: 0 14px 24px rgba(35, 50, 77, 0.18);
-      transform: rotate(var(--tilt, -1deg));
-      pointer-events: auto;
-      touch-action: none;
-    }
-
-    .sticky-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      padding: 8px 10px 4px;
-      color: rgba(35, 50, 77, 0.82);
-      font-size: 13px;
-      font-weight: 1000;
-      cursor: grab;
-    }
-
-    .sticky-head button {
-      display: grid;
-      place-items: center;
-      width: 26px;
-      height: 26px;
-      border: 0;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.72);
-      cursor: pointer;
-      font-weight: 1000;
-    }
-
-    .sticky-note textarea {
-      min-height: 78px;
-      border: 0;
-      border-radius: 0 0 12px 12px;
-      background: transparent;
-      color: #24324a;
-      font-size: 18px;
-      font-weight: 900;
-      resize: none;
-    }
-
-    .stamp-button {
-      width: 44px;
-      height: 44px;
-      background: #fff;
-      font-size: 24px;
-    }
-
-    .hint {
-      padding: 10px 12px;
-      border-radius: 12px;
-      color: #31527a;
-      background: #eff6ff;
-      font-size: 13px;
-      font-weight: 850;
-      line-height: 1.55;
-    }
-
-    .sync-status {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      min-height: 34px;
-      padding: 0 10px;
-      border-radius: 999px;
-      color: #31527a;
-      background: #eff6ff;
-      font-size: 13px;
-      font-weight: 950;
-    }
-
-    .sync-status::before {
-      content: "";
-      width: 10px;
-      height: 10px;
-      border-radius: 999px;
-      background: #94a3b8;
-    }
-
-    .sync-status.online::before {
-      background: #22c55e;
-      box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.16);
-    }
-
-    .sync-status.error::before {
-      background: #ef4444;
-      box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.16);
-    }
-
-    .firebase-help {
-      display: none;
-      padding: 10px 12px;
-      border-radius: 12px;
-      color: #7c2d12;
-      background: #ffedd5;
-      font-size: 13px;
-      font-weight: 850;
-      line-height: 1.55;
-    }
-
-    .firebase-help.show {
-      display: block;
-    }
-
-    @media (max-width: 980px) {
-      body { overflow: auto; }
-      .app {
-        grid-template-columns: 1fr;
-        grid-template-rows: auto auto 72vh auto;
-        height: auto;
-        min-height: 100vh;
-      }
-
-      .topbar,
-      .sidebar,
-      .stage,
-      .toolbox {
-        grid-column: 1;
-      }
-
-      .sidebar,
-      .toolbox {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 10px;
-        overflow: visible;
-      }
-
-      .panel { margin-bottom: 0; }
-    }
-
-    @media (max-width: 640px) {
-      .sidebar,
-      .toolbox {
-        grid-template-columns: 1fr;
-      }
-
-      .topbar {
-        align-items: flex-start;
-        flex-direction: column;
-      }
-    }
+    canvas { touch-action: none; }
+    .hide-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
+    .hide-scrollbar::-webkit-scrollbar-thumb { background: rgba(79, 140, 255, 0.32); border-radius: 999px; }
+    .safe-text { word-break: break-word; overflow-wrap: anywhere; }
   </style>
 </head>
 <body>
-  <div class="app">
-    <header class="topbar">
-      <a class="brand" href="../index.html" aria-label="回教學微光站">
-        <span class="brand-mark">✎</span>
-        <span class="brand-title">
-          <strong>教學互動白板</strong>
-          <span>個人書寫、分組共作、便條張貼</span>
-        </span>
-      </a>
-      <div class="top-actions">
-        <button class="small-button good" id="saveButton" type="button">儲存白板</button>
-        <button class="small-button primary" id="exportButton" type="button">匯出圖片</button>
-        <button class="small-button" id="fullscreenButton" type="button">大螢幕</button>
-      </div>
-    </header>
+  <div id="root"></div>
 
-    <aside class="sidebar" aria-label="白板管理">
-      <section class="panel">
-        <h2>白板模式</h2>
-        <div class="mode-tabs">
-          <button class="mode-button active" type="button" data-mode="personal">個人</button>
-          <button class="mode-button" type="button" data-mode="group">分組</button>
-        </div>
-        <label>
-          班級人數
-          <input id="studentCount" type="number" min="1" max="60" value="24">
-        </label>
-        <label>
-          小組數量
-          <input id="groupCount" type="number" min="1" max="12" value="6">
-        </label>
-      </section>
-
-      <section class="panel">
-        <h2>學生共用房間</h2>
-        <label>
-          房間碼
-          <input id="roomCodeInput" type="text" maxlength="18" placeholder="例如：CLASS501">
-        </label>
-        <div class="button-row">
-          <button class="small-button good" id="createRoomButton" type="button">產生房間碼</button>
-          <button class="small-button primary" id="joinRoomButton" type="button">開始共用</button>
-          <button class="small-button" id="copyRoomLinkButton" type="button">複製學生連結</button>
-          <button class="small-button" id="leaveRoomButton" type="button">離開</button>
-        </div>
-        <div class="sync-status" id="syncStatus">尚未連線</div>
-        <div class="firebase-help" id="firebaseHelp">Firebase 尚未允許學生共用。請到 Firebase Console 開啟 Authentication 的匿名登入，並確認 Firestore 規則允許 whiteboardRooms 讀寫。</div>
-        <div class="hint">學生開啟同一個白板網址，輸入同一房間碼，就能一起操作目前的個人或分組白板。</div>
-      </section>
-
-      <section class="panel">
-        <h2 id="boardListTitle">個人白板</h2>
-        <div class="board-list" id="boardList"></div>
-      </section>
-
-      <section class="panel">
-        <h2>快速張貼</h2>
-        <textarea id="quickNoteText" placeholder="例如：我的想法是..."></textarea>
-        <div class="button-row">
-          <button class="small-button good" id="addNoteButton" type="button">新增便條</button>
-          <button class="small-button" id="randomNoteButton" type="button">隨機位置</button>
-        </div>
-      </section>
-    </aside>
-
-    <main class="stage">
-      <div class="board-header">
-        <div class="board-title">
-          <strong id="activeBoardTitle">個人 1 號白板</strong>
-          <span id="statusText">可以用滑鼠、觸控筆或手指直接書寫。</span>
-        </div>
-        <div class="button-row">
-          <button class="small-button" id="undoButton" type="button">復原</button>
-          <button class="small-button warn" id="clearInkButton" type="button">清除筆跡</button>
-          <button class="small-button danger" id="clearAllButton" type="button">清空白板</button>
-        </div>
-      </div>
-
-      <section class="board-wrap" id="boardWrap" aria-label="互動白板">
-        <canvas id="whiteboard"></canvas>
-        <div class="notes-layer" id="notesLayer"></div>
-      </section>
-    </main>
-
-    <aside class="toolbox" aria-label="白板工具">
-      <section class="panel">
-        <h2>工具</h2>
-        <div class="button-row">
-          <button class="tool-button active" type="button" data-tool="pen">畫筆</button>
-          <button class="tool-button" type="button" data-tool="eraser">橡皮擦</button>
-          <button class="tool-button" type="button" data-tool="note">便條</button>
-          <button class="tool-button" type="button" data-tool="stamp">印章</button>
-        </div>
-        <div class="hint">可在同一台投影白板上多點書寫，也可用左側房間碼讓不同學生裝置一起進入同一個白板。</div>
-      </section>
-
-      <section class="panel">
-        <h2>顏色</h2>
-        <div class="color-grid" id="colorGrid"></div>
-        <label>
-          筆跡粗細
-          <div class="range-row">
-            <input id="sizeRange" type="range" min="2" max="34" value="8">
-            <strong id="sizeText">8</strong>
-          </div>
-        </label>
-      </section>
-
-      <section class="panel">
-        <h2>便條顏色</h2>
-        <div class="color-grid" id="noteColorGrid"></div>
-      </section>
-
-      <section class="panel">
-        <h2>印章</h2>
-        <div class="stamp-grid" id="stampGrid"></div>
-      </section>
-    </aside>
-  </div>
-
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore-compat.js"></script>
-  <script>
-    const canvas = document.querySelector("#whiteboard");
-    const ctx = canvas.getContext("2d");
-    const boardWrap = document.querySelector("#boardWrap");
-    const notesLayer = document.querySelector("#notesLayer");
-    const boardList = document.querySelector("#boardList");
-    const boardListTitle = document.querySelector("#boardListTitle");
-    const activeBoardTitle = document.querySelector("#activeBoardTitle");
-    const statusText = document.querySelector("#statusText");
-    const studentCountInput = document.querySelector("#studentCount");
-    const groupCountInput = document.querySelector("#groupCount");
-    const quickNoteText = document.querySelector("#quickNoteText");
-    const sizeRange = document.querySelector("#sizeRange");
-    const sizeText = document.querySelector("#sizeText");
-    const roomCodeInput = document.querySelector("#roomCodeInput");
-    const createRoomButton = document.querySelector("#createRoomButton");
-    const joinRoomButton = document.querySelector("#joinRoomButton");
-    const copyRoomLinkButton = document.querySelector("#copyRoomLinkButton");
-    const leaveRoomButton = document.querySelector("#leaveRoomButton");
-    const syncStatus = document.querySelector("#syncStatus");
-    const firebaseHelp = document.querySelector("#firebaseHelp");
 
-    const storeKey = "jessie-interactive-whiteboard-v1";
+  <script type="text/babel">
+    const { useEffect, useMemo, useRef, useState } = React;
+
     const firebaseConfig = {
       apiKey: "AIzaSyCWd6ouQ9MkPZgoTvOAC7h3JW02e4NONy8",
       authDomain: "fir-bac91.firebaseapp.com",
@@ -613,819 +73,961 @@
       appId: "1:835752740864:web:770e85e39018e3a1ba70e5",
       measurementId: "G-B84M7QF72D"
     };
-    const colors = ["#1f2937", "#ef4444", "#f97316", "#eab308", "#22c55e", "#06b6d4", "#3b82f6", "#8b5cf6", "#ec4899"];
+
+    const storeKey = "jessie-react-whiteboard-v2";
+    const palette = ["#24324a", "#ef4444", "#f97316", "#eab308", "#22c55e", "#06b6d4", "#4f8cff", "#8b5cf6", "#ec4899"];
     const noteColors = ["#fff0a8", "#d9f7c8", "#cce9ff", "#ffd9e6", "#eadcff", "#ffe1b5"];
     const stamps = ["⭐", "💡", "✅", "❓", "👏", "❤️", "🌱", "🎯"];
-    const boards = new Map();
-    const activePointers = new Map();
-    const undoStack = [];
-    const seenRemoteActions = new Set();
-    const noteUpdateTimers = new Map();
+    const seatColors = ["#4f8cff", "#25c19a", "#ffad4d", "#ff78b7", "#8b5cf6", "#06b6d4", "#ef4444", "#84cc16", "#f59e0b", "#14b8a6"];
 
-    let mode = "personal";
-    let activeBoardId = "personal-1";
-    let tool = "pen";
-    let color = colors[0];
-    let noteColor = noteColors[0];
-    let stamp = stamps[0];
-    let brushSize = Number(sizeRange.value);
-    let randomNote = false;
-    let lastSaved = 0;
-    let firebaseReady = false;
-    let db = null;
-    let auth = null;
-    let roomCode = "";
-    let boardUnsubscribe = null;
-    let applyingRemote = false;
-    const clientId = `client-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-
-    function defaultState() {
-      return {
-        studentCount: 24,
-        groupCount: 6,
-        mode: "personal",
-        activeBoardId: "personal-1",
-        boards: {}
-      };
-    }
-
-    function setSyncStatus(message, state = "") {
-      syncStatus.textContent = message;
-      syncStatus.classList.toggle("online", state === "online");
-      syncStatus.classList.toggle("error", state === "error");
-      if (state !== "error") firebaseHelp.classList.remove("show");
-    }
-
-    function showFirebaseHelp(message) {
-      setSyncStatus(message, "error");
-      firebaseHelp.classList.add("show");
-    }
-
-    function normalizeRoomCode(value) {
-      return String(value || "")
-        .trim()
-        .toUpperCase()
-        .replace(/[^A-Z0-9-]/g, "")
-        .slice(0, 18);
+    function cx(...parts) {
+      return parts.filter(Boolean).join(" ");
     }
 
     function makeRoomCode() {
-      const part = Math.random().toString(36).slice(2, 6).toUpperCase();
-      return `BOARD-${part}`;
+      return `BOARD-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
     }
 
-    function roomShareUrl() {
-      const url = new URL(window.location.href);
-      url.searchParams.set("room", normalizeRoomCode(roomCodeInput.value || roomCode));
-      return url.toString();
+    function normalizeRoomCode(value) {
+      return String(value || "").trim().toUpperCase().replace(/[^A-Z0-9-]/g, "").slice(0, 18);
     }
 
-    async function copyRoomLink() {
-      const code = normalizeRoomCode(roomCodeInput.value || roomCode);
-      if (!code) {
-        setSyncStatus("請先產生或輸入房間碼。", "error");
-        return;
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function boardName(boardId) {
+      if (boardId.startsWith("group-")) return `第 ${boardId.split("-")[1]} 組白板`;
+      return `${boardId.split("-")[1]} 號個人白板`;
+    }
+
+    function colorForSeat(seat) {
+      const index = Math.max(0, Number(seat || 1) - 1);
+      return seatColors[index % seatColors.length];
+    }
+
+    function getFirebaseErrorHint(error) {
+      const code = error?.code || "";
+      if (code.includes("admin-restricted") || code.includes("operation-not-allowed")) {
+        return "匿名登入尚未開啟，請確認 Firebase 專案 fir-bac91 的 Authentication 已啟用 Anonymous。";
       }
-      roomCodeInput.value = code;
-      try {
-        await navigator.clipboard.writeText(roomShareUrl());
-        setSyncStatus("已複製學生連結。", roomCode ? "online" : "");
-      } catch {
-        setSyncStatus("無法自動複製，請手動複製網址。", "error");
+      if (code.includes("permission-denied") || error?.message?.includes("permission")) {
+        return "Firestore 規則尚未允許 whiteboardRooms 讀寫，請確認 Rules 已發布。";
       }
+      return error?.message || "連線失敗，請確認網路與 Firebase 設定。";
     }
 
     function initFirebase() {
-      if (firebaseReady) return true;
-      if (!window.firebase) {
-        setSyncStatus("Firebase 載入失敗，請確認網路。", "error");
-        return false;
-      }
-      try {
-        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-        auth = firebase.auth();
-        db = firebase.firestore();
-        firebaseReady = true;
-        return true;
-      } catch (error) {
-        setSyncStatus(`同步初始化失敗：${error.message}`, "error");
-        return false;
-      }
+      if (!window.firebase) throw new Error("Firebase 載入失敗，請確認網路。");
+      if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+      return { auth: firebase.auth(), db: firebase.firestore() };
     }
 
-    async function tryAnonymousSignIn() {
-      if (!auth || auth.currentUser) return true;
-      try {
-        await auth.signInAnonymously();
-        return true;
-      } catch (error) {
-        if (error.code === "auth/admin-restricted-operation" || error.code === "auth/operation-not-allowed") {
-          setSyncStatus("匿名登入未開啟，改以 Firestore 規則嘗試連線...");
-          return false;
+    function visibleActionsFrom(actions) {
+      const sorted = [...actions].sort((a, b) => (a.t || 0) - (b.t || 0));
+      let clearAllAt = 0;
+      const clearOwnerAt = new Map();
+      sorted.forEach((action) => {
+        if (action.type === "clear-all") clearAllAt = Math.max(clearAllAt, action.t || 0);
+        if (action.type === "clear-owner" && action.targetAuthor) {
+          clearOwnerAt.set(action.targetAuthor, Math.max(clearOwnerAt.get(action.targetAuthor) || 0, action.t || 0));
         }
-        throw error;
-      }
-    }
-
-    async function joinRoom() {
-      const nextRoom = normalizeRoomCode(roomCodeInput.value);
-      if (!nextRoom) {
-        roomCodeInput.focus();
-        setSyncStatus("請先輸入房間碼。", "error");
-        return;
-      }
-      if (!initFirebase()) return;
-      setSyncStatus("正在連線房間...");
-      try {
-        await tryAnonymousSignIn();
-        roomCode = nextRoom;
-        roomCodeInput.value = roomCode;
-        localStorage.setItem(`${storeKey}-room`, roomCode);
-        await db.collection("whiteboardRooms").doc(roomCode).set({
-          updatedAt: Date.now(),
-          studentCount: Number(studentCountInput.value) || 24,
-          groupCount: Number(groupCountInput.value) || 6
-        }, { merge: true });
-        listenToActiveBoard();
-        setSyncStatus(`已連線：${roomCode}`, "online");
-      } catch (error) {
-        roomCode = "";
-        const authHint = error.code?.startsWith("auth/")
-          ? "請到 Firebase Console > Authentication > Sign-in method 開啟 Anonymous 匿名登入。"
-          : "請到 Firebase Console 確認 Firestore 規則允許 whiteboardRooms 讀寫，或開啟匿名登入後用 auth != null 規則。";
-        showFirebaseHelp(`連線失敗：${error.message} ${authHint}`);
-      }
-    }
-
-    function leaveRoom() {
-      if (boardUnsubscribe) boardUnsubscribe();
-      boardUnsubscribe = null;
-      roomCode = "";
-      seenRemoteActions.clear();
-      localStorage.removeItem(`${storeKey}-room`);
-      setSyncStatus("已離開共用房間");
-    }
-
-    function actionCollection() {
-      if (!roomCode || !db) return null;
-      return db
-        .collection("whiteboardRooms")
-        .doc(roomCode)
-        .collection("boards")
-        .doc(activeBoardId)
-        .collection("actions");
-    }
-
-    async function syncAction(action) {
-      if (!roomCode || !db || applyingRemote) return;
-      const actionId = `act-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-      seenRemoteActions.add(actionId);
-      try {
-        await actionCollection().doc(actionId).set({
-          ...action,
-          id: actionId,
-          t: Date.now(),
-          boardId: activeBoardId,
-          author: auth?.currentUser?.uid || clientId
-        });
-      } catch (error) {
-        showFirebaseHelp(`同步失敗：${error.message} 請確認 Firebase 匿名登入或 Firestore 規則。`);
-      }
-    }
-
-    function listenToActiveBoard() {
-      if (boardUnsubscribe) boardUnsubscribe();
-      if (!roomCode || !db) return;
-      setSyncStatus(`同步中：${roomCode}`, "online");
-      boardUnsubscribe = actionCollection()
-        .orderBy("t")
-        .limit(650)
-        .onSnapshot((snapshot) => {
-          const actions = [];
-          snapshot.forEach((doc) => actions.push({ id: doc.id, ...doc.data() }));
-          replayActions(actions);
-          setSyncStatus(`已同步：${roomCode}｜${boardTitle(activeBoardId)}`, "online");
-        }, (error) => {
-          showFirebaseHelp(`同步讀取失敗：${error.message} 請確認 Firebase 匿名登入或 Firestore 規則。`);
-        });
-    }
-
-    function boardTitle(id) {
-      if (id.startsWith("group-")) return `第 ${id.split("-")[1]} 組白板`;
-      return `個人 ${id.split("-")[1]} 號白板`;
-    }
-
-    function ensureBoard(id) {
-      if (!boards.has(id)) boards.set(id, { image: "", notes: [] });
-      return boards.get(id);
-    }
-
-    function loadState() {
-      try {
-        const saved = JSON.parse(localStorage.getItem(storeKey) || "null") || defaultState();
-        studentCountInput.value = saved.studentCount || 24;
-        groupCountInput.value = saved.groupCount || 6;
-        mode = saved.mode || "personal";
-        activeBoardId = saved.activeBoardId || "personal-1";
-        Object.entries(saved.boards || {}).forEach(([id, board]) => boards.set(id, board));
-      } catch {
-        Object.assign(defaultState());
-      }
-      ensureValidActiveBoard();
-    }
-
-    function saveState(showStatus = true) {
-      const data = {
-        studentCount: Number(studentCountInput.value) || 24,
-        groupCount: Number(groupCountInput.value) || 6,
-        mode,
-        activeBoardId,
-        boards: Object.fromEntries(boards)
-      };
-      localStorage.setItem(storeKey, JSON.stringify(data));
-      lastSaved = Date.now();
-      if (showStatus) statusText.textContent = "已儲存目前白板。";
-    }
-
-    function ensureValidActiveBoard() {
-      const prefix = mode === "group" ? "group" : "personal";
-      const max = mode === "group" ? Number(groupCountInput.value) || 1 : Number(studentCountInput.value) || 1;
-      if (!activeBoardId.startsWith(prefix) || Number(activeBoardId.split("-")[1]) > max) activeBoardId = `${prefix}-1`;
-      ensureBoard(activeBoardId);
-    }
-
-    function updateModeButtons() {
-      document.querySelectorAll(".mode-button").forEach((button) => {
-        button.classList.toggle("active", button.dataset.mode === mode);
+      });
+      return sorted.filter((action) => {
+        if (action.type === "clear-all" || action.type === "clear-owner") return false;
+        const authorClear = clearOwnerAt.get(action.authorId) || 0;
+        return (action.t || 0) > clearAllAt && (action.t || 0) > authorClear;
       });
     }
 
-    function resizeCanvas() {
-      const current = canvas.width ? canvas.toDataURL("image/png") : "";
-      const rect = boardWrap.getBoundingClientRect();
-      const dpr = window.devicePixelRatio || 1;
-      canvas.width = Math.max(1, Math.floor(rect.width * dpr));
-      canvas.height = Math.max(1, Math.floor(rect.height * dpr));
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    function notesFromActions(actions) {
+      const notes = new Map();
+      actions.forEach((action) => {
+        if (action.type === "note-add") notes.set(action.note.id, action.note);
+        if (action.type === "note-update" && notes.has(action.note.id)) notes.set(action.note.id, { ...notes.get(action.note.id), ...action.note });
+        if (action.type === "note-delete") notes.delete(action.noteId);
+      });
+      return [...notes.values()];
+    }
+
+    function participantsFromActions(actions) {
+      const participants = new Map();
+      actions.forEach((action) => {
+        if (!action.authorId) return;
+        participants.set(action.authorId, {
+          id: action.authorId,
+          name: action.authorName || "未命名",
+          color: action.authorColor || "#4f8cff",
+          lastAt: action.t || 0
+        });
+      });
+      return [...participants.values()].sort((a, b) => b.lastAt - a.lastAt).slice(0, 20);
+    }
+
+    function drawStroke(ctx, action) {
+      const points = action.points || [];
+      if (points.length < 2) return;
+      ctx.save();
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
-      ctx.fillStyle = "#fffdf8";
-      ctx.fillRect(0, 0, rect.width, rect.height);
-      const image = ensureBoard(activeBoardId).image || current;
-      if (image) drawImageToCanvas(image);
-    }
-
-    function drawImageToCanvas(src) {
-      const image = new Image();
-      image.onload = () => {
-        const rect = boardWrap.getBoundingClientRect();
-        ctx.clearRect(0, 0, rect.width, rect.height);
-        ctx.fillStyle = "#fffdf8";
-        ctx.fillRect(0, 0, rect.width, rect.height);
-        ctx.drawImage(image, 0, 0, rect.width, rect.height);
-      };
-      image.src = src;
-    }
-
-    function resetCanvas() {
-      const rect = boardWrap.getBoundingClientRect();
-      ctx.globalCompositeOperation = "source-over";
-      ctx.clearRect(0, 0, rect.width, rect.height);
-      ctx.fillStyle = "#fffdf8";
-      ctx.fillRect(0, 0, rect.width, rect.height);
-    }
-
-    function drawStroke(points, strokeColor, strokeSize, strokeTool) {
-      if (!points || points.length < 2) return;
-      ctx.globalCompositeOperation = strokeTool === "eraser" ? "destination-out" : "source-over";
-      ctx.strokeStyle = strokeColor || color;
-      ctx.lineWidth = strokeTool === "eraser" ? (strokeSize || brushSize) * 2.2 : (strokeSize || brushSize);
-      ctx.lineCap = "round";
-      ctx.lineJoin = "round";
+      ctx.globalAlpha = action.tool === "marker" ? 0.46 : 1;
+      ctx.strokeStyle = action.color || "#24324a";
+      ctx.lineWidth = action.size || 8;
       ctx.beginPath();
       ctx.moveTo(points[0].x, points[0].y);
-      points.slice(1).forEach((point) => ctx.lineTo(point.x, point.y));
+      for (let i = 1; i < points.length; i += 1) {
+        const midX = (points[i - 1].x + points[i].x) / 2;
+        const midY = (points[i - 1].y + points[i].y) / 2;
+        ctx.quadraticCurveTo(points[i - 1].x, points[i - 1].y, midX, midY);
+      }
       ctx.stroke();
-      ctx.globalCompositeOperation = "source-over";
+      ctx.restore();
     }
 
-    function drawStamp(mark, x, y, size) {
-      ctx.font = `${Math.max(30, (size || brushSize) * 4)}px "Segoe UI Emoji", "Apple Color Emoji", sans-serif`;
+    function drawStamp(ctx, action) {
+      ctx.save();
+      ctx.font = `${action.size || 42}px "Noto Sans TC", "Microsoft JhengHei", sans-serif`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.fillText(mark || stamp, x, y);
+      ctx.fillText(action.stamp || "⭐", action.x, action.y);
+      ctx.restore();
     }
 
-    function replayActions(actions) {
-      applyingRemote = true;
-      resetCanvas();
-      notesLayer.innerHTML = "";
-      actions.forEach((action) => applyAction(action));
-      applyingRemote = false;
-      persistCurrentBoard();
-      saveState(false);
+    function Button({ active, className = "", children, ...props }) {
+      return (
+        <button
+          className={cx(
+            "min-h-11 rounded-2xl px-4 py-2 text-base font-black shadow-sm transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-45",
+            active ? "bg-gradient-to-r from-candy to-violet-500 text-white" : "bg-white text-ink hover:bg-blue-50",
+            className
+          )}
+          {...props}
+        >
+          {children}
+        </button>
+      );
     }
 
-    function applyAction(action) {
-      if (action.type === "stroke") {
-        drawStroke(action.points, action.color, action.size, action.tool);
-        return;
-      }
-      if (action.type === "stamp") {
-        drawStamp(action.stamp, action.x, action.y, action.size);
-        return;
-      }
-      if (action.type === "note-add") {
-        createNote(action.note, { focus: false });
-        return;
-      }
-      if (action.type === "note-update") {
-        const note = notesLayer.querySelector(`[data-id="${action.note.id}"]`);
-        if (!note) {
-          createNote(action.note, { focus: false });
+    function Panel({ title, children, className = "" }) {
+      return (
+        <section className={cx("rounded-3xl border border-white/80 bg-white/90 p-4 shadow-soft backdrop-blur", className)}>
+          {title && <h2 className="mb-3 text-xl font-black text-ink">{title}</h2>}
+          {children}
+        </section>
+      );
+    }
+
+    function TopBar({ exportImage, requestFullscreen }) {
+      return (
+        <header className="sticky top-0 z-30 flex flex-wrap items-center justify-between gap-3 border-b border-white/80 bg-white/85 px-4 py-3 shadow-sm backdrop-blur">
+          <a href="../index.html" className="flex items-center gap-3 text-ink no-underline">
+            <span className="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-candy to-violet-500 text-2xl text-white shadow-lg">✎</span>
+            <span className="grid leading-tight">
+              <strong className="text-2xl font-black">教學互動白板</strong>
+              <span className="text-sm font-bold text-slate-500">老師開教室，學生選號碼一起共作</span>
+            </span>
+          </a>
+          <div className="flex flex-wrap gap-2">
+            <Button className="bg-mint text-white hover:bg-mint" onClick={exportImage}>匯出圖片</Button>
+            <Button onClick={requestFullscreen}>大螢幕</Button>
+          </div>
+        </header>
+      );
+    }
+
+    function ConnectionPanel(props) {
+      const {
+        role, setRole, roomCode, setRoomCode, seat, setSeat, studentCount, setStudentCount,
+        groupCount, setGroupCount, status, statusType, createRoom, joinRoom, leaveRoom,
+        copyLink, isConnected
+      } = props;
+      const seats = Array.from({ length: Number(studentCount) || 1 }, (_, i) => i + 1);
+      return (
+        <Panel title="共用教室">
+          <div className="grid gap-3">
+            <div className="grid grid-cols-2 gap-2 rounded-2xl bg-blue-50 p-1">
+              <Button active={role === "teacher"} onClick={() => setRole("teacher")}>老師端</Button>
+              <Button active={role === "student"} onClick={() => setRole("student")}>學生端</Button>
+            </div>
+
+            {role === "teacher" && (
+              <div className="grid grid-cols-2 gap-2">
+                <label className="grid gap-1 text-sm font-black text-slate-600">
+                  班級人數
+                  <input className="h-12 rounded-2xl border-2 border-blue-100 px-3 text-lg font-black outline-none focus:border-candy" type="number" min="1" max="60" value={studentCount} onChange={(e) => setStudentCount(clamp(Number(e.target.value) || 1, 1, 60))} />
+                </label>
+                <label className="grid gap-1 text-sm font-black text-slate-600">
+                  小組數量
+                  <input className="h-12 rounded-2xl border-2 border-blue-100 px-3 text-lg font-black outline-none focus:border-candy" type="number" min="1" max="12" value={groupCount} onChange={(e) => setGroupCount(clamp(Number(e.target.value) || 1, 1, 12))} />
+                </label>
+              </div>
+            )}
+
+            <label className="grid gap-1 text-sm font-black text-slate-600">
+              房間碼
+              <input className="h-13 rounded-2xl border-2 border-blue-100 px-3 text-xl font-black outline-none focus:border-candy" value={roomCode} onChange={(e) => setRoomCode(normalizeRoomCode(e.target.value))} placeholder="BOARD-ABCD" />
+            </label>
+
+            {role === "student" && (
+              <div className="grid gap-2">
+                <div className="text-sm font-black text-slate-600">選擇你的座號</div>
+                <div className="grid max-h-44 grid-cols-6 gap-2 overflow-auto rounded-2xl bg-white/80 p-2 hide-scrollbar">
+                  {seats.map((n) => (
+                    <button
+                      key={n}
+                      className={cx("h-11 rounded-2xl text-lg font-black shadow-sm", seat === n ? "bg-candy text-white" : "bg-blue-50 text-ink")}
+                      onClick={() => setSeat(n)}
+                    >
+                      {n}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="grid grid-cols-2 gap-2">
+              {role === "teacher" ? (
+                <Button className="bg-mint text-white hover:bg-mint" onClick={createRoom}>開教室</Button>
+              ) : (
+                <Button className="bg-mint text-white hover:bg-mint" onClick={joinRoom}>加入教室</Button>
+              )}
+              <Button onClick={copyLink}>複製學生連結</Button>
+              <Button onClick={leaveRoom}>離開</Button>
+              {role === "teacher" && <Button onClick={() => setRoomCode(makeRoomCode())}>產生房號</Button>}
+            </div>
+
+            <div className={cx(
+              "rounded-2xl px-3 py-2 text-sm font-black leading-relaxed",
+              statusType === "online" ? "bg-emerald-50 text-emerald-700" : statusType === "error" ? "bg-orange-100 text-orange-800" : "bg-blue-50 text-blue-700"
+            )}>
+              {status || (isConnected ? "已連線" : "尚未連線")}
+            </div>
+
+            <p className="rounded-2xl bg-amber-50 px-3 py-2 text-sm font-bold leading-relaxed text-amber-800">
+              學生會以座號作答。學生只能清除自己送出的筆跡、便條與印章；老師端可清空目前白板。
+            </p>
+          </div>
+        </Panel>
+      );
+    }
+
+    function BoardSwitcher({ role, seat, mode, setMode, activeBoard, setActiveBoard, studentCount, groupCount }) {
+      const personalBoards = Array.from({ length: Number(studentCount) || 1 }, (_, i) => `personal-${i + 1}`);
+      const groupBoards = Array.from({ length: Number(groupCount) || 1 }, (_, i) => `group-${i + 1}`);
+      const boards = mode === "group" ? groupBoards : personalBoards;
+      const availableBoards = role === "student" && mode === "personal" ? [`personal-${seat || 1}`] : boards;
+
+      useEffect(() => {
+        if (role === "student" && mode === "personal" && seat) setActiveBoard(`personal-${seat}`);
+      }, [role, mode, seat]);
+
+      return (
+        <Panel title="白板範圍">
+          <div className="mb-3 grid grid-cols-2 gap-2 rounded-2xl bg-blue-50 p-1">
+            <Button active={mode === "personal"} onClick={() => setMode("personal")}>個人</Button>
+            <Button active={mode === "group"} onClick={() => setMode("group")}>分組</Button>
+          </div>
+          <div className="grid max-h-52 grid-cols-2 gap-2 overflow-auto hide-scrollbar">
+            {availableBoards.map((id) => (
+              <button
+                key={id}
+                className={cx("min-h-12 rounded-2xl px-3 text-left text-sm font-black shadow-sm", activeBoard === id ? "bg-gradient-to-r from-candy to-violet-500 text-white" : "bg-white text-ink")}
+                onClick={() => setActiveBoard(id)}
+              >
+                {boardName(id)}
+              </button>
+            ))}
+          </div>
+        </Panel>
+      );
+    }
+
+    function ToolPanel(props) {
+      const {
+        role, tool, setTool, color, setColor, noteColor, setNoteColor, size, setSize,
+        stamp, setStamp, addNote, noteText, setNoteText, clearMine, clearAll, canWrite
+      } = props;
+      const tools = [{ id: "pen", label: "畫筆" }, { id: "marker", label: "螢光筆" }, { id: "note", label: "便條" }, { id: "stamp", label: "印章" }];
+
+      return (
+        <div className="grid gap-4">
+          <Panel title="書寫工具">
+            <div className="mb-3 flex flex-wrap gap-2">
+              {tools.map((item) => <Button key={item.id} active={tool === item.id} onClick={() => setTool(item.id)}>{item.label}</Button>)}
+            </div>
+            <label className="grid gap-2 text-sm font-black text-slate-600">
+              筆跡粗細 <span className="text-lg text-ink">{size}</span>
+              <input type="range" min="2" max="34" value={size} onChange={(e) => setSize(Number(e.target.value))} className="accent-candy" />
+            </label>
+          </Panel>
+
+          <Panel title="顏色">
+            <div className="flex flex-wrap gap-2">
+              {palette.map((item) => (
+                <button key={item} aria-label={item} className={cx("h-11 w-11 rounded-full border-4 border-white shadow", color === item && "ring-4 ring-candy/35")} style={{ background: item }} onClick={() => setColor(item)} />
+              ))}
+            </div>
+          </Panel>
+
+          <Panel title="快速便條">
+            <textarea className="mb-3 min-h-24 w-full resize-y rounded-2xl border-2 border-blue-100 p-3 text-lg font-bold outline-none focus:border-candy" value={noteText} onChange={(e) => setNoteText(e.target.value)} placeholder="寫下想法、答案或小組討論..." />
+            <div className="mb-3 flex flex-wrap gap-2">
+              {noteColors.map((item) => (
+                <button key={item} className={cx("h-10 w-10 rounded-full border-4 border-white shadow", noteColor === item && "ring-4 ring-candy/35")} style={{ background: item }} onClick={() => setNoteColor(item)} />
+              ))}
+            </div>
+            <Button className="w-full bg-mint text-white hover:bg-mint" disabled={!canWrite} onClick={addNote}>張貼便條</Button>
+          </Panel>
+
+          <Panel title="印章">
+            <div className="grid grid-cols-4 gap-2">
+              {stamps.map((item) => (
+                <button key={item} className={cx("h-12 rounded-2xl bg-white text-2xl shadow-sm", stamp === item && "ring-4 ring-candy/35")} onClick={() => setStamp(item)}>{item}</button>
+              ))}
+            </div>
+          </Panel>
+
+          <Panel title="清除">
+            <div className="grid gap-2">
+              <Button className="bg-amber-400 text-ink hover:bg-amber-400" disabled={!canWrite} onClick={clearMine}>清除我的內容</Button>
+              {role === "teacher" && <Button className="bg-red-500 text-white hover:bg-red-500" disabled={!canWrite} onClick={clearAll}>老師清空目前白板</Button>}
+            </div>
+          </Panel>
+        </div>
+      );
+    }
+
+    function SessionTimer() {
+      const [seconds, setSeconds] = useState(300);
+      const [customMinutes, setCustomMinutes] = useState(5);
+      const [customSeconds, setCustomSeconds] = useState(0);
+      const [running, setRunning] = useState(false);
+      useEffect(() => {
+        if (!running) return undefined;
+        const id = window.setInterval(() => {
+          setSeconds((value) => {
+            const next = Math.max(0, value - 1);
+            if (next === 0) setRunning(false);
+            return next;
+          });
+        }, 1000);
+        return () => window.clearInterval(id);
+      }, [running]);
+      const setPreset = (value) => {
+        setRunning(false);
+        setSeconds(value);
+        setCustomMinutes(Math.floor(value / 60));
+        setCustomSeconds(value % 60);
+      };
+      const applyCustomTime = () => {
+        const next = clamp((Number(customMinutes) || 0) * 60 + (Number(customSeconds) || 0), 1, 5999);
+        setRunning(false);
+        setSeconds(next);
+      };
+      const mm = String(Math.floor(seconds / 60)).padStart(2, "0");
+      const ss = String(seconds % 60).padStart(2, "0");
+      return (
+        <Panel title="活動計時器">
+          <div className="mb-3 rounded-3xl bg-ink px-4 py-3 text-center text-4xl font-black text-sunshine">{mm}:{ss}</div>
+          <div className="mb-3 grid grid-cols-3 gap-2">
+            <Button onClick={() => setPreset(180)}>3分</Button>
+            <Button onClick={() => setPreset(300)}>5分</Button>
+            <Button active={running} onClick={() => setRunning(!running)}>{running ? "暫停" : "開始"}</Button>
+          </div>
+          <div className="grid grid-cols-[1fr_1fr_auto] gap-2">
+            <label className="grid gap-1 text-xs font-black text-slate-500">
+              分
+              <input
+                className="h-11 rounded-2xl border-2 border-blue-100 px-3 text-center text-lg font-black outline-none focus:border-candy"
+                type="number"
+                min="0"
+                max="99"
+                value={customMinutes}
+                onChange={(e) => setCustomMinutes(clamp(Number(e.target.value) || 0, 0, 99))}
+              />
+            </label>
+            <label className="grid gap-1 text-xs font-black text-slate-500">
+              秒
+              <input
+                className="h-11 rounded-2xl border-2 border-blue-100 px-3 text-center text-lg font-black outline-none focus:border-candy"
+                type="number"
+                min="0"
+                max="59"
+                value={customSeconds}
+                onChange={(e) => setCustomSeconds(clamp(Number(e.target.value) || 0, 0, 59))}
+              />
+            </label>
+            <Button className="self-end bg-candy text-white hover:bg-candy" onClick={applyCustomTime}>套用</Button>
+          </div>
+        </Panel>
+      );
+    }
+
+    function QuickScoreboard() {
+      const [scores, setScores] = useState({ A: 0, B: 0, C: 0, D: 0 });
+      const adjustScore = (team, delta) => {
+        setScores((prev) => ({ ...prev, [team]: (Number(prev[team]) || 0) + delta }));
+      };
+      const setTeamScore = (team, value) => {
+        setScores((prev) => ({ ...prev, [team]: Number(value) || 0 }));
+      };
+      const resetScores = () => {
+        setScores(Object.fromEntries(Object.keys(scores).map((team) => [team, 0])));
+      };
+      return (
+        <Panel title="小組加分">
+          <div className="mb-3 grid gap-2">
+            {Object.entries(scores).map(([team, score]) => (
+              <div key={team} className="grid grid-cols-[1fr_auto_auto] items-center gap-2 rounded-2xl bg-white p-2 shadow-sm">
+                <label className="grid gap-1 text-sm font-black text-slate-500">
+                  第 {team} 組
+                  <input
+                    className="h-11 w-full rounded-2xl border-2 border-blue-100 px-3 text-center text-2xl font-black text-candy outline-none focus:border-candy"
+                    type="number"
+                    value={score}
+                    onChange={(e) => setTeamScore(team, e.target.value)}
+                  />
+                </label>
+                <button className="h-11 w-11 rounded-2xl bg-blue-50 text-2xl font-black text-candy shadow-sm" onClick={() => adjustScore(team, 1)}>+</button>
+                <button className="h-11 w-11 rounded-2xl bg-rose-50 text-2xl font-black text-rose-500 shadow-sm" onClick={() => adjustScore(team, -1)}>-</button>
+              </div>
+            ))}
+          </div>
+          <Button className="w-full bg-slate-200 text-ink hover:bg-slate-200" onClick={resetScores}>全部歸零</Button>
+        </Panel>
+      );
+    }
+
+    function ParticipantPanel({ participants, currentAuthor }) {
+      return (
+        <Panel title="作答紀錄">
+          <div className="grid gap-2">
+            {currentAuthor && (
+              <div className="rounded-2xl bg-blue-50 px-3 py-2 text-sm font-black text-blue-700">
+                目前身分：{currentAuthor.name}
+              </div>
+            )}
+            {participants.length === 0 ? (
+              <div className="rounded-2xl bg-slate-50 px-3 py-3 text-sm font-bold text-slate-500">還沒有學生作答。</div>
+            ) : participants.map((person) => (
+              <div key={person.id} className="flex items-center gap-2 rounded-2xl bg-white px-3 py-2 shadow-sm">
+                <span className="h-4 w-4 rounded-full" style={{ background: person.color }} />
+                <strong className="safe-text text-sm">{person.name}</strong>
+              </div>
+            ))}
+          </div>
+        </Panel>
+      );
+    }
+
+    function WhiteboardStage({ activeBoard, actions, notes, currentAuthor, canWrite, tool, color, size, stamp, onAction, onNoteUpdate, onNoteDelete }) {
+      const canvasRef = useRef(null);
+      const wrapRef = useRef(null);
+      const drawingRef = useRef(null);
+
+      const renderCanvas = () => {
+        const canvas = canvasRef.current;
+        const wrap = wrapRef.current;
+        if (!canvas || !wrap) return;
+        const rect = wrap.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = Math.max(1, Math.round(rect.width * dpr));
+        canvas.height = Math.max(1, Math.round(rect.height * dpr));
+        canvas.style.width = `${rect.width}px`;
+        canvas.style.height = `${rect.height}px`;
+        const ctx = canvas.getContext("2d");
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.clearRect(0, 0, rect.width, rect.height);
+        actions.forEach((action) => {
+          if (action.type === "stroke") drawStroke(ctx, action);
+          if (action.type === "stamp") drawStamp(ctx, action);
+        });
+      };
+
+      useEffect(() => {
+        renderCanvas();
+      }, [actions, activeBoard]);
+
+      useEffect(() => {
+        const onResize = () => renderCanvas();
+        window.addEventListener("resize", onResize);
+        return () => window.removeEventListener("resize", onResize);
+      }, [actions]);
+
+      const getPoint = (event) => {
+        const rect = wrapRef.current.getBoundingClientRect();
+        return { x: clamp(event.clientX - rect.left, 0, rect.width), y: clamp(event.clientY - rect.top, 0, rect.height) };
+      };
+
+      const pointerDown = (event) => {
+        if (!canWrite || !currentAuthor) return;
+        const point = getPoint(event);
+        if (tool === "stamp") {
+          onAction({ type: "stamp", x: point.x, y: point.y, stamp, size: Math.max(32, size * 2) });
           return;
         }
-        note.style.left = `${action.note.x}px`;
-        note.style.top = `${action.note.y}px`;
-        note.style.setProperty("--note-color", action.note.color || noteColor);
-        note.style.setProperty("--tilt", action.note.tilt || "-1deg");
-        note.querySelector("textarea").value = action.note.text || "";
-        return;
-      }
-      if (action.type === "note-delete") {
-        notesLayer.querySelector(`[data-id="${action.noteId}"]`)?.remove();
-        return;
-      }
-      if (action.type === "clear-ink") {
-        resetCanvas();
-        return;
-      }
-      if (action.type === "clear-all") {
-        resetCanvas();
-        notesLayer.innerHTML = "";
-      }
-    }
-
-    function persistCurrentBoard() {
-      const board = ensureBoard(activeBoardId);
-      board.image = canvas.toDataURL("image/png");
-      board.notes = [...notesLayer.querySelectorAll(".sticky-note")].map((note) => ({
-        id: note.dataset.id,
-        x: Number(note.style.left.replace("px", "")) || 0,
-        y: Number(note.style.top.replace("px", "")) || 0,
-        text: note.querySelector("textarea").value,
-        color: note.style.getPropertyValue("--note-color") || noteColor,
-        tilt: note.style.getPropertyValue("--tilt") || "-1deg"
-      }));
-    }
-
-    function switchBoard(id) {
-      persistCurrentBoard();
-      activeBoardId = id;
-      ensureBoard(activeBoardId);
-      undoStack.length = 0;
-      renderBoardList();
-      loadBoardToStage();
-      saveState(false);
-      listenToActiveBoard();
-    }
-
-    function loadBoardToStage() {
-      const board = ensureBoard(activeBoardId);
-      activeBoardTitle.textContent = boardTitle(activeBoardId);
-      statusText.textContent = mode === "group"
-        ? "小組可輪流上台整理想法，也可以用便條收集討論結果。"
-        : "學生可以直接在自己的白板書寫、畫圖或張貼想法。";
-      resizeCanvas();
-      setTimeout(() => {
-        if (board.image) drawImageToCanvas(board.image);
-      }, 40);
-      notesLayer.innerHTML = "";
-      board.notes.forEach((note) => createNote(note));
-    }
-
-    function renderBoardList() {
-      boardList.innerHTML = "";
-      const count = mode === "group" ? Number(groupCountInput.value) || 1 : Number(studentCountInput.value) || 1;
-      const prefix = mode === "group" ? "group" : "personal";
-      boardListTitle.textContent = mode === "group" ? "分組白板" : "個人白板";
-      for (let i = 1; i <= count; i += 1) {
-        const id = `${prefix}-${i}`;
-        ensureBoard(id);
-        const button = document.createElement("button");
-        button.className = `board-button ${id === activeBoardId ? "active" : ""}`;
-        button.type = "button";
-        button.textContent = mode === "group" ? `第 ${i} 組` : `${i} 號`;
-        button.addEventListener("click", () => switchBoard(id));
-        boardList.appendChild(button);
-      }
-    }
-
-    function setTool(nextTool) {
-      tool = nextTool;
-      document.querySelectorAll(".tool-button").forEach((button) => {
-        button.classList.toggle("active", button.dataset.tool === tool);
-      });
-      statusText.textContent = {
-        pen: "畫筆模式：可以直接書寫或畫圖。",
-        eraser: "橡皮擦模式：拖曳即可擦除筆跡。",
-        note: "便條模式：點白板任一處即可張貼便條。",
-        stamp: "印章模式：點白板任一處即可貼上鼓勵印章。"
-      }[tool];
-    }
-
-    function pointFromEvent(event) {
-      const rect = canvas.getBoundingClientRect();
-      return { x: event.clientX - rect.left, y: event.clientY - rect.top };
-    }
-
-    function pushUndo() {
-      undoStack.push(canvas.toDataURL("image/png"));
-      if (undoStack.length > 18) undoStack.shift();
-    }
-
-    function startDrawing(event) {
-      if (event.target.closest(".sticky-note")) return;
-      const point = pointFromEvent(event);
-      if (tool === "note") {
-        addNoteAt(point.x, point.y);
-        return;
-      }
-      if (tool === "stamp") {
-        addStamp(point.x, point.y);
-        return;
-      }
-      pushUndo();
-      activePointers.set(event.pointerId, {
-        last: point,
-        points: [point],
-        color,
-        size: brushSize,
-        tool
-      });
-      canvas.setPointerCapture(event.pointerId);
-      ctx.beginPath();
-      ctx.moveTo(point.x, point.y);
-    }
-
-    function draw(event) {
-      if (!activePointers.has(event.pointerId)) return;
-      event.preventDefault();
-      const drawing = activePointers.get(event.pointerId);
-      const last = drawing.last;
-      const point = pointFromEvent(event);
-      ctx.globalCompositeOperation = drawing.tool === "eraser" ? "destination-out" : "source-over";
-      ctx.strokeStyle = drawing.color;
-      ctx.lineWidth = drawing.tool === "eraser" ? drawing.size * 2.2 : drawing.size;
-      ctx.beginPath();
-      ctx.moveTo(last.x, last.y);
-      ctx.lineTo(point.x, point.y);
-      ctx.stroke();
-      drawing.last = point;
-      drawing.points.push(point);
-      activePointers.set(event.pointerId, drawing);
-    }
-
-    function stopDrawing(event) {
-      if (!activePointers.has(event.pointerId)) return;
-      const drawing = activePointers.get(event.pointerId);
-      activePointers.delete(event.pointerId);
-      ctx.globalCompositeOperation = "source-over";
-      persistCurrentBoard();
-      saveState(false);
-      syncAction({
-        type: "stroke",
-        tool: drawing.tool,
-        color: drawing.color,
-        size: drawing.size,
-        points: drawing.points
-      });
-    }
-
-    function addNoteAt(x, y, text = quickNoteText.value.trim() || "我的想法是...") {
-      const jitter = randomNote ? Math.random() * 140 - 70 : 0;
-      const note = {
-        id: `note-${Date.now()}-${Math.random().toString(16).slice(2)}`,
-        x: Math.max(8, x + jitter),
-        y: Math.max(8, y + jitter),
-        text,
-        color: noteColor,
-        tilt: `${Math.round(Math.random() * 4 - 2)}deg`
+        if (tool === "note") return;
+        event.currentTarget.setPointerCapture(event.pointerId);
+        drawingRef.current = { points: [point], tool, color, size };
       };
-      createNote(note);
-      quickNoteText.value = "";
-      persistCurrentBoard();
-      saveState(false);
-      syncAction({ type: "note-add", note });
-      statusText.textContent = "已新增便條，可拖曳移動或直接修改文字。";
-    }
 
-    function noteDataFromElement(el) {
-      return {
-        id: el.dataset.id,
-        x: Number(el.style.left.replace("px", "")) || 0,
-        y: Number(el.style.top.replace("px", "")) || 0,
-        text: el.querySelector("textarea").value,
-        color: el.style.getPropertyValue("--note-color") || noteColor,
-        tilt: el.style.getPropertyValue("--tilt") || "-1deg"
+      const pointerMove = (event) => {
+        if (!drawingRef.current) return;
+        const point = getPoint(event);
+        const stroke = drawingRef.current;
+        const previous = stroke.points[stroke.points.length - 1];
+        stroke.points.push(point);
+        const ctx = canvasRef.current.getContext("2d");
+        drawStroke(ctx, { ...stroke, points: [previous, point] });
       };
+
+      const pointerUp = () => {
+        if (!drawingRef.current) return;
+        const stroke = drawingRef.current;
+        drawingRef.current = null;
+        if (stroke.points.length > 1) onAction({ type: "stroke", ...stroke });
+      };
+
+      return (
+        <main className="grid min-h-[68vh] min-w-0 grid-rows-[auto_minmax(0,1fr)] gap-3">
+          <div className="flex flex-wrap items-end justify-between gap-3 px-1">
+            <div>
+              <h1 className="text-3xl font-black text-ink md:text-4xl">{boardName(activeBoard)}</h1>
+              <p className="font-bold text-slate-500">可用滑鼠、觸控筆或手指書寫；學生作答會記錄座號。</p>
+            </div>
+            <div className="rounded-3xl bg-white/90 px-4 py-2 text-sm font-black text-slate-600 shadow-sm">
+              {canWrite ? "可以作答" : "請先開教室或選座號加入"}
+            </div>
+          </div>
+
+          <section ref={wrapRef} className="board-paper relative min-h-[560px] overflow-hidden rounded-[2rem] border-[10px] border-amber-300 shadow-soft">
+            <canvas
+              ref={canvasRef}
+              className="absolute inset-0 h-full w-full cursor-crosshair"
+              onPointerDown={pointerDown}
+              onPointerMove={pointerMove}
+              onPointerUp={pointerUp}
+              onPointerCancel={pointerUp}
+            />
+            <div className="pointer-events-none absolute inset-0">
+              {notes.map((note) => {
+                const mine = currentAuthor?.id === note.authorId;
+                const canEdit = mine || currentAuthor?.role === "teacher";
+                return <StickyNote key={note.id} note={note} canEdit={canEdit} onUpdate={onNoteUpdate} onDelete={onNoteDelete} />;
+              })}
+            </div>
+          </section>
+        </main>
+      );
     }
 
-    function syncNoteUpdate(el) {
-      if (applyingRemote) return;
-      window.clearTimeout(noteUpdateTimers.get(el.dataset.id));
-      noteUpdateTimers.set(el.dataset.id, window.setTimeout(() => {
-        syncAction({ type: "note-update", note: noteDataFromElement(el) });
-      }, 180));
+    function StickyNote({ note, canEdit, onUpdate, onDelete }) {
+      const [text, setText] = useState(note.text || "");
+      useEffect(() => setText(note.text || ""), [note.text]);
+      const commit = () => {
+        if (canEdit && text !== note.text) onUpdate({ ...note, text });
+      };
+      return (
+        <article
+          className="pointer-events-auto absolute grid min-h-[128px] w-[210px] grid-rows-[auto_1fr] rounded-2xl border-2 border-white/80 shadow-lg"
+          style={{ left: `${note.x}px`, top: `${note.y}px`, background: note.color || "#fff0a8", transform: `rotate(${note.tilt || -1}deg)` }}
+        >
+          <header className="flex items-center justify-between gap-2 px-3 pt-2 text-xs font-black text-slate-700">
+            <span className="safe-text">#{note.seat || "師"} {note.authorName || ""}</span>
+            {canEdit && <button className="grid h-7 w-7 place-items-center rounded-full bg-white/80 font-black" onClick={() => onDelete(note)}>×</button>}
+          </header>
+          <textarea
+            className="min-h-[86px] resize-none rounded-b-2xl border-0 bg-transparent p-3 text-lg font-black text-ink outline-none"
+            value={text}
+            readOnly={!canEdit}
+            onChange={(e) => setText(e.target.value)}
+            onBlur={commit}
+          />
+        </article>
+      );
     }
 
-    function createNote(note, options = {}) {
-      const existing = notesLayer.querySelector(`[data-id="${note.id}"]`);
-      if (existing) existing.remove();
-      const el = document.createElement("article");
-      el.className = "sticky-note";
-      el.dataset.id = note.id;
-      el.style.left = `${note.x}px`;
-      el.style.top = `${note.y}px`;
-      el.style.setProperty("--note-color", note.color || noteColor);
-      el.style.setProperty("--tilt", note.tilt || "-1deg");
-      el.innerHTML = `
-        <div class="sticky-head"><span>便條</span><button type="button" aria-label="刪除便條">×</button></div>
-        <textarea>${escapeHtml(note.text || "")}</textarea>
-      `;
-      const head = el.querySelector(".sticky-head");
-      const removeButton = el.querySelector("button");
-      const textarea = el.querySelector("textarea");
-      let dragging = null;
-      head.addEventListener("pointerdown", (event) => {
-        dragging = { x: event.clientX, y: event.clientY, left: Number(el.style.left.replace("px", "")) || 0, top: Number(el.style.top.replace("px", "")) || 0 };
-        head.setPointerCapture(event.pointerId);
-      });
-      head.addEventListener("pointermove", (event) => {
-        if (!dragging) return;
-        const rect = boardWrap.getBoundingClientRect();
-        const nextLeft = Math.min(rect.width - 80, Math.max(0, dragging.left + event.clientX - dragging.x));
-        const nextTop = Math.min(rect.height - 60, Math.max(0, dragging.top + event.clientY - dragging.y));
-        el.style.left = `${nextLeft}px`;
-        el.style.top = `${nextTop}px`;
-      });
-      head.addEventListener("pointerup", () => {
-        dragging = null;
-        persistCurrentBoard();
-        saveState(false);
-        syncAction({ type: "note-update", note: noteDataFromElement(el) });
-      });
-      removeButton.addEventListener("click", () => {
-        const noteId = el.dataset.id;
-        el.remove();
-        persistCurrentBoard();
-        saveState(false);
-        syncAction({ type: "note-delete", noteId });
-      });
-      textarea.addEventListener("input", () => {
-        persistCurrentBoard();
-        if (Date.now() - lastSaved > 600) saveState(false);
-        syncNoteUpdate(el);
-      });
-      notesLayer.appendChild(el);
-      if (options.focus !== false) textarea.focus();
-    }
+    function App() {
+      const url = new URL(window.location.href);
+      const initialRoom = normalizeRoomCode(url.searchParams.get("room") || localStorage.getItem(`${storeKey}-room`) || "");
+      const savedRole = localStorage.getItem(`${storeKey}-role`) || (initialRoom ? "student" : "teacher");
+      const savedSeat = Number(localStorage.getItem(`${storeKey}-seat`) || "0");
 
-    function addStamp(x, y) {
-      pushUndo();
-      drawStamp(stamp, x, y, brushSize);
-      persistCurrentBoard();
-      saveState(false);
-      syncAction({ type: "stamp", stamp, x, y, size: brushSize });
-    }
+      const [role, setRole] = useState(savedRole);
+      const [roomCode, setRoomCode] = useState(initialRoom || makeRoomCode());
+      const [studentCount, setStudentCount] = useState(Number(localStorage.getItem(`${storeKey}-studentCount`) || 24));
+      const [groupCount, setGroupCount] = useState(Number(localStorage.getItem(`${storeKey}-groupCount`) || 6));
+      const [seat, setSeat] = useState(savedSeat || 1);
+      const [mode, setMode] = useState("personal");
+      const [activeBoard, setActiveBoard] = useState(`personal-${savedSeat || 1}`);
+      const [tool, setTool] = useState("pen");
+      const [color, setColor] = useState(palette[0]);
+      const [noteColor, setNoteColor] = useState(noteColors[0]);
+      const [size, setSize] = useState(8);
+      const [stamp, setStamp] = useState(stamps[0]);
+      const [noteText, setNoteText] = useState("");
+      const [status, setStatus] = useState("尚未連線");
+      const [statusType, setStatusType] = useState("");
+      const [connected, setConnected] = useState(false);
+      const [actions, setActions] = useState([]);
 
-    function escapeHtml(value) {
-      return String(value).replace(/[&<>"']/g, (char) => ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#39;"
-      }[char]));
-    }
+      const firebaseRef = useRef({ auth: null, db: null });
+      const actionUnsubRef = useRef(null);
+      const roomUnsubRef = useRef(null);
 
-    function renderColors() {
-      const host = document.querySelector("#colorGrid");
-      host.innerHTML = "";
-      colors.forEach((item) => {
-        const button = document.createElement("button");
-        button.className = `color-button ${item === color ? "active" : ""}`;
-        button.type = "button";
-        button.style.background = item;
-        button.addEventListener("click", () => {
-          color = item;
-          renderColors();
-        });
-        host.appendChild(button);
-      });
-    }
-
-    function renderNoteColors() {
-      const host = document.querySelector("#noteColorGrid");
-      host.innerHTML = "";
-      noteColors.forEach((item) => {
-        const button = document.createElement("button");
-        button.className = `color-button ${item === noteColor ? "active" : ""}`;
-        button.type = "button";
-        button.style.background = item;
-        button.addEventListener("click", () => {
-          noteColor = item;
-          renderNoteColors();
-        });
-        host.appendChild(button);
-      });
-    }
-
-    function renderStamps() {
-      const host = document.querySelector("#stampGrid");
-      host.innerHTML = "";
-      stamps.forEach((item) => {
-        const button = document.createElement("button");
-        button.className = `stamp-button ${item === stamp ? "active" : ""}`;
-        button.type = "button";
-        button.textContent = item;
-        button.addEventListener("click", () => {
-          stamp = item;
-          renderStamps();
-        });
-        host.appendChild(button);
-      });
-    }
-
-    async function exportBoard() {
-      persistCurrentBoard();
-      const rect = boardWrap.getBoundingClientRect();
-      const exportCanvas = document.createElement("canvas");
-      exportCanvas.width = Math.floor(rect.width * 2);
-      exportCanvas.height = Math.floor(rect.height * 2);
-      const ex = exportCanvas.getContext("2d");
-      ex.scale(2, 2);
-      ex.fillStyle = "#fffdf8";
-      ex.fillRect(0, 0, rect.width, rect.height);
-      ex.drawImage(canvas, 0, 0, rect.width, rect.height);
-      [...notesLayer.querySelectorAll(".sticky-note")].forEach((note) => {
-        const left = Number(note.style.left.replace("px", "")) || 0;
-        const top = Number(note.style.top.replace("px", "")) || 0;
-        ex.fillStyle = note.style.getPropertyValue("--note-color") || "#fff0a8";
-        roundRect(ex, left, top, 190, 120, 14);
-        ex.fill();
-        ex.fillStyle = "#23324d";
-        ex.font = "bold 18px Microsoft JhengHei, sans-serif";
-        wrapText(ex, note.querySelector("textarea").value, left + 14, top + 32, 164, 28);
-      });
-      const link = document.createElement("a");
-      link.download = `${boardTitle(activeBoardId)}.png`;
-      link.href = exportCanvas.toDataURL("image/png");
-      link.click();
-      statusText.textContent = "已匯出目前白板圖片。";
-    }
-
-    function roundRect(context, x, y, width, height, radius) {
-      context.beginPath();
-      context.moveTo(x + radius, y);
-      context.arcTo(x + width, y, x + width, y + height, radius);
-      context.arcTo(x + width, y + height, x, y + height, radius);
-      context.arcTo(x, y + height, x, y, radius);
-      context.arcTo(x, y, x + width, y, radius);
-      context.closePath();
-    }
-
-    function wrapText(context, text, x, y, maxWidth, lineHeight) {
-      const chars = [...text];
-      let line = "";
-      let row = 0;
-      chars.forEach((char) => {
-        const test = line + char;
-        if (context.measureText(test).width > maxWidth && line) {
-          context.fillText(line, x, y + row * lineHeight);
-          line = char;
-          row += 1;
-        } else {
-          line = test;
+      const currentAuthor = useMemo(() => {
+        if (role === "student" && !seat) return null;
+        if (role === "student") {
+          return { id: `student-${seat}`, role, seat, name: `${seat} 號`, color: colorForSeat(seat) };
         }
-      });
-      if (line) context.fillText(line, x, y + row * lineHeight);
+        return { id: "teacher", role, seat: "老師", name: "老師", color: "#8b5cf6" };
+      }, [role, seat]);
+
+      const visibleActions = useMemo(() => visibleActionsFrom(actions.filter((action) => action.boardId === activeBoard)), [actions, activeBoard]);
+      const notes = useMemo(() => notesFromActions(visibleActions), [visibleActions]);
+      const participants = useMemo(() => participantsFromActions(visibleActions), [visibleActions]);
+      const canWrite = connected && Boolean(currentAuthor);
+
+      useEffect(() => {
+        localStorage.setItem(`${storeKey}-role`, role);
+        localStorage.setItem(`${storeKey}-seat`, String(seat || ""));
+        localStorage.setItem(`${storeKey}-studentCount`, String(studentCount));
+        localStorage.setItem(`${storeKey}-groupCount`, String(groupCount));
+      }, [role, seat, studentCount, groupCount]);
+
+      useEffect(() => {
+        if (mode === "personal" && role === "student") setActiveBoard(`personal-${seat || 1}`);
+      }, [mode, role, seat]);
+
+      useEffect(() => {
+        if (connected) listenToBoard(activeBoard);
+      }, [activeBoard]);
+
+      async function signIn() {
+        const firebaseTools = initFirebase();
+        firebaseRef.current = firebaseTools;
+        if (!firebaseTools.auth.currentUser) await firebaseTools.auth.signInAnonymously();
+        return firebaseTools;
+      }
+
+      function setOnline(message) {
+        setStatus(message);
+        setStatusType("online");
+      }
+
+      function setError(error) {
+        setStatus(getFirebaseErrorHint(error));
+        setStatusType("error");
+      }
+
+      async function createRoom() {
+        const code = normalizeRoomCode(roomCode || makeRoomCode());
+        setRoomCode(code);
+        setStatus("正在開教室...");
+        setStatusType("");
+        try {
+          const { db, auth } = await signIn();
+          await db.collection("whiteboardRooms").doc(code).set({
+            roomCode: code,
+            teacherUid: auth.currentUser.uid,
+            studentCount: Number(studentCount) || 24,
+            groupCount: Number(groupCount) || 6,
+            updatedAt: Date.now()
+          }, { merge: true });
+          localStorage.setItem(`${storeKey}-room`, code);
+          setConnected(true);
+          listenToRoom(code);
+          listenToBoard(activeBoard, code);
+          setOnline(`教室已開啟：${code}`);
+        } catch (error) {
+          setError(error);
+        }
+      }
+
+      async function joinRoom() {
+        const code = normalizeRoomCode(roomCode);
+        if (!code) {
+          setStatus("請先輸入房間碼。");
+          setStatusType("error");
+          return;
+        }
+        if (role === "student" && !seat) {
+          setStatus("學生加入前請先選擇座號。");
+          setStatusType("error");
+          return;
+        }
+        setStatus("正在加入教室...");
+        setStatusType("");
+        try {
+          const { db } = await signIn();
+          const doc = await db.collection("whiteboardRooms").doc(code).get();
+          if (!doc.exists) throw new Error("找不到這個教室，請確認房間碼。");
+          const data = doc.data() || {};
+          setStudentCount(Number(data.studentCount) || studentCount);
+          setGroupCount(Number(data.groupCount) || groupCount);
+          localStorage.setItem(`${storeKey}-room`, code);
+          setConnected(true);
+          listenToRoom(code);
+          listenToBoard(activeBoard, code);
+          setOnline(`已加入教室：${code}`);
+        } catch (error) {
+          setError(error);
+        }
+      }
+
+      function listenToRoom(code = roomCode) {
+        if (roomUnsubRef.current) roomUnsubRef.current();
+        const { db } = firebaseRef.current;
+        if (!db) return;
+        roomUnsubRef.current = db.collection("whiteboardRooms").doc(code).onSnapshot((doc) => {
+          const data = doc.data() || {};
+          if (data.studentCount) setStudentCount(Number(data.studentCount));
+          if (data.groupCount) setGroupCount(Number(data.groupCount));
+        }, setError);
+      }
+
+      function listenToBoard(boardId, code = roomCode) {
+        if (actionUnsubRef.current) actionUnsubRef.current();
+        const { db } = firebaseRef.current;
+        if (!db || !code) return;
+        actionUnsubRef.current = db
+          .collection("whiteboardRooms")
+          .doc(code)
+          .collection("boards")
+          .doc(boardId)
+          .collection("actions")
+          .orderBy("t")
+          .limit(900)
+          .onSnapshot((snapshot) => {
+            const remote = [];
+            snapshot.forEach((doc) => remote.push({ id: doc.id, ...doc.data() }));
+            setActions((prev) => {
+              const otherBoards = prev.filter((item) => item.boardId !== boardId);
+              return [...otherBoards, ...remote];
+            });
+            setOnline(`已同步：${code}｜${boardName(boardId)}`);
+          }, setError);
+      }
+
+      async function syncAction(action) {
+        if (!canWrite || !firebaseRef.current.db) return;
+        const actionId = `act-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+        const payload = {
+          ...action,
+          id: actionId,
+          boardId: activeBoard,
+          t: Date.now(),
+          authorId: currentAuthor.id,
+          authorName: currentAuthor.name,
+          authorColor: currentAuthor.color,
+          seat: currentAuthor.seat
+        };
+        setActions((prev) => [...prev.filter((item) => item.id !== actionId), payload]);
+        try {
+          await firebaseRef.current.db
+            .collection("whiteboardRooms")
+            .doc(normalizeRoomCode(roomCode))
+            .collection("boards")
+            .doc(activeBoard)
+            .collection("actions")
+            .doc(actionId)
+            .set(payload);
+        } catch (error) {
+          setError(error);
+        }
+      }
+
+      function addNote() {
+        if (!currentAuthor) return;
+        const text = noteText.trim() || "我的想法是...";
+        const note = {
+          id: `note-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+          x: 48 + Math.random() * 140,
+          y: 52 + Math.random() * 120,
+          text,
+          color: noteColor,
+          tilt: Math.round(Math.random() * 6 - 3),
+          authorId: currentAuthor.id,
+          authorName: currentAuthor.name,
+          seat: currentAuthor.seat
+        };
+        setNoteText("");
+        syncAction({ type: "note-add", note, authorId: currentAuthor.id });
+      }
+
+      function updateNote(note) {
+        if (!currentAuthor) return;
+        if (role !== "teacher" && note.authorId !== currentAuthor.id) return;
+        syncAction({ type: "note-update", note, authorId: note.authorId });
+      }
+
+      function deleteNote(note) {
+        if (!currentAuthor) return;
+        if (role !== "teacher" && note.authorId !== currentAuthor.id) return;
+        syncAction({ type: "note-delete", noteId: note.id, authorId: note.authorId });
+      }
+
+      function clearMine() {
+        if (!currentAuthor) return;
+        syncAction({ type: "clear-owner", targetAuthor: currentAuthor.id, authorId: currentAuthor.id });
+      }
+
+      function clearAll() {
+        if (role !== "teacher") return;
+        syncAction({ type: "clear-all" });
+      }
+
+      function leaveRoom() {
+        if (actionUnsubRef.current) actionUnsubRef.current();
+        if (roomUnsubRef.current) roomUnsubRef.current();
+        actionUnsubRef.current = null;
+        roomUnsubRef.current = null;
+        setConnected(false);
+        setActions([]);
+        localStorage.removeItem(`${storeKey}-room`);
+        setStatus("已離開教室");
+        setStatusType("");
+      }
+
+      async function copyLink() {
+        const code = normalizeRoomCode(roomCode);
+        if (!code) return;
+        const link = new URL(window.location.href);
+        link.searchParams.set("room", code);
+        try {
+          await navigator.clipboard.writeText(link.toString());
+          setStatus("已複製學生連結。");
+          setStatusType(connected ? "online" : "");
+        } catch {
+          setStatus("無法自動複製，請手動複製網址。");
+          setStatusType("error");
+        }
+      }
+
+      function exportImage() {
+        const canvas = document.querySelector("canvas");
+        if (!canvas) return;
+        const exportCanvas = document.createElement("canvas");
+        exportCanvas.width = canvas.width;
+        exportCanvas.height = canvas.height;
+        const ctx = exportCanvas.getContext("2d");
+        const scale = canvas.width / Math.max(1, canvas.getBoundingClientRect().width);
+        ctx.fillStyle = "#fffef8";
+        ctx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+        ctx.drawImage(canvas, 0, 0);
+        notes.forEach((note) => {
+          const x = note.x * scale;
+          const y = note.y * scale;
+          const width = 210 * scale;
+          const height = 128 * scale;
+          ctx.save();
+          ctx.fillStyle = note.color || "#fff0a8";
+          ctx.strokeStyle = "rgba(36, 50, 74, 0.2)";
+          ctx.lineWidth = 2 * scale;
+          ctx.beginPath();
+          ctx.roundRect(x, y, width, height, 16 * scale);
+          ctx.fill();
+          ctx.stroke();
+          ctx.fillStyle = "#24324a";
+          ctx.font = `${14 * scale}px Microsoft JhengHei, sans-serif`;
+          ctx.fillText(`#${note.seat || "師"} ${note.authorName || ""}`, x + 12 * scale, y + 24 * scale);
+          ctx.font = `bold ${18 * scale}px Microsoft JhengHei, sans-serif`;
+          String(note.text || "").split(/\n/).slice(0, 4).forEach((line, index) => {
+            ctx.fillText(line.slice(0, 13), x + 12 * scale, y + (54 + index * 24) * scale);
+          });
+          ctx.restore();
+        });
+        const link = document.createElement("a");
+        link.download = `${boardName(activeBoard)}.png`;
+        link.href = exportCanvas.toDataURL("image/png");
+        link.click();
+      }
+
+      function requestFullscreen() {
+        document.documentElement.requestFullscreen?.();
+      }
+
+      return (
+        <div className="min-h-screen">
+          <TopBar exportImage={exportImage} requestFullscreen={requestFullscreen} />
+          <div className="grid gap-4 p-4 xl:grid-cols-[310px_minmax(0,1fr)_300px]">
+            <aside className="grid content-start gap-4">
+              <ConnectionPanel
+                role={role}
+                setRole={setRole}
+                roomCode={roomCode}
+                setRoomCode={setRoomCode}
+                seat={seat}
+                setSeat={setSeat}
+                studentCount={studentCount}
+                setStudentCount={setStudentCount}
+                groupCount={groupCount}
+                setGroupCount={setGroupCount}
+                status={status}
+                statusType={statusType}
+                createRoom={createRoom}
+                joinRoom={joinRoom}
+                leaveRoom={leaveRoom}
+                copyLink={copyLink}
+                isConnected={connected}
+              />
+              <BoardSwitcher
+                role={role}
+                seat={seat}
+                mode={mode}
+                setMode={setMode}
+                activeBoard={activeBoard}
+                setActiveBoard={setActiveBoard}
+                studentCount={studentCount}
+                groupCount={groupCount}
+              />
+            </aside>
+
+            <WhiteboardStage
+              activeBoard={activeBoard}
+              actions={visibleActions}
+              notes={notes}
+              currentAuthor={currentAuthor}
+              canWrite={canWrite}
+              tool={tool}
+              color={color}
+              size={size}
+              stamp={stamp}
+              onAction={syncAction}
+              onNoteUpdate={updateNote}
+              onNoteDelete={deleteNote}
+            />
+
+            <aside className="grid content-start gap-4">
+              <ToolPanel
+                role={role}
+                tool={tool}
+                setTool={setTool}
+                color={color}
+                setColor={setColor}
+                noteColor={noteColor}
+                setNoteColor={setNoteColor}
+                size={size}
+                setSize={setSize}
+                stamp={stamp}
+                setStamp={setStamp}
+                addNote={addNote}
+                noteText={noteText}
+                setNoteText={setNoteText}
+                clearMine={clearMine}
+                clearAll={clearAll}
+                canWrite={canWrite}
+              />
+              <ParticipantPanel participants={participants} currentAuthor={currentAuthor} />
+              <SessionTimer />
+              <QuickScoreboard />
+            </aside>
+          </div>
+        </div>
+      );
     }
 
-    document.querySelectorAll(".mode-button").forEach((button) => {
-      button.addEventListener("click", () => {
-        persistCurrentBoard();
-        mode = button.dataset.mode;
-        updateModeButtons();
-        ensureValidActiveBoard();
-        renderBoardList();
-        loadBoardToStage();
-        saveState(false);
-        listenToActiveBoard();
-      });
-    });
-
-    document.querySelectorAll(".tool-button").forEach((button) => {
-      button.addEventListener("click", () => setTool(button.dataset.tool));
-    });
-
-    studentCountInput.addEventListener("input", () => {
-      persistCurrentBoard();
-      ensureValidActiveBoard();
-      renderBoardList();
-      loadBoardToStage();
-      saveState(false);
-      listenToActiveBoard();
-    });
-    groupCountInput.addEventListener("input", () => {
-      persistCurrentBoard();
-      ensureValidActiveBoard();
-      renderBoardList();
-      loadBoardToStage();
-      saveState(false);
-      listenToActiveBoard();
-    });
-    sizeRange.addEventListener("input", () => {
-      brushSize = Number(sizeRange.value);
-      sizeText.textContent = String(brushSize);
-    });
-    document.querySelector("#addNoteButton").addEventListener("click", () => addNoteAt(80 + Math.random() * 140, 70 + Math.random() * 120));
-    document.querySelector("#randomNoteButton").addEventListener("click", () => {
-      randomNote = !randomNote;
-      document.querySelector("#randomNoteButton").classList.toggle("primary", randomNote);
-      statusText.textContent = randomNote ? "隨機位置已開啟。" : "隨機位置已關閉。";
-    });
-    document.querySelector("#undoButton").addEventListener("click", () => {
-      const previous = undoStack.pop();
-      if (!previous) {
-        statusText.textContent = "目前沒有可復原的筆跡。";
-        return;
-      }
-      drawImageToCanvas(previous);
-      setTimeout(() => {
-        persistCurrentBoard();
-        saveState(false);
-      }, 80);
-    });
-    document.querySelector("#clearInkButton").addEventListener("click", () => {
-      pushUndo();
-      resetCanvas();
-      persistCurrentBoard();
-      saveState(false);
-      syncAction({ type: "clear-ink" });
-      statusText.textContent = "已清除筆跡，便條保留。";
-    });
-    document.querySelector("#clearAllButton").addEventListener("click", () => {
-      pushUndo();
-      resetCanvas();
-      notesLayer.innerHTML = "";
-      persistCurrentBoard();
-      saveState(false);
-      syncAction({ type: "clear-all" });
-      statusText.textContent = "已清空目前白板。";
-    });
-    document.querySelector("#saveButton").addEventListener("click", () => {
-      persistCurrentBoard();
-      saveState();
-    });
-    document.querySelector("#exportButton").addEventListener("click", exportBoard);
-    document.querySelector("#fullscreenButton").addEventListener("click", async () => {
-      try {
-        if (document.fullscreenElement) await document.exitFullscreen();
-        else await document.documentElement.requestFullscreen();
-      } catch {
-        statusText.textContent = "瀏覽器暫時不允許全螢幕。";
-      }
-    });
-    createRoomButton.addEventListener("click", () => {
-      roomCodeInput.value = makeRoomCode();
-      statusText.textContent = "已產生房間碼，按「開始共用」即可讓學生加入。";
-    });
-    joinRoomButton.addEventListener("click", joinRoom);
-    copyRoomLinkButton.addEventListener("click", copyRoomLink);
-    leaveRoomButton.addEventListener("click", leaveRoom);
-    roomCodeInput.addEventListener("input", () => {
-      roomCodeInput.value = normalizeRoomCode(roomCodeInput.value);
-    });
-    canvas.addEventListener("pointerdown", startDrawing);
-    canvas.addEventListener("pointermove", draw);
-    canvas.addEventListener("pointerup", stopDrawing);
-    canvas.addEventListener("pointercancel", stopDrawing);
-    window.addEventListener("resize", () => {
-      persistCurrentBoard();
-      resizeCanvas();
-    });
-
-    loadState();
-    const urlRoom = normalizeRoomCode(new URLSearchParams(window.location.search).get("room"));
-    roomCodeInput.value = urlRoom || localStorage.getItem(`${storeKey}-room`) || "";
-    updateModeButtons();
-    renderColors();
-    renderNoteColors();
-    renderStamps();
-    renderBoardList();
-    loadBoardToStage();
-    if (urlRoom) joinRoom();
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
   </script>
 </body>
 </html>
