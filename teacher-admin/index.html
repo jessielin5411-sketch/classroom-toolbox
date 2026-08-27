@@ -487,10 +487,10 @@
 
       <form class="login" id="loginForm">
         <label class="label" for="email">教師信箱</label>
-        <input id="email" type="email" autocomplete="username" placeholder="請輸入 Firebase 老師帳號">
+        <input id="email" type="email" autocomplete="username" placeholder="可留空；需要 Firebase 紀錄時再輸入帳號">
         <label class="label" for="password">教師密碼</label>
-        <input id="password" type="password" autocomplete="current-password" placeholder="請輸入密碼">
-        <button class="button primary" type="submit">登入 Firebase 後台</button>
+        <input id="password" type="password" autocomplete="current-password" placeholder="請輸入 teacher123">
+        <button class="button primary" type="submit">登入教師後台</button>
         <div class="status" id="loginStatus">後台目前已鎖定。</div>
       </form>
     </section>
@@ -732,6 +732,7 @@
     const parentDraftStatus = document.querySelector("#parentDraftStatus");
 
     const teacherAccessKey = "jessie-toolbox-teacher-unlocked";
+    const localTeacherPassword = "teacher123";
     const petKey = "jessie-toolbox-pet-scoreboard";
     const teamKey = "jessie-toolbox-team-scoreboard";
     const homeworkKey = "jessie-toolbox-homework-helper";
@@ -851,7 +852,7 @@
       { min: 80, name: "守護獸" }
     ];
 
-    let unlocked = false;
+    let unlocked = sessionStorage.getItem(teacherAccessKey) === "true";
     let selectedScenario = "semester";
     let draftVariant = 0;
     let selectedParentScenario = "conflict";
@@ -1493,6 +1494,7 @@
     }
 
     async function recordAdminEvent(action) {
+      if (!auth.currentUser) return;
       try {
         await addDoc(collection(db, "adminActivity"), {
           action,
@@ -1509,7 +1511,7 @@
       unlocked = true;
       sessionStorage.setItem(teacherAccessKey, "true");
       dashboard.classList.add("unlocked");
-      loginStatus.textContent = `已登入：${user.email}`;
+      loginStatus.textContent = `已登入：${user.email || "本機教師"}`;
       email.value = user.email || email.value;
       password.value = "";
       render();
@@ -1526,11 +1528,16 @@
 
     loginForm.addEventListener("submit", async (event) => {
       event.preventDefault();
+      const typedPassword = password.value.trim();
+      if (typedPassword === localTeacherPassword) {
+        unlock({ email: "本機教師" });
+        return;
+      }
       loginStatus.textContent = "正在登入 Firebase...";
       try {
         await signInWithEmailAndPassword(auth, email.value.trim(), password.value);
       } catch (error) {
-        loginStatus.textContent = `登入失敗：${error.message}`;
+        loginStatus.textContent = "登入失敗：請輸入 teacher123，或確認 Firebase 帳號密碼。";
       }
     });
 
@@ -1556,7 +1563,11 @@
     onAuthStateChanged(auth, (user) => {
       if (user) {
         unlock(user);
-      } else {
+      } else if (unlocked) {
+        dashboard.classList.add("unlocked");
+        loginStatus.textContent = "已登入：本機教師";
+        render();
+      } else if (!unlocked) {
         lockDashboard();
       }
     });

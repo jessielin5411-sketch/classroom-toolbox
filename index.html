@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>教學微光站</title>
+  <title>教師班級神隊友</title>
   <style>
     :root {
       --ink: #243047;
@@ -17,7 +17,8 @@
       --yellow: #ffd24a;
       --orange: #ffad4d;
       --line: rgba(255, 143, 199, 0.38);
-      --shadow: 0 24px 60px rgba(111, 78, 143, 0.18);
+      --shadow: 0 28px 64px rgba(111, 78, 143, 0.2);
+      --toy-shadow: 0 16px 0 rgba(36, 48, 71, 0.06), 0 26px 52px rgba(111, 78, 143, 0.2);
     }
 
     * {
@@ -30,10 +31,13 @@
       font-family: "Segoe UI", "Noto Sans TC", system-ui, sans-serif;
       color: var(--ink);
       background:
-        radial-gradient(circle at 8% 12%, rgba(255, 210, 74, 0.48), transparent 22%),
-        radial-gradient(circle at 90% 10%, rgba(155, 123, 255, 0.28), transparent 24%),
-        radial-gradient(circle at 80% 88%, rgba(79, 140, 255, 0.22), transparent 24%),
-        linear-gradient(135deg, rgba(255, 143, 199, 0.2), transparent 38%),
+        linear-gradient(135deg, rgba(255, 248, 251, 0.78), rgba(238, 249, 255, 0.76)),
+        url("./assets/home-classroom-3d.png") center top / cover fixed,
+        radial-gradient(circle at 8% 12%, rgba(255, 210, 74, 0.5), transparent 22%),
+        radial-gradient(circle at 90% 10%, rgba(155, 123, 255, 0.32), transparent 24%),
+        radial-gradient(circle at 80% 88%, rgba(79, 140, 255, 0.28), transparent 24%),
+        radial-gradient(circle at 18% 82%, rgba(34, 185, 143, 0.18), transparent 24%),
+        linear-gradient(135deg, rgba(255, 143, 199, 0.24), transparent 38%),
         var(--paper);
     }
 
@@ -45,10 +49,11 @@
       background-image:
         radial-gradient(circle, rgba(255, 173, 77, 0.42) 0 4px, transparent 5px),
         radial-gradient(circle, rgba(79, 140, 255, 0.32) 0 3px, transparent 4px),
-        radial-gradient(circle, rgba(34, 185, 143, 0.28) 0 5px, transparent 6px);
+        radial-gradient(circle, rgba(34, 185, 143, 0.28) 0 5px, transparent 6px),
+        linear-gradient(135deg, transparent 0 42%, rgba(255, 255, 255, 0.42) 43% 48%, transparent 49%);
       background-position: 32px 40px, 130px 96px, 230px 28px;
-      background-size: 260px 180px, 310px 210px, 360px 260px;
-      opacity: 0.8;
+      background-size: 260px 180px, 310px 210px, 360px 260px, 180px 180px;
+      opacity: 0.34;
     }
 
     a {
@@ -66,10 +71,10 @@
 
     .topbar {
       display: flex;
-      justify-content: space-between;
+      justify-content: center;
       align-items: center;
       gap: 16px;
-      padding: 18px clamp(18px, 4vw, 44px);
+      padding: 14px clamp(18px, 4vw, 44px) 6px;
     }
 
     .logo {
@@ -81,8 +86,8 @@
       border-radius: 8px;
       color: #fff;
       font-weight: 900;
-      background: linear-gradient(135deg, var(--pink), var(--purple));
-      box-shadow: 0 10px 24px rgba(155, 123, 255, 0.24);
+      background: linear-gradient(145deg, #ffb2d8, var(--pink) 42%, var(--purple));
+      box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.42), 0 10px 0 rgba(125, 89, 213, 0.18), 0 18px 28px rgba(155, 123, 255, 0.24);
     }
 
     .logo-mark {
@@ -98,69 +103,85 @@
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
-      justify-content: flex-end;
+      justify-content: flex-start;
     }
 
     .nav a {
-      min-height: 40px;
+      min-height: 36px;
       display: inline-flex;
       align-items: center;
-      padding: 0 12px;
+      justify-content: center;
+      padding: 0 11px;
       border: 1px solid var(--line);
-      border-radius: 8px;
-      background: rgba(255, 255, 255, 0.78);
+      border-radius: 999px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 250, 234, 0.9));
       color: #7b4ed8;
+      font-size: 14px;
       font-weight: 800;
+      box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.88), 0 8px 16px rgba(111, 78, 143, 0.1);
+    }
+
+    .topic-shortcuts {
+      margin-top: 18px;
+      padding: 14px;
+      border: 1px solid rgba(255, 143, 199, 0.22);
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.58);
+    }
+
+    .topic-shortcuts-title {
+      margin: 0 0 10px;
+      color: #65758f;
+      font-size: 13px;
+      font-weight: 900;
     }
 
     .hero {
-      width: min(1120px, calc(100% - 36px));
+      width: min(1060px, calc(100% - 36px));
       margin: 0 auto;
-      padding: clamp(22px, 5vw, 48px) 0 54px;
+      padding: clamp(14px, 3vw, 28px) 0 54px;
     }
 
     .hero-grid {
       display: grid;
-      grid-template-columns: minmax(0, 1.05fr) minmax(280px, 0.95fr);
-      gap: 26px;
+      grid-template-columns: minmax(0, 2fr) minmax(220px, 1fr);
+      gap: 18px;
       align-items: stretch;
+      position: relative;
     }
 
     .intro {
-      padding: clamp(24px, 5vw, 44px);
+      position: relative;
+      padding: clamp(20px, 4vw, 34px);
       border: 4px solid rgba(255, 255, 255, 0.92);
-      border-radius: 8px;
+      border-radius: 30px;
       background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(255, 253, 244, 0.94)),
-        linear-gradient(135deg, rgba(255, 143, 199, 0.18), rgba(79, 140, 255, 0.12));
-      box-shadow: var(--shadow);
+        radial-gradient(circle at 20% 18%, rgba(255, 255, 255, 0.92), transparent 18%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.97), rgba(255, 253, 244, 0.95)),
+        linear-gradient(135deg, rgba(255, 143, 199, 0.24), rgba(79, 140, 255, 0.18));
+      box-shadow: var(--toy-shadow);
+      transform: perspective(900px) rotateX(1deg);
     }
 
     h1 {
       margin: 0;
-      font-size: clamp(40px, 8vw, 84px);
-      line-height: 0.98;
+      font-size: clamp(34px, 6vw, 68px);
+      line-height: 1;
       letter-spacing: 0;
       color: #20304f;
       text-shadow:
-        0 6px 0 rgba(255, 210, 74, 0.45),
-        0 14px 34px rgba(79, 140, 255, 0.16);
+        0 4px 0 rgba(255, 210, 74, 0.72),
+        0 11px 0 rgba(255, 143, 199, 0.2),
+        0 20px 34px rgba(79, 140, 255, 0.2);
     }
 
     .lead {
       max-width: 650px;
-      margin: 22px 0 0;
+      margin: 16px 0 0;
       color: var(--muted);
       font-size: clamp(18px, 2.5vw, 24px);
       line-height: 1.55;
       font-weight: 700;
-    }
-
-    .quick-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 28px;
     }
 
     .button {
@@ -169,16 +190,16 @@
       justify-content: center;
       min-height: 48px;
       padding: 0 18px;
-      border-radius: 8px;
+      border-radius: 18px;
       border: 1px solid transparent;
       font-weight: 900;
-      box-shadow: 0 7px 0 rgba(255, 143, 199, 0.2);
+      box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.36), 0 7px 0 rgba(111, 78, 143, 0.14), 0 16px 24px rgba(111, 78, 143, 0.14);
       transition: transform 0.15s ease, box-shadow 0.15s ease;
     }
 
     .button:hover {
       transform: translateY(-2px);
-      box-shadow: 0 9px 0 rgba(255, 143, 199, 0.24);
+      box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.4), 0 9px 0 rgba(111, 78, 143, 0.16), 0 20px 28px rgba(111, 78, 143, 0.16);
     }
 
     .button.primary {
@@ -197,29 +218,46 @@
       min-height: 100%;
       display: grid;
       place-items: center;
-      padding: 18px;
+      padding: 14px;
       border: 4px solid rgba(255, 255, 255, 0.92);
-      border-radius: 8px;
+      border-radius: 32px;
       background:
+        radial-gradient(circle at 32% 18%, rgba(255, 255, 255, 0.9), transparent 18%),
         radial-gradient(circle at 50% 46%, rgba(255, 210, 74, 0.28), transparent 42%),
-        linear-gradient(180deg, rgba(255, 255, 255, 0.8), rgba(255, 247, 251, 0.82));
-      box-shadow: var(--shadow);
+        linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(255, 247, 251, 0.88));
+      box-shadow: var(--toy-shadow);
       overflow: hidden;
     }
 
     .mascot-card img {
+      position: relative;
+      z-index: 1;
       display: block;
-      width: min(78%, 330px);
+      width: min(76%, 280px);
       height: auto;
-      max-height: 430px;
+      max-height: 330px;
       object-fit: contain;
       object-position: center;
       border-radius: 6px;
       filter: drop-shadow(0 16px 22px rgba(111, 78, 143, 0.18));
     }
 
+    .creator-credit {
+      position: absolute;
+      right: 14px;
+      bottom: 12px;
+      z-index: 2;
+      padding: 5px 9px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.86);
+      color: #7b4ed8;
+      font-size: 12px;
+      font-weight: 900;
+      box-shadow: 0 8px 16px rgba(111, 78, 143, 0.14);
+    }
+
     .section-title {
-      margin: 38px 0 14px;
+      margin: 24px 0 14px;
       color: #7b4ed8;
       font-size: clamp(24px, 4vw, 36px);
       letter-spacing: 0;
@@ -239,10 +277,18 @@
       justify-content: space-between;
       padding: 20px;
       border: 2px solid var(--line);
-      border-radius: 8px;
-      background: rgba(255, 255, 255, 0.88);
-      box-shadow: 0 16px 34px rgba(111, 78, 143, 0.12);
+      border-radius: 24px;
+      background:
+        radial-gradient(circle at 20% 16%, rgba(255, 255, 255, 0.95), transparent 18%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(255, 253, 244, 0.9));
+      box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.88), 0 9px 0 rgba(36, 48, 71, 0.05), 0 18px 34px rgba(111, 78, 143, 0.13);
       overflow: hidden;
+      transition: transform 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .tool-card:hover {
+      transform: translateY(-4px) rotate(-0.4deg);
+      box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.9), 0 12px 0 rgba(36, 48, 71, 0.05), 0 24px 40px rgba(111, 78, 143, 0.16);
     }
 
     .tool-card::after {
@@ -254,7 +300,8 @@
       top: -24px;
       border-radius: 50%;
       background: var(--card-color, var(--yellow));
-      opacity: 0.3;
+      opacity: 0.42;
+      box-shadow: inset 0 12px 18px rgba(255, 255, 255, 0.28), 0 16px 24px rgba(111, 78, 143, 0.12);
     }
 
     .tool-icon {
@@ -262,10 +309,10 @@
       height: 52px;
       display: grid;
       place-items: center;
-      border-radius: 8px;
-      background: var(--card-color, var(--yellow));
+      border-radius: 18px;
+      background: linear-gradient(145deg, #ffffff 0%, var(--card-color, var(--yellow)) 34%, var(--card-color, var(--yellow)) 100%);
       font-size: 28px;
-      box-shadow: 0 8px 0 rgba(36, 48, 71, 0.08);
+      box-shadow: inset 0 4px 0 rgba(255, 255, 255, 0.54), 0 8px 0 rgba(36, 48, 71, 0.08), 0 15px 18px rgba(111, 78, 143, 0.14);
     }
 
     .tool-card h3 {
@@ -311,12 +358,13 @@
         margin: 0 auto;
         object-fit: contain;
       }
+
     }
 
     @media (max-width: 620px) {
       .topbar {
-        align-items: flex-start;
-        flex-direction: column;
+        align-items: center;
+        flex-direction: row;
       }
 
       .nav {
@@ -330,38 +378,37 @@
     <header class="topbar">
       <a class="logo" href="./index.html" aria-label="回首頁">
         <span class="logo-mark">★</span>
-        教學微光站
+        教師班級神隊友
       </a>
-      <nav class="nav" aria-label="主要分頁">
-        <a href="./index.html">首頁</a>
-        <a href="./class-timer/index.html">班級計時器</a>
-        <a href="./lucky-draw/index.html">抽籤扭蛋</a>
-        <a href="./team-scoreboard/index.html">小組計分板</a>
-        <a href="./pet-scoreboard/index.html">個人寵物</a>
-        <a href="./homework-helper/index.html">作業訂正</a>
-        <a href="./noise-monitor/index.html">音量監測</a>
-        <a href="./mood-checkin/index.html">心情簽到</a>
-        <a href="./contact-book/index.html">聯絡簿</a>
-        <a href="./exam-proctor/index.html">考試監考</a>
-        <a href="./interactive-whiteboard/index.html">互動白板</a>
-        <a href="./prompt-library/index.html">提示詞大全</a>
-        <a href="./writing-assistant/index.html">文案小幫手</a>
-        <a href="./teacher-admin/index.html">教師後台</a>
-      </nav>
     </header>
 
     <main class="hero">
       <section class="hero-grid" aria-labelledby="site-title">
         <div class="intro">
-          <h1 id="site-title">教學微光站</h1>
+          <h1 id="site-title">教師班級神隊友</h1>
           <p class="lead">班級經營與教學工具分享庫</p>
-          <div class="quick-actions">
-            <a class="button primary" href="./class-timer/index.html">打開班級計時器</a>
-            <a class="button secondary" href="#tools">看看工具分頁</a>
+          <div class="topic-shortcuts" aria-label="工具快速鍵">
+            <p class="topic-shortcuts-title">快速開啟常用工具</p>
+            <nav class="nav">
+              <a href="./class-timer/index.html">班級計時器</a>
+              <a href="./lucky-draw/index.html">抽籤扭蛋</a>
+              <a href="./team-scoreboard/index.html">小組計分板</a>
+              <a href="./pet-scoreboard/index.html">個人寵物</a>
+              <a href="./homework-helper/index.html">作業訂正</a>
+              <a href="./noise-monitor/index.html">音量監測</a>
+              <a href="./mood-checkin/index.html">心情簽到</a>
+              <a href="./contact-book/index.html">聯絡簿</a>
+              <a href="./exam-proctor/index.html">考試監考</a>
+              <a href="./interactive-whiteboard/index.html">互動白板</a>
+              <a href="./prompt-library/index.html">提示詞大全</a>
+              <a href="./writing-assistant/index.html">文案小幫手</a>
+              <a href="./teacher-admin/index.html">教師後台</a>
+            </nav>
           </div>
         </div>
         <div class="mascot-card" aria-hidden="true">
           <img src="./assets/home-teacher.png" alt="">
+          <span class="creator-credit">林依芯製作</span>
         </div>
       </section>
 
