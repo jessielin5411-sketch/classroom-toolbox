@@ -10,6 +10,8 @@ const DEFAULT_POLL = {
     { id: "b", text: "教室桌遊派對", image: "", votes: 0 },
   ],
   round: 1,
+  studentCount: 30,
+  anonymous: true,
 };
 
 function safeRoom(value) {
@@ -19,6 +21,7 @@ function safeRoom(value) {
 function validPoll(poll) {
   if (!poll || typeof poll.question !== "string" || !Array.isArray(poll.options)) return false;
   if (poll.question.length > 240 || poll.options.length < 2 || poll.options.length > 8) return false;
+  if (!Number.isInteger(poll.studentCount) || poll.studentCount < 1 || poll.studentCount > 60 || typeof poll.anonymous !== "boolean") return false;
   if (JSON.stringify(poll).length > MAX_PAYLOAD_BYTES) return false;
   return poll.options.every((option) =>
     option && typeof option.id === "string" && typeof option.text === "string" &&
@@ -59,9 +62,13 @@ export class PollRoom extends DurableObject {
         this.broadcast({ type: "state", poll: this.poll });
         return;
       }
-      if (message.type === "vote" && typeof message.optionId === "string") {
+      if (message.type === "vote" && typeof message.optionId === "string" && typeof message.voterId === "string") {
         const option = poll.options.find((item) => item.id === message.optionId);
         if (!option) throw new Error("找不到投票選項");
+        if (!/^[A-Za-z0-9-]{8,80}$/.test(message.voterId)) throw new Error("無效的投票身分");
+        const voteKey = `vote:${poll.round}:${message.voterId}`;
+        if (await this.ctx.storage.get(voteKey)) throw new Error("本輪已完成投票");
+        await this.ctx.storage.put(voteKey, true);
         option.votes += 1;
         await this.ctx.storage.put("poll", poll);
         this.broadcast({ type: "state", poll });
