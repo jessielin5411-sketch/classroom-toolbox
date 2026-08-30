@@ -1,0 +1,14 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "classroom-live-poll",
+  "main": "src/index.js",
+  "compatibility_date": "2026-08-30",
+  "durable_objects": {
+    "bindings": [
+      { "name": "POLL_ROOM", "class_name": "PollRoom" }
+    ]
+  },
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["PollRoom"] }
+  ]
+}

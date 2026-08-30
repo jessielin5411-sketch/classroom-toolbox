@@ -6,3 +6,5 @@ Git-*-64-bit.exe
 PortableGit-*-64-bit.7z.exe
 git-install.log
 **/.git-nested-backup/
+**/node_modules/
+**/.wrangler/
