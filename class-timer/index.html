@@ -31,10 +31,8 @@
       font-family: "Segoe UI", "Noto Sans TC", system-ui, sans-serif;
       color: var(--ink);
       background:
-        radial-gradient(circle at 10% 10%, rgba(255, 210, 74, 0.45), transparent 22%),
-        radial-gradient(circle at 88% 12%, rgba(155, 123, 255, 0.28), transparent 24%),
-        radial-gradient(circle at 76% 88%, rgba(79, 140, 255, 0.22), transparent 24%),
-        linear-gradient(135deg, rgba(255, 143, 199, 0.2), transparent 36%),
+        linear-gradient(90deg, rgba(255, 252, 242, 0.9), rgba(255, 255, 255, 0.62) 42%, rgba(255, 248, 230, 0.76)),
+        url("assets/timer-3d-background.png") center center / cover fixed,
         var(--paper);
     }
 
@@ -43,13 +41,10 @@
       position: fixed;
       inset: 0;
       pointer-events: none;
-      background-image:
-        radial-gradient(circle, rgba(255, 173, 77, 0.45) 0 4px, transparent 5px),
-        radial-gradient(circle, rgba(79, 140, 255, 0.35) 0 3px, transparent 4px),
-        radial-gradient(circle, rgba(34, 185, 143, 0.3) 0 5px, transparent 6px);
-      background-position: 32px 40px, 120px 96px, 210px 28px;
-      background-size: 260px 180px, 310px 210px, 360px 260px;
-      opacity: 0.75;
+      background:
+        radial-gradient(circle at 50% 48%, rgba(255, 255, 255, 0.72), transparent 34%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 240, 196, 0.34));
+      opacity: 0.92;
     }
 
     button,
