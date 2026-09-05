@@ -288,15 +288,32 @@
     .time {
       position: relative;
       z-index: 1;
+      display: inline-block;
+      padding: 0 0.06em 0.08em;
       font-variant-numeric: tabular-nums;
       font-size: clamp(72px, 16vw, 180px);
       line-height: 0.95;
       font-weight: 900;
       letter-spacing: 0;
-      color: #20304f;
+      color: #1e3154;
+      transform: perspective(900px) rotateX(5deg);
       text-shadow:
-        0 6px 0 rgba(255, 210, 74, 0.45),
-        0 14px 34px rgba(79, 140, 255, 0.18);
+        0 1px 0 #fff9c8,
+        0 3px 0 #ffe179,
+        0 6px 0 #f4ba48,
+        0 10px 0 rgba(122, 81, 37, 0.16),
+        0 18px 26px rgba(31, 52, 88, 0.2),
+        0 30px 48px rgba(79, 140, 255, 0.16);
+    }
+
+    .time::after {
+      content: attr(data-time);
+      position: absolute;
+      inset: 0.02em 0 auto;
+      pointer-events: none;
+      color: rgba(255, 255, 255, 0.42);
+      clip-path: polygon(0 0, 100% 0, 100% 36%, 0 52%);
+      text-shadow: none;
     }
 
     .current-clock {
@@ -388,8 +405,11 @@
     .is-final-seconds .time {
       color: var(--red);
       text-shadow:
-        0 6px 0 rgba(255, 210, 74, 0.65),
-        0 0 28px rgba(217, 45, 32, 0.24);
+        0 1px 0 #fff9c8,
+        0 3px 0 #ffc857,
+        0 6px 0 #d94a3b,
+        0 13px 22px rgba(217, 45, 32, 0.28),
+        0 0 34px rgba(217, 45, 32, 0.26);
     }
 
     .is-final-seconds .timer-card {
@@ -417,7 +437,7 @@
       max-height: 250px;
       object-fit: contain;
       margin: 0 auto;
-      filter: drop-shadow(0 16px 22px rgba(111, 78, 143, 0.18));
+      filter: drop-shadow(0 18px 24px rgba(111, 78, 143, 0.18));
     }
 
     .confetti {
@@ -540,7 +560,7 @@
         <span class="confetti three"></span>
         <h2 class="lesson-title" id="displayTitle">小組討論</h2>
         <div class="timer-card">
-          <div class="time" id="timeDisplay">05:00</div>
+          <div class="time" id="timeDisplay" data-time="05:00">05:00</div>
           <div class="status" id="status">準備開始</div>
           <div class="progress-wrap" aria-hidden="true">
             <div class="progress" id="progress"></div>
@@ -557,7 +577,7 @@
             <span class="clock-label">現在時間</span>
             <span id="currentClock">--:--:--</span>
           </div>
-          <img src="assets/classroom-characters.png" alt="">
+          <img src="assets/classroom-characters-chibi.png" alt="">
         </div>
       </section>
     </main>
@@ -660,11 +680,15 @@
 
     function playBell() {
       playToneSequence([
-        { offset: 0, frequency: 784, duration: 0.22, volume: 0.32 },
-        { offset: 0.24, frequency: 1046, duration: 0.28, volume: 0.38 },
-        { offset: 0.56, frequency: 1318, duration: 0.42, volume: 0.42 },
-        { offset: 1.08, frequency: 1046, duration: 0.5, volume: 0.4 }
-      ], 1900);
+        { offset: 0, frequency: 1760, duration: 0.12, volume: 0.34, type: "square" },
+        { offset: 0.14, frequency: 2360, duration: 0.12, volume: 0.38, type: "sawtooth" },
+        { offset: 0.28, frequency: 1760, duration: 0.12, volume: 0.34, type: "square" },
+        { offset: 0.42, frequency: 2360, duration: 0.12, volume: 0.38, type: "sawtooth" },
+        { offset: 0.66, frequency: 1980, duration: 0.16, volume: 0.4, type: "square" },
+        { offset: 0.86, frequency: 2620, duration: 0.16, volume: 0.42, type: "sawtooth" },
+        { offset: 1.08, frequency: 1980, duration: 0.18, volume: 0.4, type: "square" },
+        { offset: 1.32, frequency: 2860, duration: 0.26, volume: 0.44, type: "sawtooth" }
+      ], 1800);
     }
 
     function updateClasses(percent) {
@@ -684,7 +708,9 @@
         ? remainingSeconds / Math.max(totalSeconds, 1)
         : Math.min(elapsedSeconds / Math.max(totalSeconds, 1), 1);
 
-      timeDisplay.textContent = formatTime(displaySeconds);
+      const formattedTime = formatTime(displaySeconds);
+      timeDisplay.textContent = formattedTime;
+      timeDisplay.dataset.time = formattedTime;
       renderClock();
       progress.style.transform = `scaleX(${Math.max(0, Math.min(percent, 1))})`;
       displayTitle.textContent = activityTitle.value.trim() || "班級計時器";
