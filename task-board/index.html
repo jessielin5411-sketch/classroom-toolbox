@@ -1,0 +1,448 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>小組任務看板</title>
+  <style>
+    :root {
+      --ink: #243047;
+      --muted: #65758f;
+      --paper: #fffaf0;
+      --panel: rgba(255, 255, 255, 0.92);
+      --purple: #7557df;
+      --blue: #4f8cff;
+      --mint: #32c79b;
+      --yellow: #f9c548;
+      --orange: #f28a45;
+      --pink: #ef6fae;
+      --red: #e84f5f;
+      --line: rgba(117, 87, 223, 0.2);
+      --shadow: 0 16px 36px rgba(57, 65, 120, 0.14);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      font-family: "Segoe UI", "Noto Sans TC", system-ui, sans-serif;
+      background:
+        radial-gradient(circle at 4% 8%, rgba(249, 197, 72, 0.32), transparent 20%),
+        radial-gradient(circle at 96% 7%, rgba(79, 140, 255, 0.23), transparent 22%),
+        radial-gradient(circle at 91% 94%, rgba(50, 199, 155, 0.2), transparent 24%),
+        linear-gradient(135deg, #fffaf0, #f6f5ff 48%, #effcff);
+    }
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+      outline: 3px solid rgba(79, 140, 255, 0.42);
+      outline-offset: 2px;
+    }
+
+    .topbar {
+      min-height: 74px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 12px clamp(16px, 3vw, 38px);
+      border-bottom: 1px solid rgba(117, 87, 223, 0.12);
+      background: rgba(255, 255, 255, 0.78);
+      backdrop-filter: blur(14px);
+    }
+    .brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .brand-mark {
+      width: 45px; height: 45px; display: grid; place-items: center; flex: 0 0 auto;
+      border-radius: 14px; color: #fff; font-size: 24px;
+      background: linear-gradient(135deg, var(--blue), var(--purple));
+      box-shadow: 0 8px 0 rgba(80, 71, 164, 0.13), 0 14px 22px rgba(79, 140, 255, 0.22);
+    }
+    .brand h1 { margin: 0; font-size: clamp(21px, 3vw, 29px); line-height: 1.05; }
+    .brand p { margin: 3px 0 0; color: var(--muted); font-size: 13px; font-weight: 750; }
+    .home-link, .icon-button, .button {
+      border: 1px solid var(--line); border-radius: 10px; font-weight: 900;
+      background: #fff; color: var(--ink); box-shadow: 0 5px 0 rgba(57, 65, 120, 0.08);
+    }
+    .home-link { padding: 9px 12px; text-decoration: none; white-space: nowrap; }
+
+    .shell { width: min(1480px, calc(100% - 32px)); margin: 20px auto 36px; display: grid; grid-template-columns: 310px minmax(0, 1fr); gap: 20px; }
+    .setup, .board { min-width: 0; }
+    .setup { display: grid; align-content: start; gap: 14px; }
+    .setup-card, .board-head, .group-card, .modal-card {
+      border: 1px solid rgba(117, 87, 223, 0.16); border-radius: 14px; background: var(--panel); box-shadow: var(--shadow);
+    }
+    .setup-card { padding: 17px; }
+    .setup-card h2, .setup-card h3 { margin: 0 0 12px; font-size: 17px; }
+    .setup-card h2 { color: var(--purple); font-size: 20px; }
+    .setup-note { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.55; font-weight: 700; }
+    .field { display: grid; gap: 6px; margin-top: 11px; }
+    .field label { color: #4d5970; font-size: 13px; font-weight: 850; }
+    input, select, textarea {
+      width: 100%; border: 1px solid rgba(117, 87, 223, 0.22); border-radius: 9px;
+      padding: 9px 10px; color: var(--ink); background: rgba(255, 255, 255, 0.9); font-weight: 700;
+    }
+    textarea { min-height: 70px; resize: vertical; line-height: 1.45; }
+    .template-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .template-tab { min-height: 58px; padding: 7px; border: 1px solid var(--line); border-radius: 10px; background: #fff; color: var(--ink); font-weight: 900; }
+    .template-tab small { display: block; margin-top: 3px; color: var(--muted); font-size: 11px; font-weight: 750; }
+    .template-tab.active { color: #fff; border-color: transparent; background: linear-gradient(135deg, var(--blue), var(--purple)); }
+    .template-tab.active small { color: rgba(255,255,255,.85); }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+    .button-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 13px; }
+    .button { min-height: 40px; padding: 0 12px; }
+    .button.primary { color: #fff; border-color: transparent; background: linear-gradient(135deg, var(--blue), var(--purple)); }
+    .button.good { color: #fff; border-color: transparent; background: linear-gradient(135deg, #1eb987, var(--mint)); }
+    .button.warn { color: #6b4100; border-color: #f0cb76; background: #fff7d6; }
+    .button.danger { color: #fff; border-color: transparent; background: linear-gradient(135deg, var(--red), var(--pink)); }
+    .button.compact { min-height: 35px; padding: 0 10px; font-size: 13px; }
+
+    .board-head { padding: clamp(16px, 3vw, 25px); }
+    .board-title-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+    .eyebrow { margin: 0 0 5px; color: var(--purple); font-size: 13px; font-weight: 950; }
+    .activity-name { margin: 0; font-size: clamp(28px, 5vw, 46px); line-height: 1.1; letter-spacing: 0; }
+    .project-steps { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 17px; }
+    .step-chip { padding: 7px 10px; border-radius: 999px; background: #f0efff; color: #6853bd; font-size: 13px; font-weight: 900; }
+    .step-chip.active { color: #fff; background: var(--purple); box-shadow: 0 4px 0 rgba(82, 63, 163, .18); }
+    .timer-panel { margin-top: 18px; padding: 15px; border-radius: 12px; background: linear-gradient(135deg, #24385e, #3f5c95); color: #fff; }
+    .timer-layout { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; }
+    .timer-label { font-size: 13px; font-weight: 850; opacity: .78; }
+    .timer-value { margin-top: 2px; font-variant-numeric: tabular-nums; font-size: clamp(40px, 7vw, 72px); font-weight: 950; letter-spacing: 0; line-height: .96; }
+    .timer-value.ending { color: #ffe16a; animation: alert .85s ease-in-out infinite alternate; }
+    @keyframes alert { to { transform: scale(1.035); color: #ffb7b7; } }
+    .timer-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 7px; }
+    .timer-actions .button { box-shadow: none; }
+
+    .group-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 14px; margin-top: 18px; }
+    .group-card { position: relative; overflow: hidden; padding: 17px; border-top: 8px solid var(--group); }
+    .group-card.status-help { box-shadow: 0 0 0 4px rgba(242, 138, 69, .18), var(--shadow); }
+    .group-card.status-done { background: linear-gradient(180deg, #f5fff9, #fff); }
+    .group-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+    .group-name { margin: 0; font-size: 23px; }
+    .state-pill { padding: 6px 9px; border-radius: 999px; color: #5c6678; background: #eef2f7; font-size: 12px; font-weight: 950; white-space: nowrap; }
+    .state-pill.working { color: #0c6d56; background: #dff9ef; }
+    .state-pill.help { color: #954b09; background: #fff0d8; }
+    .state-pill.done { color: #087352; background: #d7fae8; }
+    .station-mark { margin-top: 13px; color: var(--group); font-size: 13px; font-weight: 950; }
+    .task-name { margin: 5px 0 7px; font-size: 24px; line-height: 1.22; }
+    .task-detail { min-height: 44px; margin: 0; color: var(--muted); font-size: 14px; line-height: 1.55; font-weight: 700; }
+    .task-info { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 13px; }
+    .info-chip { padding: 6px 8px; border-radius: 8px; background: #f4f6fa; color: #536176; font-size: 12px; font-weight: 900; }
+    .next-task { margin: 13px 0; padding: 10px; border-radius: 9px; background: #faf8ff; color: #5e5974; font-size: 13px; line-height: 1.42; font-weight: 800; }
+    .next-task strong { display: block; margin-bottom: 3px; color: var(--purple); }
+    .card-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+    .card-actions .button:last-child { grid-column: span 2; }
+    .board-empty { padding: 28px; border: 2px dashed var(--line); border-radius: 14px; text-align: center; color: var(--muted); font-weight: 800; }
+
+    .edit-banner { display: none; margin-top: 14px; padding: 10px 12px; border-radius: 10px; background: #fff7d7; color: #75520e; font-size: 13px; font-weight: 850; }
+    .edit-banner.show { display: block; }
+    dialog { width: min(560px, calc(100% - 28px)); border: 0; padding: 0; border-radius: 16px; box-shadow: 0 28px 78px rgba(18, 31, 59, .3); }
+    dialog::backdrop { background: rgba(22, 31, 55, .42); backdrop-filter: blur(2px); }
+    .modal-card { padding: 22px; box-shadow: none; }
+    .modal-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .modal-head h2 { margin: 0; font-size: 23px; }
+    .close-button { width: 36px; height: 36px; border: 0; border-radius: 9px; background: #f1f3f8; color: var(--ink); font-size: 22px; font-weight: 900; }
+
+    .fullscreen-board .setup, .fullscreen-board .topbar .home-link { display: none; }
+    .fullscreen-board .shell { width: min(1680px, calc(100% - 44px)); grid-template-columns: 1fr; margin-top: 24px; }
+    .fullscreen-board .group-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .fullscreen-board .group-card { min-height: 390px; }
+    .fullscreen-board .task-name { font-size: clamp(26px, 2.7vw, 42px); }
+    .fullscreen-board .task-detail { font-size: clamp(15px, 1.4vw, 20px); }
+
+    @media (max-width: 980px) { .shell { grid-template-columns: 1fr; } .setup { grid-template-columns: repeat(2, minmax(0, 1fr)); } .setup-card:first-child { grid-column: span 2; } }
+    @media (max-width: 690px) {
+      .topbar { align-items: flex-start; } .home-link { font-size: 13px; }
+      .shell { width: min(100% - 20px, 1480px); margin-top: 10px; gap: 12px; }
+      .setup { grid-template-columns: 1fr; } .setup-card:first-child { grid-column: auto; }
+      .board-title-row { display: block; } .board-title-row > .button { margin-top: 12px; }
+      .timer-layout { grid-template-columns: 1fr; } .timer-actions { justify-content: flex-start; }
+      .group-grid { grid-template-columns: 1fr; } .fullscreen-board .group-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">✓</div>
+      <div><h1>小組任務看板</h1><p>分站活動與專題任務，讓全班看懂下一步。</p></div>
+    </div>
+    <a class="home-link" href="../index.html">← 回首頁</a>
+  </header>
+
+  <main class="shell">
+    <aside class="setup" aria-label="教師設定">
+      <section class="setup-card">
+        <h2>活動設定</h2>
+        <div class="field"><label for="activityInput">活動名稱</label><input id="activityInput" maxlength="30" value="自然探索分站活動"></div>
+        <div class="field"><label for="groupCount">小組數量</label><select id="groupCount"><option value="2">2 組</option><option value="3">3 組</option><option value="4" selected>4 組</option><option value="5">5 組</option><option value="6">6 組</option></select></div>
+        <div class="button-row"><button class="button primary" id="applyActivity" type="button">套用活動設定</button><button class="button warn" id="resetBoard" type="button">重置本輪</button></div>
+      </section>
+
+      <section class="setup-card">
+        <h3>選擇活動模板</h3>
+        <div class="template-tabs">
+          <button class="template-tab active" data-template="station" type="button">分站活動<small>任務輪替、時間到換站</small></button>
+          <button class="template-tab" data-template="project" type="button">專題任務<small>分階段推進、完成再前進</small></button>
+        </div>
+        <p class="setup-note" id="templateHint">每組先從不同站點開始，完成後由老師切換至下一站。</p>
+      </section>
+
+      <section class="setup-card">
+        <h3>全班倒數</h3>
+        <div class="row">
+          <div class="field"><label for="minutesInput">分鐘</label><input id="minutesInput" type="number" min="1" max="180" value="8"></div>
+          <div class="field"><label for="secondsInput">秒數</label><input id="secondsInput" type="number" min="0" max="59" value="0"></div>
+        </div>
+        <div class="button-row"><button class="button good" id="setTimer" type="button">設定倒數</button><button class="button" id="addMinute" type="button">+ 1 分鐘</button></div>
+      </section>
+
+      <section class="setup-card">
+        <h3>編輯指定小組</h3>
+        <div class="field"><label for="editGroupSelect">選擇小組</label><select id="editGroupSelect"></select></div>
+        <div class="field"><label for="taskTitleInput">目前任務</label><input id="taskTitleInput" maxlength="32"></div>
+        <div class="field"><label for="taskDetailInput">任務說明</label><textarea id="taskDetailInput" maxlength="120"></textarea></div>
+        <div class="row"><div class="field"><label for="taskMinutesInput">任務分鐘</label><input id="taskMinutesInput" type="number" min="1" max="90"></div><div class="field"><label for="materialInput">所需材料</label><input id="materialInput" maxlength="30"></div></div>
+        <div class="button-row"><button class="button primary" id="saveGroupTask" type="button">更新這組任務</button></div>
+      </section>
+    </aside>
+
+    <section class="board" aria-label="任務投影看板">
+      <section class="board-head">
+        <div class="board-title-row">
+          <div><p class="eyebrow" id="modeLabel">分站活動</p><h2 class="activity-name" id="activityTitle">自然探索分站活動</h2></div>
+          <button class="button compact" id="fullscreenButton" type="button">⛶ 投影全螢幕</button>
+        </div>
+        <div class="project-steps" id="steps"></div>
+        <section class="timer-panel" aria-label="全班倒數">
+          <div class="timer-layout">
+            <div><div class="timer-label" id="timerLabel">本站活動剩餘時間</div><div class="timer-value" id="timerDisplay">08:00</div></div>
+            <div class="timer-actions"><button class="button good compact" id="startTimer" type="button">開始</button><button class="button compact" id="pauseTimer" type="button">暫停</button><button class="button compact" id="restartTimer" type="button">重新開始</button></div>
+          </div>
+        </section>
+        <p class="edit-banner" id="editBanner">已儲存到這台裝置的瀏覽器。老師可隨時再調整各組內容。</p>
+      </section>
+      <div class="group-grid" id="groupGrid"></div>
+    </section>
+  </main>
+
+  <dialog id="finishDialog">
+    <section class="modal-card">
+      <div class="modal-head"><h2>時間到囉！</h2><button class="close-button" id="closeDialog" type="button" aria-label="關閉">×</button></div>
+      <p class="setup-note" style="margin-top: 12px">提醒各組整理桌面、確認成果，準備進入下一個任務。</p>
+      <div class="button-row"><button class="button primary" id="dialogCloseButton" type="button">知道了</button></div>
+    </section>
+  </dialog>
+
+  <script>
+    const STORAGE_KEY = "classroom-toolbox-task-board-v1";
+    const colors = ["#4f8cff", "#ef6fae", "#32c79b", "#f28a45", "#7557df", "#cf9f22"];
+    const templates = {
+      station: {
+        label: "分站活動",
+        hint: "每組先從不同站點開始，完成後由老師切換至下一站。",
+        tasks: [
+          { title: "觀察找線索", detail: "閱讀任務卡，找出三個關鍵資訊並圈起來。", minutes: 8, material: "任務卡、鉛筆" },
+          { title: "動手做實驗", detail: "依步驟完成操作，記錄你們發現的現象。", minutes: 8, material: "實驗材料、記錄單" },
+          { title: "合作整理", detail: "用便利貼整理重點，選出最重要的兩個發現。", minutes: 8, material: "便利貼、海報紙" },
+          { title: "挑戰分享", detail: "準備 30 秒分享，讓全班聽懂你們的成果。", minutes: 8, material: "成果卡" }
+        ]
+      },
+      project: {
+        label: "專題任務",
+        hint: "每組依序完成四個階段；完成一個階段，再往下一步前進。",
+        tasks: [
+          { title: "資料蒐集", detail: "從資料與課本中找出和主題有關的重點證據。", minutes: 10, material: "課本、資料卡" },
+          { title: "討論規劃", detail: "分配組員工作，畫出成果要呈現的順序。", minutes: 10, material: "計畫單、便利貼" },
+          { title: "製作成果", detail: "把資料轉化成海報、模型或數位作品。", minutes: 15, material: "創作材料" },
+          { title: "分享發表", detail: "練習清楚說明，彼此給一個具體的建議。", minutes: 8, material: "成果作品" }
+        ]
+      }
+    };
+
+    const defaultState = () => ({
+      template: "station", activity: "自然探索分站活動", totalSeconds: 480, remainingSeconds: 480, running: false,
+      groups: buildGroups(4, "station")
+    });
+    function buildGroups(count, templateKey) {
+      const taskCount = templates[templateKey].tasks.length;
+      return Array.from({ length: count }, (_, index) => ({
+        name: `第 ${index + 1} 組`, taskIndex: templateKey === "station" ? index % taskCount : 0,
+        status: "waiting", customTask: null
+      }));
+    }
+    function loadState() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        if (saved && templates[saved.template] && Array.isArray(saved.groups)) return { ...defaultState(), ...saved, running: false };
+      } catch (_) {}
+      return defaultState();
+    }
+    let state = loadState();
+    let timerId = null;
+
+    const el = (id) => document.getElementById(id);
+    const activityInput = el("activityInput");
+    const groupCount = el("groupCount");
+    const minutesInput = el("minutesInput");
+    const secondsInput = el("secondsInput");
+    const editGroupSelect = el("editGroupSelect");
+    const taskTitleInput = el("taskTitleInput");
+    const taskDetailInput = el("taskDetailInput");
+    const taskMinutesInput = el("taskMinutesInput");
+    const materialInput = el("materialInput");
+    const groupGrid = el("groupGrid");
+    const finishDialog = el("finishDialog");
+
+    function saveState(showNotice = false) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...state, running: false }));
+      if (showNotice) { el("editBanner").classList.add("show"); setTimeout(() => el("editBanner").classList.remove("show"), 2200); }
+    }
+    function formatTime(seconds) {
+      const safe = Math.max(0, seconds);
+      return `${String(Math.floor(safe / 60)).padStart(2, "0")}:${String(safe % 60).padStart(2, "0")}`;
+    }
+    function taskFor(group) { return group.customTask || templates[state.template].tasks[group.taskIndex]; }
+    function nextTaskFor(group) {
+      const tasks = templates[state.template].tasks;
+      const nextIndex = Math.min(group.taskIndex + 1, tasks.length - 1);
+      if (state.template === "station") return tasks[(group.taskIndex + 1) % tasks.length];
+      return group.taskIndex === tasks.length - 1 ? null : tasks[nextIndex];
+    }
+    function statusText(status) { return ({ waiting: "尚未開始", working: "進行中", help: "需要協助", done: "已完成" })[status]; }
+    function renderSteps() {
+      const tasks = templates[state.template].tasks;
+      const activeStep = Math.max(...state.groups.map((group) => group.taskIndex));
+      el("steps").innerHTML = tasks.map((task, index) => `<span class="step-chip ${index === activeStep ? "active" : ""}">${state.template === "station" ? `第 ${index + 1} 站` : `${index + 1}. ${task.title}`}</span>`).join("");
+    }
+    function renderEditor() {
+      editGroupSelect.innerHTML = state.groups.map((group, index) => `<option value="${index}">${group.name}</option>`).join("");
+      const currentIndex = Math.min(Number(editGroupSelect.dataset.selected || 0), state.groups.length - 1);
+      editGroupSelect.value = String(currentIndex);
+      fillEditor(currentIndex);
+    }
+    function fillEditor(index) {
+      const group = state.groups[index];
+      if (!group) return;
+      const task = taskFor(group);
+      taskTitleInput.value = task.title;
+      taskDetailInput.value = task.detail;
+      taskMinutesInput.value = task.minutes;
+      materialInput.value = task.material;
+    }
+    function renderBoard() {
+      document.body.classList.toggle("fullscreen-board", document.fullscreenElement === document.documentElement);
+      activityInput.value = state.activity;
+      groupCount.value = String(state.groups.length);
+      minutesInput.value = Math.floor(state.totalSeconds / 60);
+      secondsInput.value = state.totalSeconds % 60;
+      el("activityTitle").textContent = state.activity;
+      el("modeLabel").textContent = templates[state.template].label;
+      el("templateHint").textContent = templates[state.template].hint;
+      el("timerLabel").textContent = state.template === "station" ? "本站活動剩餘時間" : "本階段剩餘時間";
+      const display = el("timerDisplay");
+      display.textContent = formatTime(state.remainingSeconds);
+      display.classList.toggle("ending", state.running && state.remainingSeconds <= 60 && state.remainingSeconds > 0);
+      document.querySelectorAll(".template-tab").forEach((button) => button.classList.toggle("active", button.dataset.template === state.template));
+      renderSteps();
+      groupGrid.innerHTML = state.groups.map((group, index) => {
+        const task = taskFor(group);
+        const next = nextTaskFor(group);
+        const pillClass = group.status === "waiting" ? "" : group.status;
+        const modeText = state.template === "station" ? `目前第 ${group.taskIndex + 1} 站` : `專題第 ${group.taskIndex + 1} 階段`;
+        return `<article class="group-card status-${group.status}" style="--group:${colors[index % colors.length]}">
+          <div class="group-top"><h3 class="group-name">${group.name}</h3><span class="state-pill ${pillClass}">${statusText(group.status)}</span></div>
+          <div class="station-mark">${modeText}</div>
+          <h4 class="task-name">${task.title}</h4>
+          <p class="task-detail">${task.detail}</p>
+          <div class="task-info"><span class="info-chip">⏱ ${task.minutes} 分鐘</span><span class="info-chip">✦ ${task.material || "自備材料"}</span></div>
+          <div class="next-task"><strong>${next ? "下一步" : "已到最後一關"}</strong>${next ? next.title : "請整理成果並準備分享。"}</div>
+          <div class="card-actions">
+            <button class="button compact good" data-action="working" data-index="${index}" type="button">開始進行</button>
+            <button class="button compact warn" data-action="help" data-index="${index}" type="button">需要協助</button>
+            <button class="button compact primary" data-action="done" data-index="${index}" type="button">${next ? "完成，下一步" : "完成任務"}</button>
+          </div>
+        </article>`;
+      }).join("");
+    }
+    function renderAll() { renderBoard(); renderEditor(); }
+    function setTemplate(templateKey) {
+      state.template = templateKey;
+      state.groups = buildGroups(state.groups.length, templateKey);
+      const firstMinutes = templates[templateKey].tasks[0].minutes;
+      state.totalSeconds = firstMinutes * 60;
+      state.remainingSeconds = state.totalSeconds;
+      state.running = false;
+      stopTimer(); saveState(true); renderAll();
+    }
+    function setGroupStatus(index, action) {
+      const group = state.groups[index];
+      if (!group) return;
+      if (action === "done") {
+        const lastIndex = templates[state.template].tasks.length - 1;
+        if (group.taskIndex < lastIndex || state.template === "station") {
+          group.taskIndex = state.template === "station" ? (group.taskIndex + 1) % templates[state.template].tasks.length : group.taskIndex + 1;
+          group.customTask = null;
+          group.status = "waiting";
+        } else { group.status = "done"; }
+      } else { group.status = action; }
+      editGroupSelect.dataset.selected = index;
+      saveState(true); renderAll();
+    }
+    function stopTimer() { clearInterval(timerId); timerId = null; state.running = false; }
+    function startTimer() {
+      if (state.remainingSeconds <= 0) state.remainingSeconds = state.totalSeconds;
+      if (timerId) return;
+      state.running = true;
+      const endAt = Date.now() + state.remainingSeconds * 1000;
+      timerId = setInterval(() => {
+        state.remainingSeconds = Math.max(0, Math.ceil((endAt - Date.now()) / 1000));
+        renderBoard();
+        if (state.remainingSeconds === 0) { stopTimer(); saveState(); renderBoard(); if (typeof finishDialog.showModal === "function") finishDialog.showModal(); }
+      }, 250);
+      renderBoard();
+    }
+    function setTimer() {
+      const minutes = Math.max(0, Math.min(180, Number(minutesInput.value) || 0));
+      const seconds = Math.max(0, Math.min(59, Number(secondsInput.value) || 0));
+      state.totalSeconds = Math.max(1, minutes * 60 + seconds);
+      state.remainingSeconds = state.totalSeconds;
+      stopTimer(); saveState(true); renderBoard();
+    }
+
+    document.querySelectorAll(".template-tab").forEach((button) => button.addEventListener("click", () => setTemplate(button.dataset.template)));
+    el("applyActivity").addEventListener("click", () => {
+      const wantedCount = Number(groupCount.value);
+      state.activity = activityInput.value.trim() || "未命名小組活動";
+      if (wantedCount !== state.groups.length) state.groups = buildGroups(wantedCount, state.template);
+      stopTimer(); saveState(true); renderAll();
+    });
+    el("resetBoard").addEventListener("click", () => {
+      state.groups = buildGroups(state.groups.length, state.template);
+      state.remainingSeconds = state.totalSeconds;
+      stopTimer(); saveState(true); renderAll();
+    });
+    el("setTimer").addEventListener("click", setTimer);
+    el("addMinute").addEventListener("click", () => { state.totalSeconds += 60; state.remainingSeconds += 60; saveState(true); renderBoard(); });
+    el("startTimer").addEventListener("click", startTimer);
+    el("pauseTimer").addEventListener("click", () => { stopTimer(); saveState(true); renderBoard(); });
+    el("restartTimer").addEventListener("click", () => { state.remainingSeconds = state.totalSeconds; stopTimer(); saveState(true); renderBoard(); });
+    editGroupSelect.addEventListener("change", () => { editGroupSelect.dataset.selected = editGroupSelect.value; fillEditor(Number(editGroupSelect.value)); });
+    el("saveGroupTask").addEventListener("click", () => {
+      const index = Number(editGroupSelect.value);
+      const group = state.groups[index];
+      if (!group) return;
+      group.customTask = { title: taskTitleInput.value.trim() || "未命名任務", detail: taskDetailInput.value.trim() || "請和組員討論完成這項任務。", minutes: Math.max(1, Number(taskMinutesInput.value) || 1), material: materialInput.value.trim() || "自備材料" };
+      group.status = "waiting";
+      saveState(true); renderAll();
+    });
+    groupGrid.addEventListener("click", (event) => { const button = event.target.closest("button[data-action]"); if (button) setGroupStatus(Number(button.dataset.index), button.dataset.action); });
+    el("fullscreenButton").addEventListener("click", async () => { if (document.fullscreenElement) await document.exitFullscreen(); else await document.documentElement.requestFullscreen(); });
+    document.addEventListener("fullscreenchange", renderBoard);
+    el("closeDialog").addEventListener("click", () => finishDialog.close());
+    el("dialogCloseButton").addEventListener("click", () => finishDialog.close());
+    window.addEventListener("beforeunload", () => saveState());
+    renderAll();
+  </script>
+</body>
+</html>
