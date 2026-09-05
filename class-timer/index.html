@@ -680,15 +680,19 @@
 
     function playBell() {
       playToneSequence([
-        { offset: 0, frequency: 1760, duration: 0.12, volume: 0.34, type: "square" },
-        { offset: 0.14, frequency: 2360, duration: 0.12, volume: 0.38, type: "sawtooth" },
-        { offset: 0.28, frequency: 1760, duration: 0.12, volume: 0.34, type: "square" },
-        { offset: 0.42, frequency: 2360, duration: 0.12, volume: 0.38, type: "sawtooth" },
-        { offset: 0.66, frequency: 1980, duration: 0.16, volume: 0.4, type: "square" },
-        { offset: 0.86, frequency: 2620, duration: 0.16, volume: 0.42, type: "sawtooth" },
-        { offset: 1.08, frequency: 1980, duration: 0.18, volume: 0.4, type: "square" },
-        { offset: 1.32, frequency: 2860, duration: 0.26, volume: 0.44, type: "sawtooth" }
-      ], 1800);
+        { offset: 0, frequency: 2400, duration: 0.1, volume: 0.42, type: "square" },
+        { offset: 0.11, frequency: 3300, duration: 0.1, volume: 0.48, type: "sawtooth" },
+        { offset: 0.22, frequency: 2400, duration: 0.1, volume: 0.42, type: "square" },
+        { offset: 0.33, frequency: 3500, duration: 0.12, volume: 0.5, type: "sawtooth" },
+        { offset: 0.56, frequency: 2550, duration: 0.1, volume: 0.44, type: "square" },
+        { offset: 0.67, frequency: 3600, duration: 0.1, volume: 0.5, type: "sawtooth" },
+        { offset: 0.78, frequency: 2550, duration: 0.1, volume: 0.44, type: "square" },
+        { offset: 0.89, frequency: 3800, duration: 0.14, volume: 0.52, type: "sawtooth" },
+        { offset: 1.18, frequency: 2700, duration: 0.11, volume: 0.46, type: "square" },
+        { offset: 1.3, frequency: 3900, duration: 0.11, volume: 0.54, type: "sawtooth" },
+        { offset: 1.42, frequency: 2700, duration: 0.11, volume: 0.46, type: "square" },
+        { offset: 1.54, frequency: 4200, duration: 0.2, volume: 0.56, type: "sawtooth" }
+      ], 2200);
     }
 
     function updateClasses(percent) {
