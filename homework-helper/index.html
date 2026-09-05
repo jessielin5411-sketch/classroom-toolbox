@@ -31,8 +31,7 @@
       font-family: "Segoe UI", "Noto Sans TC", system-ui, sans-serif;
       color: var(--ink);
       background:
-        linear-gradient(90deg, rgba(255, 251, 242, 0.94), rgba(255, 255, 255, 0.75) 48%, rgba(246, 252, 255, 0.86)),
-        url("assets/homework-correction-3d-background.png") center center / cover fixed,
+        linear-gradient(90deg, rgba(255, 251, 242, 0.96), rgba(255, 255, 255, 0.9) 48%, rgba(246, 252, 255, 0.94)),
         var(--paper);
     }
 
@@ -41,7 +40,8 @@
       position: fixed;
       inset: 0;
       pointer-events: none;
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.34));
+      background: url("assets/homework-correction-3d-background.png") center center / min(1120px, 86vw) auto no-repeat;
+      opacity: 0.5;
     }
 
     button,
