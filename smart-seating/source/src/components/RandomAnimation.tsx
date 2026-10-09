@@ -1,0 +1,3 @@
+import { useEffect,useState } from 'react';
+import type { Student } from '../types';
+export function RandomAnimation({students}:{students:Student[]}){const [tick,setTick]=useState(0);useEffect(()=>{const timer=setInterval(()=>setTick(t=>t+1),110);return()=>clearInterval(timer);},[]);return <div className="random-stage" aria-live="polite"><div className="dice dancing">🎲</div><h2>{tick<12?'隨機洗牌中……':tick<24?'座位重新排列……':`✨ ${Math.max(1,3-Math.floor((tick-24)/5))}……`}</h2><div className="shuffle-cards" aria-hidden="true">{[0,1,2,3,4].map(i=><div key={i}>{students[(tick*7+i*3)%students.length]?.number??'?'}</div>)}</div><p>這一次會坐在哪裡呢？</p></div>;}

@@ -1,0 +1,2 @@
+import type { Student } from '../types';
+export function StudentPicker({students,selected,onChange}:{students:Student[];selected:string[];onChange:(ids:string[])=>void}){return <div className="picker">{students.length===0?<p>請先建立學生名單。</p>:students.map(s=><label key={s.id} className={selected.includes(s.id)?'selected':''}><input type="checkbox" checked={selected.includes(s.id)} onChange={e=>onChange(e.target.checked?[...selected,s.id]:selected.filter(id=>id!==s.id))}/>{s.number} {s.name}</label>)}</div>;}
