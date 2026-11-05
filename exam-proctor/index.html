@@ -4,6 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>考試監考系統</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Noto+Sans+TC:wght@500;700;900&display=swap" rel="stylesheet">
   <style>
     :root {
       --ink: #1f2937;
@@ -17,6 +20,10 @@
       --deep: #070b16;
       --deep-panel: #101827;
       --glow: 0 20px 60px rgba(37, 99, 235, 0.18);
+      --text-font: "Noto Sans TC", "Source Han Sans TC", "Microsoft JhengHei", sans-serif;
+      --number-font: "Montserrat", Arial, sans-serif;
+      --tech-cyan: #41d8ff;
+      --tech-cyan-soft: #91efff;
     }
 
     * { box-sizing: border-box; }
@@ -24,7 +31,7 @@
     body {
       margin: 0;
       min-height: 100vh;
-      font-family: "Segoe UI", "Noto Sans TC", "Microsoft JhengHei", system-ui, sans-serif;
+      font-family: var(--text-font);
       color: var(--ink);
       background:
         radial-gradient(circle at 12% 10%, rgba(37, 99, 235, 0.14), transparent 30%),
@@ -447,9 +454,16 @@
     .standby {
       display: none;
       color: #bfdbfe;
+      font-family: var(--text-font);
       font-size: clamp(28px, 4vw, 58px);
       font-weight: 1000;
       line-height: 1.35;
+    }
+
+    .display-number {
+      font-family: var(--number-font);
+      font-weight: 1000;
+      letter-spacing: 0;
     }
 
     body.standby-mode {
@@ -482,6 +496,12 @@
       animation: preparePulse 1.15s ease-in-out infinite;
     }
 
+    body.prepare-mode .display-number {
+      display: inline-block;
+      font-size: 1.13em;
+      text-shadow: 0 0 26px rgba(255, 157, 62, 0.54);
+    }
+
     @keyframes preparePulse {
       50% { transform: scale(1.018); opacity: 0.88; }
     }
@@ -506,6 +526,246 @@
     @keyframes marqueeMove {
       from { transform: translateX(100%); }
       to { transform: translateX(-100%); }
+    }
+
+    /* Projector layout: large, high-contrast blocks that remain readable from the back row. */
+    .proctor-screen {
+      min-height: 100vh;
+      padding: clamp(8px, 1.2vw, 18px);
+      background:
+        radial-gradient(circle at 50% 0%, rgba(48, 209, 255, 0.27), transparent 35%),
+        linear-gradient(135deg, #010911, #041d35 52%, #020d1a);
+    }
+
+    body.proctoring .proctor-screen,
+    body.standby-mode .proctor-screen { display: block; }
+
+    .proctor-shell {
+      min-height: calc(100vh - clamp(16px, 2.4vw, 36px));
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: clamp(8px, 1vw, 14px);
+      padding: clamp(8px, 1vw, 14px);
+      border: 2px solid rgba(65, 216, 255, 0.7);
+      border-radius: 12px;
+      background:
+        linear-gradient(rgba(65, 216, 255, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(65, 216, 255, 0.035) 1px, transparent 1px),
+        rgba(4, 19, 38, 0.92);
+      background-size: 28px 28px, 28px 28px, auto;
+      box-shadow: inset 0 0 0 1px rgba(145, 239, 255, 0.14), 0 0 52px rgba(38, 197, 255, 0.28);
+    }
+
+    .exam-bar {
+      min-height: 86px;
+      padding: 12px clamp(14px, 2vw, 26px);
+      border: 1px solid rgba(65, 216, 255, 0.66);
+      border-radius: 10px;
+      background: linear-gradient(100deg, rgba(17, 92, 139, 0.93), rgba(5, 36, 69, 0.97));
+      box-shadow: inset 0 1px 0 rgba(190, 246, 255, 0.18), 0 0 24px rgba(39, 211, 255, 0.08);
+    }
+
+    .exam-identity {
+      display: flex;
+      align-items: center;
+      gap: clamp(10px, 1.5vw, 18px);
+    }
+
+    .exam-badge {
+      width: clamp(46px, 5.4vw, 70px);
+      aspect-ratio: 1;
+      display: grid;
+      place-items: center;
+      border: 2px solid rgba(145, 239, 255, 0.72);
+      border-radius: 14px 14px 22px 22px;
+      color: var(--tech-cyan-soft);
+      font-size: clamp(24px, 3vw, 40px);
+      background: linear-gradient(135deg, #124b79, #08223e);
+      box-shadow: inset 0 0 0 4px rgba(255,255,255,.08), 0 0 18px rgba(65, 216, 255, .24);
+    }
+
+    .clock-label,
+    .card-label,
+    .stat-label,
+    .regulations-title small {
+      color: #bcefff;
+      font-size: clamp(12px, 1.25vw, 17px);
+      font-weight: 900;
+    }
+
+    .exam-subject {
+      font-family: var(--text-font);
+      font-size: clamp(28px, 4.1vw, 56px);
+      line-height: 1;
+      text-shadow: 0 3px 0 rgba(0, 0, 0, 0.24);
+    }
+
+    .exam-period {
+      margin-top: 4px;
+      color: #cbf4ff;
+      font-size: clamp(14px, 1.7vw, 22px);
+      font-weight: 850;
+    }
+
+    .clock-block {
+      min-width: 170px;
+      text-align: right;
+    }
+
+    .screen-clock {
+      color: #fff;
+      font-family: var(--number-font);
+      font-size: clamp(31px, 4.2vw, 60px);
+      font-weight: 1000;
+      font-variant-numeric: tabular-nums;
+      line-height: .92;
+    }
+
+    .screen-date {
+      margin-top: 5px;
+      color: #b5e9ff;
+      font-size: clamp(13px, 1.35vw, 19px);
+      font-weight: 850;
+    }
+
+    .exam-dashboard {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: minmax(0, 1.18fr) minmax(280px, .82fr);
+      gap: clamp(10px, 1.3vw, 18px);
+    }
+
+    .period-card,
+    .attendance-panel,
+    .regulations {
+      border: 1px solid rgba(65, 216, 255, 0.62);
+      border-radius: 10px;
+      background: linear-gradient(135deg, rgba(12, 59, 90, .95), rgba(6, 27, 51, .98));
+      box-shadow: inset 0 1px 0 rgba(169, 239, 255, .12), 0 0 22px rgba(29, 179, 236, .06);
+    }
+
+    .period-card { padding: clamp(14px, 2vw, 24px); }
+    .period-time {
+      margin: 4px 0 clamp(12px, 1.8vw, 20px);
+      color: #fff;
+      font-family: var(--number-font);
+      font-size: clamp(30px, 4.2vw, 58px);
+      font-weight: 1000;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .timer-stage {
+      min-height: 0;
+      display: block;
+      padding: 0;
+      text-align: left;
+    }
+
+    .timer-caption {
+      color: #e9f5ff;
+      font-size: clamp(16px, 2vw, 28px);
+      font-weight: 950;
+    }
+
+    .timer {
+      margin-top: 4px;
+      color: #f7d64f;
+      font-family: var(--number-font);
+      font-size: clamp(76px, 11vw, 178px);
+      line-height: .9;
+      text-shadow: 0 0 30px rgba(251, 211, 75, .22);
+    }
+
+    .timer.warning { color: #ff6475; }
+    .finish-message { padding-top: 24px; text-align: center; }
+
+    .attendance-panel {
+      display: grid;
+      align-content: start;
+      overflow: hidden;
+    }
+
+    .attendance-title {
+      padding: 14px 18px;
+      border-bottom: 1px solid rgba(130, 231, 255, .42);
+      color: #fff;
+      font-size: clamp(18px, 2.1vw, 28px);
+      font-weight: 1000;
+      background: linear-gradient(90deg, rgba(33, 168, 214, .32), rgba(20, 86, 133, .12));
+    }
+
+    .attendance-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: center;
+      padding: clamp(10px, 1.3vw, 16px) 18px;
+      border-bottom: 1px solid rgba(130, 231, 255, .22);
+    }
+
+    .attendance-row:last-child { border-bottom: 0; }
+    .stat-value { color: #fff; font-family: var(--number-font); font-size: clamp(34px, 4.1vw, 60px); font-weight: 1000; line-height: .9; }
+    .stat-value small { font-size: .44em; }
+    .attendance-row.present .stat-value { color: #61f19c; text-shadow: 0 0 18px rgba(97, 241, 156, .18); }
+    .attendance-row.absent .stat-value { color: #ff6570; }
+    .absent-seats { grid-column: 1 / -1; color: #ffb2b7; font-size: clamp(12px, 1.25vw, 17px); font-weight: 850; }
+
+    .screen-audio {
+      width: 100%;
+      margin: clamp(14px, 1.6vw, 20px) 0 0;
+      border-color: rgba(133, 210, 255, .34);
+      background: rgba(3, 20, 39, .6);
+    }
+
+    .regulations {
+      padding: clamp(12px, 1.5vw, 20px) clamp(14px, 2vw, 26px);
+      color: #fff;
+    }
+
+    .regulations-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 8px;
+      color: #fff;
+      font-size: clamp(20px, 2.5vw, 34px);
+      font-weight: 1000;
+    }
+
+    .regulations-title span { color: #ffdd58; }
+    .regulation-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px 0; margin: 0; padding: 0; list-style: none; }
+    .regulation-list li { position: relative; min-height: 3.1em; padding: 0 18px 0 50px; color: #e6fbff; font-size: clamp(17px, 1.65vw, 25px); font-weight: 850; line-height: 1.4; }
+    .regulation-list li + li { border-left: 1px solid rgba(121, 229, 255, 0.26); }
+    .regulation-list li::before { content: attr(data-number) "."; position: absolute; left: 18px; top: 0; color: #ffe16a; font-family: var(--number-font); font-weight: 1000; }
+
+    .marquee { display: none; }
+    .end-button { top: auto; right: clamp(14px, 2vw, 28px); bottom: clamp(14px, 2vw, 24px); border-radius: 8px; }
+
+    .standby-stage {
+      display: none;
+      min-height: 0;
+      place-items: center;
+      padding: 30px;
+      text-align: center;
+      border: 1px solid rgba(99, 200, 250, .54);
+      border-radius: 10px;
+      background: linear-gradient(135deg, rgba(26, 54, 78, .94), rgba(14, 30, 48, .97));
+    }
+
+    body.standby-mode .exam-dashboard,
+    body.standby-mode .regulations { display: none; }
+    body.standby-mode .proctor-shell { grid-template-rows: auto 1fr; }
+    body.standby-mode .standby-stage { display: grid; }
+    body.standby-mode .standby { display: block; max-width: 880px; white-space: pre-line; }
+
+    @media (max-width: 760px) {
+      .exam-bar { align-items: center; flex-direction: row; }
+      .exam-dashboard { grid-template-columns: 1fr; }
+      .regulation-list { grid-template-columns: 1fr; gap: 8px; }
+      .regulation-list li { padding-left: 42px; font-size: 17px; }
+      .regulation-list li + li { padding-top: 8px; border-top: 1px solid rgba(255, 225, 105, 0.28); border-left: 0; }
+      .clock-block { min-width: 0; }
+      .screen-clock { font-size: 28px; }
     }
 
     @media (max-width: 760px) {
@@ -593,26 +853,57 @@
   </main>
 
   <section class="proctor-screen" aria-live="polite">
-    <header class="exam-bar">
-      <div class="exam-subject" id="screenSubject"></div>
-      <div class="exam-meta" id="screenMeta"></div>
-    </header>
+    <div class="proctor-shell">
+      <header class="exam-bar">
+        <div class="exam-identity">
+          <div class="exam-badge" aria-hidden="true">⌂</div>
+          <div>
+            <div class="exam-subject" id="screenSubject"></div>
+            <div class="exam-period" id="screenPeriod"></div>
+          </div>
+        </div>
+        <div class="clock-block">
+          <div class="clock-label">現在時間 (Current Time)</div>
+          <div class="screen-clock" id="screenClock">10:15:24</div>
+          <div class="screen-date" id="screenDate">2026.11.05</div>
+        </div>
+      </header>
 
-    <main class="timer-stage" id="timerStage">
-      <div class="timer" id="timerText">40:00</div>
-      <div class="finish-message">考試結束，請停筆！</div>
-      <div class="standby" id="standbyText">自動監考待命中</div>
-      <div class="screen-audio" id="screenAudioPanel">
-        <div class="screen-audio-title">本節音檔</div>
-        <audio id="examAudio" controls preload="metadata"></audio>
-        <div class="screen-audio-name" id="screenAudioName"></div>
-      </div>
-    </main>
+      <main class="exam-dashboard">
+        <section class="period-card">
+          <div class="card-label">◷ 考試時間 (Exam Period)</div>
+          <div class="period-time" id="screenPeriodLarge">09:30 - 11:30</div>
+          <main class="timer-stage" id="timerStage">
+            <div class="timer-caption">◷ 剩餘時間 (Remaining Time)</div>
+            <div class="timer" id="timerText">40:00</div>
+            <div class="finish-message">考試結束，請停筆！</div>
+            <div class="screen-audio" id="screenAudioPanel">
+              <div class="screen-audio-title">本節音檔</div>
+              <audio id="examAudio" controls preload="metadata"></audio>
+              <div class="screen-audio-name" id="screenAudioName"></div>
+            </div>
+          </main>
+        </section>
 
+        <aside class="attendance-panel" aria-label="考勤人數">
+          <div class="attendance-title">♟ 考勤人數 (Attendance)</div>
+          <div class="attendance-row"><div class="stat-label">♟ 應考人數<br><small>(Total Students)</small></div><div class="stat-value" id="screenTotal">28<small> 人</small></div></div>
+          <div class="attendance-row present"><div class="stat-label">♟ 實考人數<br><small>(Present)</small></div><div class="stat-value" id="screenPresent">28<small> 人</small></div></div>
+          <div class="attendance-row absent"><div class="stat-label">▲ 缺考人數<br><small>(Absent)</small></div><div class="stat-value" id="screenAbsent">0<small> 人</small></div><div class="absent-seats" id="screenAbsentSeats">缺考座號：無</div></div>
+        </aside>
+      </main>
+
+      <section class="regulations" aria-label="考場注意事項">
+        <h2 class="regulations-title"><span>⚠</span> 考場注意事項 <small>(Exam Regulations)</small></h2>
+        <ol class="regulation-list" id="screenNotice"></ol>
+      </section>
+
+      <section class="standby-stage">
+        <div class="standby" id="standbyText">自動監考待命中</div>
+      </section>
+    </div>
     <button class="end-button" id="endButton" type="button">結束 / 返回設定</button>
-    <footer class="marquee" aria-label="考試注意事項">
-      <div class="marquee-track" id="marqueeText"></div>
-    </footer>
+    <footer class="marquee" aria-label="考試注意事項"><div class="marquee-track" id="marqueeText"></div></footer>
   </section>
 
   <script>
@@ -628,7 +919,15 @@
     const endButton = document.querySelector("#endButton");
     const setupStatus = document.querySelector("#setupStatus");
     const screenSubject = document.querySelector("#screenSubject");
-    const screenMeta = document.querySelector("#screenMeta");
+    const screenPeriod = document.querySelector("#screenPeriod");
+    const screenPeriodLarge = document.querySelector("#screenPeriodLarge");
+    const screenClock = document.querySelector("#screenClock");
+    const screenDate = document.querySelector("#screenDate");
+    const screenTotal = document.querySelector("#screenTotal");
+    const screenPresent = document.querySelector("#screenPresent");
+    const screenAbsent = document.querySelector("#screenAbsent");
+    const screenAbsentSeats = document.querySelector("#screenAbsentSeats");
+    const screenNotice = document.querySelector("#screenNotice");
     const timerStage = document.querySelector("#timerStage");
     const timerText = document.querySelector("#timerText");
     const standbyText = document.querySelector("#standbyText");
@@ -642,7 +941,6 @@
     let timerId = 0;
     let watchId = 0;
     let activeExamId = "";
-    let activeMetaBase = "";
     const audioFiles = new Map();
     const audioUrls = new Map();
     let schedule = defaultSchedule();
@@ -871,9 +1169,15 @@
       return `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
     }
 
+    function currentDateText() {
+      const now = new Date();
+      return `${now.getFullYear()}.${pad(now.getMonth() + 1)}.${pad(now.getDate())}`;
+    }
+
     function updateScreenMetaClock() {
-      if (!activeMetaBase || !document.body.classList.contains("proctoring")) return;
-      screenMeta.textContent = `${activeMetaBase} / 現在時間：${currentClockText()}`;
+      if (!document.body.classList.contains("proctoring")) return;
+      screenClock.textContent = currentClockText();
+      screenDate.textContent = currentDateText();
     }
 
     function stopTimer() {
@@ -907,11 +1211,48 @@
       const total = Number(totalInput.value);
       const absents = absentNumbers();
       const notice = noticeInput.value.trim() || "請保持安靜，仔細作答。";
+      const { start, end } = examWindow(exam);
       screenSubject.textContent = exam.subject || "考試";
-      activeMetaBase = `應考：${total} 人 / 實際：${actualCount()} 人 / 缺考座號：${absents.length ? absents.join("、") : "無"}`;
+      const period = `${timeValue(start)} - ${timeValue(end)}`;
+      screenPeriod.textContent = "考試進行中 / Exam in Progress";
+      screenPeriodLarge.textContent = period;
+      screenTotal.innerHTML = `${total}<small> 人</small>`;
+      screenPresent.innerHTML = `${actualCount()}<small> 人</small>`;
+      screenAbsent.innerHTML = `${absents.length}<small> 人</small>`;
+      screenAbsentSeats.textContent = `缺考座號：${absents.length ? absents.join("、") : "無"}`;
+      renderRegulations(notice);
       updateScreenMetaClock();
       marqueeText.textContent = `${notice}　　${notice}　　${notice}`;
       setupExamAudio(exam);
+    }
+
+    function renderRegulations(notice) {
+      const items = notice
+        .split(/[。！？\n]+/)
+        .map((item) => item.trim())
+        .filter(Boolean)
+        .slice(0, 3);
+      const fallback = ["請保持安靜，仔細作答。", "請勿交談或影響他人作答。", "寫完後請再次檢查答案。"];
+      screenNotice.innerHTML = (items.length ? items : fallback)
+        .map((item, index) => `<li data-number="${index + 1}">${escapeAttr(item)}</li>`)
+        .join("");
+    }
+
+    function renderStandbyMessage(message) {
+      const fragment = document.createDocumentFragment();
+      String(message).split("\n").forEach((line, index) => {
+        if (index) fragment.append(document.createElement("br"));
+        const match = line.match(/^(\d+)(.*)$/);
+        if (match) {
+          const number = document.createElement("span");
+          number.className = "display-number";
+          number.textContent = match[1];
+          fragment.append(number, document.createTextNode(match[2]));
+          return;
+        }
+        fragment.append(document.createTextNode(line));
+      });
+      standbyText.replaceChildren(fragment);
     }
 
     function setupExamAudio(exam) {
@@ -940,17 +1281,22 @@
       examAudio.pause();
       screenAudioPanel.classList.remove("show");
       activeExamId = "";
-      activeMetaBase = "";
       document.body.classList.remove("proctoring");
       document.body.classList.add("standby-mode");
       document.body.classList.toggle("prepare-mode", Boolean(options.prepare));
       timerStage.classList.remove("finished");
       timerText.classList.remove("warning");
       screenSubject.textContent = options.exam?.subject || "自動監考待命";
-      screenMeta.textContent = options.prepare
-        ? `考前準備 / ${options.exam?.start || ""} 開始`
-        : "";
-      standbyText.textContent = message;
+      screenPeriod.textContent = options.prepare ? `考前準備 / ${options.exam?.start || ""} 開始` : "自動監考待命";
+      screenPeriodLarge.textContent = "--:-- - --:--";
+      screenClock.textContent = currentClockText();
+      screenDate.textContent = currentDateText();
+      screenTotal.innerHTML = `${Number(totalInput.value || 0)}<small> 人</small>`;
+      screenPresent.innerHTML = `${actualCount()}<small> 人</small>`;
+      screenAbsent.innerHTML = `${absentNumbers().length}<small> 人</small>`;
+      screenAbsentSeats.textContent = `缺考座號：${absentNumbers().length ? absentNumbers().join("、") : "無"}`;
+      renderRegulations(standbyNotice);
+      renderStandbyMessage(message);
       marqueeText.textContent = `${standbyNotice}　　${standbyNotice}　　${standbyNotice}`;
     }
 
@@ -1055,7 +1401,6 @@
       stopTimer();
       stopWatcher();
       activeExamId = "";
-      activeMetaBase = "";
       document.body.classList.remove("proctoring");
       document.body.classList.remove("standby-mode");
       document.body.classList.remove("prepare-mode");
